@@ -1,0 +1,6 @@
+task repo(type: Copy) {
+    def outputJar = "${gradle.ext.repo}/ch/tutteli/${project.name}/${project.version}/"
+    outputs.dir outputJar
+    from jar
+    into outputJar
+}

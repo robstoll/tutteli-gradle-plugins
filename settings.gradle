@@ -1,0 +1,59 @@
+// tag::example[]
+rootProject.name = 'tutteli-gradle'
+
+buildscript {
+// end::example[]
+    def repo = "${rootProject.projectDir}/repo"
+    gradle.ext.repo = repo
+    if (file(repo).exists()) {
+        repositories {
+            //for local development
+            maven { url { uri(repo) } }
+        }
+
+// tag::example[]
+        dependencies {
+            classpath 'ch.tutteli:tutteli-gradle-settings:0.1.0-SNAPSHOT'
+        }
+// end::example[]
+    }
+// tag::example[]
+}
+// end::example[]
+
+/*TODO enable with 0.1.0
+// tag::example[]
+apply plugin: 'ch.tutteli.settings'
+// end::example[]
+*/
+
+def includeTopLevel(String name) { includeInSubFolder(name, "/") }
+
+def includeInSubFolder(String nameWithoutPrefix, String folder) {
+    def name = "${rootProject.name}-$nameWithoutPrefix"
+    include ":$name"
+    project(":$name").projectDir = new File("${rootProject.projectDir}/$folder/$name")
+}
+
+includeTopLevel 'settings'
+
+//TODO enable with 0.1.0
+// tag::example[]
+/**
+ * shortcut for include "${rootProject.name}-settings"
+ */
+//includeOwn 'settings'
+
+/**
+ * shortcut for `include "${rootProject.projectDir}/folder/${rootProject.name}-name"`
+ * and it sets `project.projectDir` accordingly
+ */
+//includeInFolder 'folder' 'name'
+
+/**
+ * Does not use naming convention.
+ * Shortcut for `include "${rootProject.projectDir}/folder/name"`
+ * and it sets `project.projectDir` accordingly
+ */
+//includeCustomInFolder 'folder' 'name'
+// end::example[]

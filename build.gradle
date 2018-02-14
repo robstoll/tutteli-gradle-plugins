@@ -1,0 +1,19 @@
+version = '0.1.0-SNAPSHOT'
+group = 'ch.tutteli'
+
+subprojects {
+    apply plugin: 'groovy'
+    apply plugin: 'maven'
+
+    version = rootProject.version
+    group = rootProject.group
+
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        compile gradleApi()
+        compile localGroovy()
+    }
+}
