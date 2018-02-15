@@ -57,11 +57,17 @@ class SettingsUtilPluginTest {
 
 
     @Test
-    void testFunctions() throws IOException {
+    void smokeTest() throws IOException {
         //arrange
         new File(tmpDir, 'test-project-one').mkdir()
-        new File(tmpDir, 'test/test-project-two').mkdirs()
-        new File(tmpDir, 'test/three').mkdir()
+        new File(tmpDir, 'test-project-two').mkdir()
+        new File(tmpDir, 'test/test-project-three').mkdirs()
+        new File(tmpDir, 'test/test-project-four').mkdirs()
+        new File(tmpDir, 'test/five').mkdir()
+        new File(tmpDir, 'test/six').mkdir()
+        new File(tmpDir, 'seven').mkdir()
+        new File(tmpDir, 'eight').mkdir()
+
         settingsFile << """
         rootProject.name='test-project'
         buildscript {
@@ -71,8 +77,29 @@ class SettingsUtilPluginTest {
         }
         apply plugin: 'ch.tutteli.settings'
         includeOwn 'one'
-        includeInFolder('test','two')
-        includeCustomInFolder('test','three')
+        includeOwn ('one', 'two')
+        includeInFolder('test', 'three')
+        includeInFolder('test', 'three', 'four')
+        includeCustomInFolder('test', 'five')
+        includeCustomInFolder('test', 'five', 'six')
+               
+        include {
+            modules 'one'
+            modules ('one', 'two')
+            
+            folder ('test') {
+                modules 'three'
+                modules ('three', 'four')
+            }
+            
+            folder ('test') {
+                custom 'five'
+                custom ('five', 'six')
+            }
+            
+            custom 'seven'
+            custom ('seven', 'eight')
+        }
         """
         //act
         def result = GradleRunner.create()

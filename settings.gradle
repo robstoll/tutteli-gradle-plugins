@@ -55,17 +55,16 @@ if (ext.localPluginExists && !error) {
     apply plugin: 'ch.tutteli.settings'
 }
 
-
 //TODO enable as soon as 0.1.0 is publsihed
-if(!error) {
+if (!error) {
     /**
-     * shortcut for include "${rootProject.name}-settings"
+     * Shortcut for include "${rootProject.name}-settings"
      */
     includeOwn 'settings'
 }
 
 /**
- * shortcut for `include "${rootProject.projectDir}/folder/${rootProject.name}-name"`
+ * Shortcut for `include "${rootProject.projectDir}/folder/${rootProject.name}-name"`
  * and it sets `project.projectDir` accordingly
  */
 //includeInFolder('folder', 'name')
@@ -76,3 +75,26 @@ if(!error) {
  * and it sets `project.projectDir` accordingly
  */
 //includeCustomInFolder('folder', 'name')
+
+/**
+ * Or you can use the extension object `include`
+ *
+ * include {
+ *     //same as includeOwn
+ *     modules 'one module'
+ *     modules ('or', 'several', 'modules')
+ *
+ *     folder ('test') {
+ *          //same as includeInFolder
+ *          modules 'in-folder'
+ *
+ *          //same as includeCustomInFolder
+ *          custom 'without-prefix'
+ *          custom ('also', 'multiple', 'without', 'prefix', 'is', 'possible')
+ *     }
+ *
+ *     //same as a normal `include` -- or in other words, not prefixed with `rootProject.name`
+ *     custom 'toplevel'
+ * }
+ *
+ */
