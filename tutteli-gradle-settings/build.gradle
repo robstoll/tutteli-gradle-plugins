@@ -1,3 +1,12 @@
+buildscript {
+    ext{
+        plugin_id = 'ch.tutteli.settings'
+        plugin_name = 'Tutteli Settings Plugin'
+        plugin_description = 'Adds utility functions to your settings.gradle'
+        plugin_tags = ['utility', 'multi-project']
+    }
+}
+
 task repo(type: Copy) {
     def outputJar = "${gradle.ext.repo}/ch/tutteli/${project.name}/${project.version}/"
     outputs.dir outputJar
@@ -7,19 +16,4 @@ task repo(type: Copy) {
 
 task cleanRepo(type: Delete) {
     delete gradle.ext.repo
-}
-
-pluginBundle {
-    plugins {
-        tutteliSettings {
-            id = 'ch.tutteli.settings'
-            displayName = 'Tutteli Settings Plugin'
-            description = 'Adds utility functions to your settings.gradle'
-            tags = ['utility', 'multi-project']
-        }
-    }
-
-    mavenCoordinates {
-        groupId = project.group
-    }
 }

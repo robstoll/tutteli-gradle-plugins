@@ -1,20 +1,28 @@
 buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+    ext {
+        junit_version = '5.0.3'
+        junit_gralde_version = '1.0.3'
+        publish_version = '0.9.10'
     }
+
+    repositories {
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
     dependencies {
-        classpath "com.gradle.publish:plugin-publish-plugin:0.9.10"
+        classpath "com.gradle.publish:plugin-publish-plugin:$publish_version"
+        classpath "org.junit.platform:junit-platform-gradle-plugin:$junit_gralde_version"
     }
 }
+
 version = gradle.ext.version
 group = 'ch.tutteli'
 
-subprojects {
+subprojects { subproject ->
     apply plugin: 'groovy'
-    apply plugin: 'maven'
     apply plugin: "com.gradle.plugin-publish"
+    apply plugin: 'org.junit.platform.gradle.plugin'
 
     version = rootProject.version
     group = rootProject.group
@@ -23,13 +31,47 @@ subprojects {
         jcenter()
     }
 
+    task createClasspathManifest {
+        def outputDir = file("${buildDir}/${name}")
+
+        inputs.files sourceSets.main.runtimeClasspath
+        outputs.dir outputDir
+
+        doLast {
+            outputDir.mkdirs()
+            file("${outputDir}/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+        }
+    }
+    test.dependsOn(createClasspathManifest)
+
     dependencies {
         compile gradleApi()
         compile localGroovy()
+        testCompile gradleTestKit()
+        testCompile("org.junit.jupiter:junit-jupiter-api:$junit_version")
+        testRuntime("org.junit.jupiter:junit-jupiter-engine:$junit_version")
+        testRuntime files(createClasspathManifest)
     }
-    pluginBundle {
-        website = 'https://github.com/robstoll/tutteli-gradle'
-        vcsUrl = 'https://github.com/robstoll/tutteli-gradle'
+
+    afterEvaluate {
+
+        pluginBundle {
+            website = 'https://github.com/robstoll/tutteli-gradle'
+            vcsUrl = 'https://github.com/robstoll/tutteli-gradle'
+
+            plugins {
+                tutteliSettings {
+                    id = subproject.ext.plugin_id
+                    displayName = subproject.ext.plugin_name
+                    description = subproject.ext.plugin_description
+                    tags = subproject.ext.plugin_tags
+                }
+            }
+
+            mavenCoordinates {
+                groupId = subproject.group
+            }
+        }
     }
 }
 

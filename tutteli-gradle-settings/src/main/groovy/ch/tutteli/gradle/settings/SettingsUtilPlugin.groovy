@@ -7,11 +7,13 @@ class SettingsUtilPlugin implements Plugin<Settings> {
     @Override
     void apply(Settings settings) {
 
-        def includeCustomInFolder = {String folder, String customName ->
+        def includeCustomInFolder = { String folder, String customName ->
+            def dir = new File("${settings.rootProject.projectDir}/$folder/$customName")
+            if (!dir.exists()) {
+                throw new IllegalArgumentException("cannot include the project $customName, its folder does not exist: ${dir.canonicalPath}")
+            }
             settings.include ":$customName"
-            settings.project(":$customName").projectDir = new File(
-                "${settings.rootProject.projectDir}/$folder/$customName"
-            )
+            settings.project(":$customName").projectDir = dir
         }
 
         settings.ext.includeCustomInFolder = includeCustomInFolder
