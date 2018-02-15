@@ -1,7 +1,7 @@
-image:https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg[Apache license, link="http://opensource.org/licenses/Apache2.0"]
-image:https://travis-ci.org/robstoll/atrium.svg?branch=v0.1.0[Build Status, link="https://travis-ci.org/robstoll/atrium/branches"]
+[![Apache license](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](http://opensource.org/licenses/Apache2.0)
+[![Build Status](https://travis-ci.org/robstoll/tutteli-gradle-plugin.svg?branch=master)](https://travis-ci.org/robstoll/tutteli-gradle-plugin/branches)
 
-= Tutteli gradle plugin
+# Tutteli gradle plugin
 A set of gradle plugins which provide utility tasks and functions which I often use in my projects.
 
 *You want to use one of them as well?*
@@ -10,16 +10,16 @@ Sweet :smile: the following sections will cover a few features.
 They are most probably not complete
 (and maybe out-dated, bear with me, as far as I know I am the only one using them).
 
-Please link:https://github.com/robstoll/tutteli-gradle-plugin/issues/new[open an issue],
+Please [open an issue](https://github.com/robstoll/tutteli-gradle-plugin/issues/new),
 if you find a bug or need some help.
 
 The following sections give a brief information what the different plugins offer.
 
-= ch.tutteli.settings
+# ch.tutteli.settings
 Provides utility functions to include projects (in a multi-project setup).
 Is especially useful if you apply the naming convention that all modules start with the name of the `rootProject`.
 
-Have a look at link:./settings.gradle[settings.gradle]
+Have a look at [settings.gradle](https://github.com/robstoll/tutteli-gradle-plugin/tree/master/settings.gradle)
 
-= License
-All tutteli gradle plugins are published under link:http://opensource.org/licenses/Apache2.0[Apache 2.0].
+# License
+All tutteli gradle plugins are published under [Apache 2.0](http://opensource.org/licenses/Apache2.0).

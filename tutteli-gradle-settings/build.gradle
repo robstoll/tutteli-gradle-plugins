@@ -5,6 +5,10 @@ task repo(type: Copy) {
     into outputJar
 }
 
+task cleanRepo(type: Delete) {
+    delete gradle.ext.repo
+}
+
 pluginBundle {
     plugins {
         tutteliSettings {

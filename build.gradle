@@ -8,8 +8,7 @@ buildscript {
         classpath "com.gradle.publish:plugin-publish-plugin:0.9.10"
     }
 }
-
-version = '0.1.0'
+version = gradle.ext.version
 group = 'ch.tutteli'
 
 subprojects {
@@ -41,7 +40,8 @@ Release & deploy
     a) point to the tag
         1) search for the old version and replace with new (e.g. search=1.0.0, replace=1.1.0)
         2) search for `branch=master` and replace it with `tag=vX.Y.Z` (build status and coverage in README.md)
-    b) change `version` in build.gradle to X.Y.Z (remove -SNAPSHOT)
+        3) search for `tree/master` and replace it with `tree/vX.Y.Z` (README.md)
+    b) change `version` in settings.gradle to X.Y.Z (remove -SNAPSHOT)
     c) commit (modified build.gradle, README.md and differences.md)
     d) git tag vX.Y.Z
     e) git push origin vX.Y.Z
@@ -52,10 +52,10 @@ Release & deploy
 
 Prepare next dev cycle
 -----------------------
-1. change version in build.gradle to X.Y.Z-SNAPSHOT
+1. change version in settings.gradle to X.Y.Z-SNAPSHOT
 2. point to master
    a) search for `tag=vX.Y.Z` and replace it with `branch=master`
-   b) search for Old.Version-SNAPHOT and replace with X.Y.Z-SNAPSHOT
+   b) search for `tree/vX.Y.Z` and replace it with `tree/master`
 3. commit & push changes
 
 */

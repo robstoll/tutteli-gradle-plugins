@@ -1,39 +1,50 @@
-//local dev
-buildscript {
-    def repo = "${rootProject.projectDir}/repo"
-    gradle.ext.repo = repo
-    if (file(repo).exists()) {
-        repositories {
-            //for local development
-            maven { url { uri(repo) } }
-        }
-        dependencies {
-            classpath 'ch.tutteli:tutteli-gradle-settings:0.1.0'
-        }
-    }
-}
-
 rootProject.name = 'tutteli-gradle'
 
-/* TODO enable in 0.1.1-SNAPSHOT
 buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
+    def version = '0.1.1-SNAPSHOT'
+    gradle.ext.version = version
+
+    def repo = "${rootProject.projectDir}/repo"
+    gradle.ext.repo = repo
+    def repoDir = file(repo)
+    ext.localPluginExists = false
+    if (repoDir.exists()) {
+        ext.localPluginExists = file("${repoDir.absolutePath}/ch/tutteli/${rootProject.name}-settings/$version").exists()
+        if (ext.localPluginExists) {
+
+            repositories {
+                //for local development
+                maven { url { uri(repo) } }
+            }
+
+            dependencies {
+                classpath "ch.tutteli:tutteli-gradle-settings:$version"
+            }
+        } else {
+            logger.log(LogLevel.ERROR, "local repo exists but not corresponding version, execute gr cleanRepo repo")
         }
     }
-    dependencies {
-        classpath "ch.tutteli:tutteli-gradle-settings:0.1.0"
+}
+
+
+if (!ext.localPluginExists) {
+    buildscript {
+        repositories {
+            maven {
+                url "https://plugins.gradle.org/m2/"
+            }
+        }
+        dependencies {
+            classpath "ch.tutteli:tutteli-gradle-settings:0.1.0"
+        }
     }
 }
 
-apply plugin: 'ch.tutteli.settings'
-*/
-
-// TODO remove in 0.1.1-SNAPSHOT
-if (file(gradle.ext.repo).exists()) {
+//TODO remove `if` as soon as 0.1.0 is publsihed
+if (ext.localPluginExists) {
     apply plugin: 'ch.tutteli.settings'
 }
+
 def includeTopLevel(String name) { includeInSubFolder(name, "/") }
 
 def includeInSubFolder(String nameWithoutPrefix, String folder) {
@@ -47,7 +58,7 @@ includeTopLevel 'settings'
 /**
  * shortcut for include "${rootProject.name}-settings"
  */
-//TODO enable in 0.1.1-SNAPSHOT
+//TODO enable as soon as 0.1.0 is publsihed
 //includeOwn 'settings'
 
 /**
