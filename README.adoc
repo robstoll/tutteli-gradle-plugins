@@ -1,5 +1,5 @@
 image:https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg[Apache license, link="http://opensource.org/licenses/Apache2.0"]
-image:https://travis-ci.org/robstoll/atrium.svg?branch=master[Build Status, link="https://travis-ci.org/robstoll/atrium/branches"]
+image:https://travis-ci.org/robstoll/atrium.svg?branch=v0.1.0[Build Status, link="https://travis-ci.org/robstoll/atrium/branches"]
 
 = Tutteli gradle plugin
 A set of gradle plugins which provide utility tasks and functions which I often use in my projects.
