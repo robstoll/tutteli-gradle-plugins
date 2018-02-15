@@ -21,7 +21,7 @@ class SettingsUtilPlugin implements Plugin<Settings> {
         }
 
         settings.ext.includeOwn = { String nameWithoutPrefix ->
-            includeCustomInFolder("${settings.rootProject.name}-$nameWithoutPrefix", "")
+            includeCustomInFolder("", "${settings.rootProject.name}-$nameWithoutPrefix")
         }
     }
 }

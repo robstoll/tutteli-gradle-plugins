@@ -4,3 +4,18 @@ task repo(type: Copy) {
     from jar
     into outputJar
 }
+
+pluginBundle {
+    plugins {
+        tutteliSettings {
+            id = 'ch.tutteli.settings'
+            displayName = 'Tutteli Settings Plugin'
+            description = 'Adds utility functions to your settings.gradle'
+            tags = ['utility', 'multi-project']
+        }
+    }
+
+    mavenCoordinates {
+        groupId = project.group
+    }
+}

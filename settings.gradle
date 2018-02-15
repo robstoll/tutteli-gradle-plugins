@@ -1,8 +1,5 @@
-// tag::example[]
-rootProject.name = 'tutteli-gradle'
-
+//local dev
 buildscript {
-// end::example[]
     def repo = "${rootProject.projectDir}/repo"
     gradle.ext.repo = repo
     if (file(repo).exists()) {
@@ -10,23 +7,33 @@ buildscript {
             //for local development
             maven { url { uri(repo) } }
         }
-
-// tag::example[]
         dependencies {
-            classpath 'ch.tutteli:tutteli-gradle-settings:0.1.0-SNAPSHOT'
+            classpath 'ch.tutteli:tutteli-gradle-settings:0.1.0'
         }
-// end::example[]
     }
-// tag::example[]
 }
-// end::example[]
 
-/*TODO enable with 0.1.0
-// tag::example[]
+rootProject.name = 'tutteli-gradle'
+
+/* TODO enable in 0.1.1-SNAPSHOT
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "ch.tutteli:tutteli-gradle-settings:0.1.0"
+    }
+}
+
 apply plugin: 'ch.tutteli.settings'
-// end::example[]
 */
 
+// TODO remove in 0.1.1-SNAPSHOT
+if (file(gradle.ext.repo).exists()) {
+    apply plugin: 'ch.tutteli.settings'
+}
 def includeTopLevel(String name) { includeInSubFolder(name, "/") }
 
 def includeInSubFolder(String nameWithoutPrefix, String folder) {
@@ -37,11 +44,10 @@ def includeInSubFolder(String nameWithoutPrefix, String folder) {
 
 includeTopLevel 'settings'
 
-//TODO enable with 0.1.0
-// tag::example[]
 /**
  * shortcut for include "${rootProject.name}-settings"
  */
+//TODO enable in 0.1.1-SNAPSHOT
 //includeOwn 'settings'
 
 /**
