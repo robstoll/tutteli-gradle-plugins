@@ -17,7 +17,6 @@ class SettingsUtilPluginTest {
     private File settingsFile
     private Path tmp
     private File tmpDir
-    private List<File> pluginClasspathFiles
     private List<String> pluginClasspath
 
     @BeforeEach
@@ -29,10 +28,6 @@ class SettingsUtilPluginTest {
         if (pluginClasspathResource == null) {
             throw new IllegalStateException('Did not find plugin classpath resource, run `testClasses` build task.')
         }
-
-        pluginClasspathFiles = pluginClasspathResource.readLines()
-            .collect { it.replace('\\', '\\\\') }
-            .collect { new File(it) }
 
         pluginClasspath = pluginClasspathResource.readLines()
             .collect { it.replace('\\', '\\\\') }
@@ -81,7 +76,6 @@ class SettingsUtilPluginTest {
         """
         //act
         def result = GradleRunner.create()
-            .withPluginClasspath(pluginClasspathFiles)
             .withProjectDir(tmpDir)
             .withArguments("projects")
             .build()
