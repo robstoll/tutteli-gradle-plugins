@@ -24,7 +24,7 @@ class SettingsUtilPluginTest {
         tmp = Files.createTempDirectory("myTests")
         tmpDir = tmp.toFile()
         settingsFile = new File(tmpDir, "settings.gradle")
-        URL pluginClasspathResource = getClass().classLoader.findResource('plugin-classpath.txt')
+        URL pluginClasspathResource = getClass().classLoader.getResource('plugin-classpath.txt')
         if (pluginClasspathResource == null) {
             throw new IllegalStateException('Did not find plugin classpath resource, run `testClasses` build task.')
         }
