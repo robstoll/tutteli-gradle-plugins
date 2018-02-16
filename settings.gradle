@@ -1,29 +1,12 @@
 rootProject.name = 'tutteli-gradle'
 
+
 buildscript {
-    def version = '0.1.1-SNAPSHOT'
-    gradle.ext.version = version
+    gradle.ext.version = '0.1.1-SNAPSHOT'
+    gradle.ext.repo = "${rootProject.projectDir}/repo"
 
-    def repo = "${rootProject.projectDir}/repo"
-    gradle.ext.repo = repo
-    def repoDir = file(repo)
-    ext.localPluginExists = false
-    if (repoDir.exists()) {
-        ext.localPluginExists = file("${repoDir.absolutePath}/ch/tutteli/${rootProject.name}-settings/$version").exists()
-        if (ext.localPluginExists) {
-
-            repositories {
-                //for local development
-                maven { url { uri(repo) } }
-            }
-
-            dependencies {
-                classpath "ch.tutteli:tutteli-gradle-settings:$version"
-            }
-        } else {
-            logger.log(LogLevel.ERROR, "local repo exists but not corresponding version, execute gr cleanRepo repo")
-        }
-    }
+    apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
+    includeLocalRepo(gradle.ext.repo, 'settings', gradle.ext.version, this)
 }
 
 if (!ext.localPluginExists) {
@@ -46,9 +29,8 @@ def includeInSubFolder(String nameWithoutPrefix, String folder) {
     include ":$name"
     project(":$name").projectDir = new File("${rootProject.projectDir}/$folder/$name")
 }
-includeTopLevel 'settings'
 
-def error = true
+def error = false
 
 //TODO remove `if` as soon as 0.1.0 is published
 if (ext.localPluginExists && !error) {
@@ -56,11 +38,14 @@ if (ext.localPluginExists && !error) {
 }
 
 //TODO enable as soon as 0.1.0 is publsihed
-if (!error) {
+if (ext.localPluginExists && !error) {
     /**
-     * Shortcut for include "${rootProject.name}-settings"
+     * Shortcut for `include "${rootProject.name}-settings"; include "${rootProject.name}-jacoco"`
      */
-    includeOwn 'settings'
+    includeOwn ('settings', 'jacoco')
+} else {
+    includeTopLevel 'settings'
+    includeTopLevel 'jacoco'
 }
 
 /**

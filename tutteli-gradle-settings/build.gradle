@@ -7,14 +7,3 @@ buildscript {
         plugin_tags = ['utility', 'multi-project']
     }
 }
-
-task repo(type: Copy) {
-    def outputJar = "${gradle.ext.repo}/ch/tutteli/${project.name}/${project.version}/"
-    outputs.dir outputJar
-    from jar
-    into outputJar
-}
-
-task cleanRepo(type: Delete) {
-    delete gradle.ext.repo
-}

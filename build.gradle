@@ -1,7 +1,7 @@
 buildscript {
     ext {
         junit_version = '5.0.3'
-        junit_gralde_version = '1.0.3'
+        junit_gradle_version = '1.0.3'
         publish_version = '0.9.10'
     }
 
@@ -12,7 +12,16 @@ buildscript {
 
     dependencies {
         classpath "com.gradle.publish:plugin-publish-plugin:$publish_version"
-        classpath "org.junit.platform:junit-platform-gradle-plugin:$junit_gralde_version"
+        classpath "org.junit.platform:junit-platform-gradle-plugin:$junit_gradle_version"
+    }
+}
+
+
+buildscript {
+    ext.error = false
+    if (!ext.error) {
+        apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
+        includeLocalRepo(gradle.ext.repo, 'jacoco', gradle.ext.version, this)
     }
 }
 
@@ -23,7 +32,12 @@ subprojects { subproject ->
     apply plugin: 'groovy'
     apply plugin: 'java-gradle-plugin'
     apply plugin: "com.gradle.plugin-publish"
-    apply plugin: 'org.junit.platform.gradle.plugin'
+    if (error || !subproject.localPluginExists) {
+        apply plugin: 'org.junit.platform.gradle.plugin'
+    } else {
+        apply plugin: 'ch.tutteli.jacoco'
+        def report = subproject.tasks.getByName('junitPlatformJacocoReport')
+    }
 
     version = rootProject.version
     group = rootProject.group
@@ -80,6 +94,18 @@ subprojects { subproject ->
             }
         }
     }
+
+
+    task repo(type: Copy) {
+        def outputJar = "${gradle.ext.repo}/ch/tutteli/${project.name}/${project.version}/"
+        outputs.dir outputJar
+        from jar
+        into outputJar
+    }
+}
+
+task cleanRepo(type: Delete) {
+    delete gradle.ext.repo
 }
 
 /*

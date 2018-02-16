@@ -1,0 +1,22 @@
+buildscript {
+    ext.includeLocalRepo = { String repo, String pluginName, String version, entity ->
+        def repoDir = file(repo)
+        entity.ext.localPluginExists = false
+        if (repoDir.exists()) {
+            entity.ext.localPluginExists = file("${repoDir.absolutePath}/ch/tutteli/${rootProject.name}-$pluginName/$version").exists()
+            if (entity.ext.localPluginExists) {
+                entity.buildscript {
+                    repositories {
+                        //for local development
+                        maven { url { uri(repo) } }
+                    }
+                    dependencies {
+                        classpath "ch.tutteli:tutteli-gradle-$pluginName:$version"
+                    }
+                }
+            } else {
+                logger.log(LogLevel.ERROR, "local repo exists but not corresponding version of $pluginName, execute gr cleanRepo repo")
+            }
+        }
+    }
+}
