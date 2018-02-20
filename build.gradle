@@ -77,8 +77,8 @@ subprojects { subproject ->
         }
 
         pluginBundle {
-            website = 'https://github.com/robstoll/tutteli-gradle'
-            vcsUrl = 'https://github.com/robstoll/tutteli-gradle'
+            website = 'https://github.com/robstoll/tutteli-gradle-plugin'
+            vcsUrl = 'https://github.com/robstoll/tutteli-gradle-plugin'
 
             plugins {
                 tutteliSettings {
