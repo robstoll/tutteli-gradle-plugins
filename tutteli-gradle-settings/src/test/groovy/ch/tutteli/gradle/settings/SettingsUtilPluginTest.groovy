@@ -5,6 +5,7 @@ import org.gradle.api.initialization.Settings
 import org.gradle.api.plugins.Convention
 import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -85,6 +86,14 @@ class SettingsUtilPluginTest {
     }
 
     @Test
+    void includePrefixed_nonExistingFolder_throwIllegalArgumentException() {
+        //act
+        Assertions.assertThrows(IllegalArgumentException) {
+            includePrefixed('nonExisting')
+        }
+    }
+
+    @Test
     void includePrefixedInFolder_oneProject_includedInFolder() {
         //arrange
         def folder = new File(tmpDir, 'myFolder')
@@ -114,6 +123,14 @@ class SettingsUtilPluginTest {
     }
 
     @Test
+    void includePrefixedInFolder_nonExistingFolder_throwIllegalArgumentException() {
+        //act
+        Assertions.assertThrows(IllegalArgumentException) {
+            includePrefixedInFolder('myFolder', 'nonExisting')
+        }
+    }
+
+    @Test
     void includeCustomInFolder_oneProject_includedInFolderWithoutPrefix() {
         //arrange
         def folder = new File(tmpDir, 'myFolder')
@@ -140,6 +157,14 @@ class SettingsUtilPluginTest {
         //assert
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
         verifyProjectIncluded(nameB, descriptorB, projectDirB)
+    }
+
+    @Test
+    void includeCustomInFolder_nonExistingFolder_throwIllegalArgumentException() {
+        //act
+        Assertions.assertThrows(IllegalArgumentException) {
+            includeCustomInFolder('myFolder', 'nonExisting')
+        }
     }
 
     private List setUpProject(String name) {
