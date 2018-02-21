@@ -37,6 +37,9 @@ subprojects { subproject ->
     } else {
         apply plugin: 'ch.tutteli.jacoco'
         def report = subproject.tasks.getByName('junitPlatformJacocoReport')
+        report.reports {
+            html.enabled = true
+        }
     }
 
     version = rootProject.version
@@ -64,12 +67,13 @@ subprojects { subproject ->
         testCompile("org.junit.jupiter:junit-jupiter-api:$junit_version")
         testRuntime("org.junit.jupiter:junit-jupiter-engine:$junit_version")
         testRuntime files(createClasspathManifest)
+        testCompile("org.mockito:mockito-core:2.15.0")
     }
 
     afterEvaluate {
         gradlePlugin {
             plugins {
-                tutteliSettings {
+                tutteliPlugin { //name does not matter
                     id = subproject.ext.plugin_id
                     implementationClass = subproject.ext.plugin_class
                 }
@@ -78,7 +82,7 @@ subprojects { subproject ->
 
         pluginBundle {
             website = 'https://github.com/robstoll/tutteli-gradle-plugin'
-            vcsUrl = 'https://github.com/robstoll/tutteli-gradle-plugin'
+            vcsUrl = 'https://github.com/robstoll/tutteli-gradle-plugin.git'
 
             plugins {
                 tutteliSettings {
@@ -94,7 +98,6 @@ subprojects { subproject ->
             }
         }
     }
-
 
     task repo(type: Copy) {
         def outputJar = "${gradle.ext.repo}/ch/tutteli/${project.name}/${project.version}/"
