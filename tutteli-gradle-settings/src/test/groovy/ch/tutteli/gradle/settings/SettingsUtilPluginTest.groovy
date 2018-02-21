@@ -17,8 +17,8 @@ import static org.mockito.Mockito.*
 
 class SettingsUtilPluginTest {
     private includeCustomInFolder
-    private includeInFolder
-    private includeOwn
+    private includePrefixedInFolder
+    private includePrefixed
     private Path tmp
     private File tmpDir
     private rootProjectName = "test"
@@ -48,10 +48,10 @@ class SettingsUtilPluginTest {
         def captor = ArgumentCaptor.forClass(Closure)
         verify(ext).set(eq('includeCustomInFolder'), captor.capture())
         includeCustomInFolder = captor.getValue()
-        verify(ext).set(eq('includeInFolder'), captor.capture())
-        includeInFolder = captor.getValue()
-        verify(ext).set(eq('includeOwn'), captor.capture())
-        includeOwn = captor.getValue()
+        verify(ext).set(eq('includePrefixedInFolder'), captor.capture())
+        includePrefixedInFolder = captor.getValue()
+        verify(ext).set(eq('includePrefixed'), captor.capture())
+        includePrefixed = captor.getValue()
     }
 
     @AfterEach
@@ -60,43 +60,43 @@ class SettingsUtilPluginTest {
     }
 
     @Test
-    void includeOwn_oneProject_includedInRoot() {
+    void includePrefixed_oneProject_includedInRoot() {
         //arrange
         def nameA = 'test-a'
         def (descriptorA, projectDirA) = setUpProject(nameA)
         //act
-        includeOwn('a')
+        includePrefixed('a')
         //assert
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
     }
 
     @Test
-    void includeOwn_twoProjects_bothIncludedInRoot() {
+    void includePrefixed_twoProjects_bothIncludedInRoot() {
         //arrange
         def nameA = 'test-a'
         def nameB = 'test-b'
         def (descriptorA, projectDirA) = setUpProject(nameA)
         def (descriptorB, projectDirB) = setUpProject(nameB)
         //act
-        includeOwn('a', 'b')
+        includePrefixed('a', 'b')
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
         verifyProjectIncluded(nameB, descriptorB, projectDirB)
     }
 
     @Test
-    void includeInFolder_oneProject_includedInFolder() {
+    void includePrefixedInFolder_oneProject_includedInFolder() {
         //arrange
         def folder = new File(tmpDir, 'myFolder')
         folder.mkdir()
         def nameA = 'test-a'
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
         //act
-        includeInFolder('myFolder', 'a')
+        includePrefixedInFolder('myFolder', 'a')
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
     }
 
     @Test
-    void includeInFolder_twoProjects_bothIncludedInFolder() {
+    void includePrefixedInFolder_twoProjects_bothIncludedInFolder() {
         //arrange
         def folder = new File(tmpDir, 'myFolder')
         folder.mkdir()
@@ -105,7 +105,7 @@ class SettingsUtilPluginTest {
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
         def (descriptorB, projectDirB) = setUpProject(folder, nameB)
         //act
-        includeInFolder('myFolder', 'a', 'b')
+        includePrefixedInFolder('myFolder', 'a', 'b')
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
         verifyProjectIncluded(nameB, descriptorB, projectDirB)
     }

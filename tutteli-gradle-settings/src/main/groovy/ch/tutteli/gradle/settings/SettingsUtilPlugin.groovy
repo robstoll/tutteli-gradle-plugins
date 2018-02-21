@@ -17,17 +17,17 @@ class SettingsUtilPluginExtension {
         configure.execute(new SettingsUtilPluginExtension(settings, folderName))
     }
 
-    void modules(String... modules) {
-        IncludeCustomInFolder.includeInFolder(settings, folder, modules)
+    void prefixed(String... modules) {
+        IncludeCustomInFolder.includePrefixedInFolder(settings, folder, modules)
     }
 
-    void custom(String... modulesWithoutPrefix) {
+    void project(String... modulesWithoutPrefix) {
         IncludeCustomInFolder.includeCustomInFolder(settings, folder, modulesWithoutPrefix)
     }
 }
 
 class IncludeCustomInFolder {
-    static void includeInFolder(Settings settings, String folder, String... namesWithoutPrefix) {
+    static void includePrefixedInFolder(Settings settings, String folder, String... namesWithoutPrefix) {
         namesWithoutPrefix.each {
             include(settings, folder, "${settings.rootProject.name}-$it")
         }
@@ -59,12 +59,12 @@ class SettingsUtilPlugin implements Plugin<Settings> {
             IncludeCustomInFolder.includeCustomInFolder(settings, folder, customNames)
         }
 
-        settings.ext.includeInFolder = { String folder, String... namesWithoutPrefix ->
-            IncludeCustomInFolder.includeInFolder(settings, folder, namesWithoutPrefix)
+        settings.ext.includePrefixedInFolder = { String folder, String... namesWithoutPrefix ->
+            IncludeCustomInFolder.includePrefixedInFolder(settings, folder, namesWithoutPrefix)
         }
 
-        settings.ext.includeOwn = { String... namesWithoutPrefix ->
-            IncludeCustomInFolder.includeInFolder(settings, "", namesWithoutPrefix)
+        settings.ext.includePrefixed = { String... namesWithoutPrefix ->
+            IncludeCustomInFolder.includePrefixedInFolder(settings, "", namesWithoutPrefix)
         }
     }
 }

@@ -82,29 +82,29 @@ class SettingsUtilPluginIntTest {
             }
         }
         apply plugin: 'ch.tutteli.settings'
-        includeOwn 'one'
-        includeOwn ('one', 'two')
-        includeInFolder('test', 'three')
-        includeInFolder('test', 'three', 'four')
+        includePrefixed 'one'
+        includePrefixed ('one', 'two')
+        includePrefixedInFolder('test', 'three')
+        includePrefixedInFolder('test', 'three', 'four')
         includeCustomInFolder('test', 'five')
         includeCustomInFolder('test', 'five', 'six')
                
         include {
-            modules 'one'
-            modules ('one', 'two')
+            prefixed 'one'
+            prefixed ('one', 'two')
             
             folder ('test') {
-                modules 'three'
-                modules ('three', 'four')
+                prefixed 'three'
+                prefixed ('three', 'four')
             }
             
             folder ('test') {
-                custom 'five'
-                custom ('five', 'six')
+                project 'five'
+                project ('five', 'six')
             }
             
-            custom 'seven'
-            custom ('seven', 'eight')
+            project 'seven'
+            project ('seven', 'eight')
         }
         """
         //act
