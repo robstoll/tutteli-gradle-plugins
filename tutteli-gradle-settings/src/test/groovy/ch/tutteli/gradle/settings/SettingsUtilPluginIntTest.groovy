@@ -1,3 +1,5 @@
+package ch.tutteli.gradle.settings
+
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
@@ -13,7 +15,7 @@ import java.nio.file.attribute.BasicFileAttributes
 import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.junit.jupiter.api.Assertions.assertTrue
 
-class SettingsUtilPluginTest {
+class SettingsUtilPluginIntTest {
     private File settingsFile
     private Path tmp
     private File tmpDir
@@ -36,7 +38,11 @@ class SettingsUtilPluginTest {
 
     @AfterEach
     void tearDown() {
-        Files.walkFileTree(tmp, new SimpleFileVisitor<Path>() {
+        deleteTmp(tmp)
+    }
+
+    static void deleteTmp(Path tmpFolder) {
+        Files.walkFileTree(tmpFolder, new SimpleFileVisitor<Path>() {
 
             @Override
             FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
