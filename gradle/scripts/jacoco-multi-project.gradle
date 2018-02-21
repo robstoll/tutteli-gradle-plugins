@@ -26,10 +26,10 @@ task codeCoverageReport(type: JacocoReport) {
         classDirectories += files(it.sourceSets.main.output.classesDirs)
     }
     doFirst {
-        println "going to generate merged jacoco report based on:"
-        println "  - source projects: ${jacocoMulti.sourceProjects*.name}"
-        println "  - jacoco projects: ${jacocoMulti.jacocoProjects*.name}"
-        println "========================================="
+        logger.info("going to generate merged jacoco report based on:")
+        logger.info("  - source projects: ${jacocoMulti.sourceProjects*.name}")
+        logger.info("  - jacoco projects: ${jacocoMulti.jacocoProjects*.name}")
+        logger.info("=========================================")
     }
 
     reports {
