@@ -79,6 +79,7 @@ class SettingsUtilPluginTest {
         def (descriptorB, projectDirB) = setUpProject(nameB)
         //act
         includePrefixed('a', 'b')
+        //assert
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
         verifyProjectIncluded(nameB, descriptorB, projectDirB)
     }
@@ -92,6 +93,7 @@ class SettingsUtilPluginTest {
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
         //act
         includePrefixedInFolder('myFolder', 'a')
+        //assert
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
     }
 
@@ -106,6 +108,7 @@ class SettingsUtilPluginTest {
         def (descriptorB, projectDirB) = setUpProject(folder, nameB)
         //act
         includePrefixedInFolder('myFolder', 'a', 'b')
+        //assert
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
         verifyProjectIncluded(nameB, descriptorB, projectDirB)
     }
@@ -119,6 +122,7 @@ class SettingsUtilPluginTest {
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
         //act
         includeCustomInFolder('myFolder', nameA)
+        //assert
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
     }
 
@@ -133,6 +137,7 @@ class SettingsUtilPluginTest {
         def (descriptorB, projectDirB) = setUpProject(folder, nameB)
         //act
         includeCustomInFolder('myFolder', nameA, nameB)
+        //assert
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
         verifyProjectIncluded(nameB, descriptorB, projectDirB)
     }
