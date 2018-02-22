@@ -19,7 +19,7 @@ class JunitJacocoPluginExtension {
     JunitJacocoPluginExtension(Project project, Task junitPlatformTestTask) {
         this.junitPlatformTestTask = junitPlatformTestTask
         this.jacocoPluginExtension = project.extensions.getByType(JacocoPluginExtension)
-        this.jacocoReportTask = project.task(type: JacocoReport, 'junitPlatformJacocoReport') as JacocoReport
+        this.jacocoReportTask = project.task(type: JacocoReport, JunitJacocoPlugin.REPORT_TASK_NAME) as JacocoReport
         this.junitPlatformExtension = project.extensions.getByType(JUnitPlatformExtension)
         this.enableJunitReport = project.objects.property(Boolean)
         this.enableJunitReport.set(false)
