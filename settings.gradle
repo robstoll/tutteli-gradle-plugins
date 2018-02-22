@@ -42,10 +42,10 @@ if (ext.localPluginExists && !error) {
     /**
      * Shortcut for `include "${rootProject.name}-settings"; include "${rootProject.name}-jacoco"`
      */
-    includePrefixed ('settings', 'jacoco')
+    includePrefixed ('settings', 'junitjacoco')
 } else {
     includeTopLevel 'settings'
-    includeTopLevel 'jacoco'
+    includeTopLevel 'junitjacoco'
 }
 
 /**

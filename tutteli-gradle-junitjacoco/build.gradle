@@ -1,9 +1,9 @@
 buildscript {
     ext {
-        plugin_id = 'ch.tutteli.jacoco'
-        plugin_class = 'ch.tutteli.gradle.jacoco.JacocoPlugin'
+        plugin_id = 'ch.tutteli.junitjacoco'
+        plugin_class = 'ch.tutteli.gradle.junitjacoco.JunitJacocoPlugin'
         plugin_name = 'Tutteli Jacoco Plugin'
-        plugin_description = 'Binds jacoco to the task junitPlatformTest'
+        plugin_description = 'Applies the junit5 platform plugin and binds jacoco to it.'
         plugin_tags = ['jacoco', 'junit']
     }
 }

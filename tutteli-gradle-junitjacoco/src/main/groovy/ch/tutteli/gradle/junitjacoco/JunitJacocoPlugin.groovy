@@ -1,13 +1,14 @@
-package ch.tutteli.gradle.jacoco
+package ch.tutteli.gradle.junitjacoco
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.junit.platform.gradle.plugin.JUnitPlatformPlugin
 
-class JacocoPlugin implements Plugin<Project> {
+class JunitJacocoPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         Task junitPlatformTestTask = applyJunitPlatform(project)
@@ -26,7 +27,7 @@ class JacocoPlugin implements Plugin<Project> {
     }
 
     private static void applyJacoco(Project project, Task junitPlatformTestTask) {
-        project.getPluginManager().apply(org.gradle.testing.jacoco.plugins.JacocoPlugin)
+        project.getPluginManager().apply(JacocoPlugin)
 
         JacocoPluginExtension jacocoExtension = project.extensions.getByName('jacoco') as JacocoPluginExtension
         jacocoExtension.with {
@@ -39,14 +40,13 @@ class JacocoPlugin implements Plugin<Project> {
         jacocoReport.with {
             sourceDirectories = project.sourceSets.main.allJava.sourceDirectories
             classDirectories = project.files(project.sourceSets.main.output.classesDirs)
-            executionData junitPlatformTestTask
-            reports {
+            executionData junitPlatformTestTask; reports {
                 csv.enabled = false
-                csv.destination project.file("${project.jacoco.reportsDir}/report.csv")
+                csv.destination project.file("${project.jacoco.reportsDir}/junitReport.csv")
                 xml.enabled = true
-                xml.destination project.file("${project.jacoco.reportsDir}/report.xml")
+                xml.destination project.file("${project.jacoco.reportsDir}/junitReport.xml")
                 html.enabled = false
-                html.destination project.file("${project.jacoco.reportsDir}/html/")
+                html.destination project.file("${project.jacoco.reportsDir}/junitHtml/")
             }
         }
         project.check.dependsOn jacocoReport

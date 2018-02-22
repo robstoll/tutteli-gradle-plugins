@@ -1,21 +1,20 @@
-package ch.tutteli.gradle.jacoco
+package ch.tutteli.gradle.junitjacoco
 
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.assertNotNull
 import static org.junit.jupiter.api.Assertions.assertTrue
 
-class JacocoPluginSmokeTest {
+class JunitJacocoPluginSmokeTest {
 
     @Test
     void smokeTest(){
         //arrange
         Project project = ProjectBuilder.builder().build()
         //act
-        project.plugins.apply(JacocoPlugin)
+        project.plugins.apply(JunitJacocoPlugin)
         //assert
         assertNotNull(project.tasks.getByName('junitPlatformTest'), 'junitPlatformTest')
         assertNotNull(project.extensions.getByName('jacoco'), 'jacoco')
