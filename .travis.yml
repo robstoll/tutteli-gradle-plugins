@@ -9,7 +9,8 @@ before_install:
 install: true
 
 script:
-  - ./gr -i repo build
+  - ./gr -i repo
+  - ./gr build
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
