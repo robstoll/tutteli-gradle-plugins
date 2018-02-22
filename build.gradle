@@ -23,21 +23,27 @@ buildscript {
         apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
         includeLocalRepo(gradle.ext.repo, 'junitjacoco', gradle.ext.version, this)
     }
-    //TODO enable as soon as 0.2.0 is published
-//    if (!ext.localPluginExists) {
-//        dependencies {
-//            classpath "ch.tutteli:tutteli-gradle-jacoco:0.2.0"
-//        }
-//    }
+
+    if (error || !ext.localPluginExists) {
+        dependencies {
+            classpath "ch.tutteli:tutteli-gradle-junitjacoco:0.2.0"
+        }
+    }
 }
 
 version = gradle.ext.version
 group = 'ch.tutteli'
 
-subprojects { subproject ->
+subprojects {
     apply plugin: 'groovy'
     apply plugin: 'java-gradle-plugin'
-    apply plugin: "com.gradle.plugin-publish"
+    apply plugin: 'com.gradle.plugin-publish'
+
+    version = rootProject.version
+    group = rootProject.group
+}
+
+subprojects {
     if (error || !rootProject.ext.localPluginExists) {
         apply plugin: 'org.junit.platform.gradle.plugin'
     } else {
@@ -66,9 +72,9 @@ subprojects { subproject ->
             }
         }
     }
+}
 
-    version = rootProject.version
-    group = rootProject.group
+subprojects { subproject ->
 
     repositories {
         jcenter()
@@ -91,7 +97,7 @@ subprojects { subproject ->
     dependencies {
         testCompile("org.junit.jupiter:junit-jupiter-api:$junit_version")
         testRuntime("org.junit.jupiter:junit-jupiter-engine:$junit_version")
-        testRuntime files(createClasspathManifest)
+        testRuntime files(createClasspathManifest) //required for settings.gradle test
         testCompile("org.mockito:mockito-core:2.15.0")
     }
 
