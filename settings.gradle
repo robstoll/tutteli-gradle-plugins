@@ -2,7 +2,7 @@ rootProject.name = 'tutteli-gradle'
 
 
 buildscript {
-    gradle.ext.version = '0.1.1-SNAPSHOT'
+    gradle.ext.version = '0.2.0'
     gradle.ext.repo = "${rootProject.projectDir}/repo"
 
     apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
@@ -17,12 +17,12 @@ if (!ext.localPluginExists) {
             }
         }
         dependencies {
-            classpath "ch.tutteli:tutteli-gradle-settings:0.1.0"
+            classpath "ch.tutteli:tutteli-gradle-settings:0.2.0"
         }
     }
 }
 
-//TODO remove as soon as 0.1.0 is published
+//TODO remove as soon as 0.2.0 is published
 def includeTopLevel(String name) { includeInSubFolder(name, "/") }
 def includeInSubFolder(String nameWithoutPrefix, String folder) {
     def name = "${rootProject.name}-$nameWithoutPrefix"
@@ -32,12 +32,12 @@ def includeInSubFolder(String nameWithoutPrefix, String folder) {
 
 def error = false
 
-//TODO remove `if` as soon as 0.1.0 is published
+//TODO remove `if` as soon as 0.2.0 is published
 if (ext.localPluginExists && !error) {
     apply plugin: 'ch.tutteli.settings'
 }
 
-//TODO enable as soon as 0.1.0 is publsihed
+//TODO enable as soon as 0.2.0 is publsihed
 if (ext.localPluginExists && !error) {
     /**
      * Shortcut for `include "${rootProject.name}-settings"; include "${rootProject.name}-jacoco"`
