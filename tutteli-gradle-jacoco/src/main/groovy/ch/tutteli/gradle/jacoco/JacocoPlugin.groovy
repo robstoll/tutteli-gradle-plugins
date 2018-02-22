@@ -42,11 +42,11 @@ class JacocoPlugin implements Plugin<Project> {
             executionData junitPlatformTestTask
             reports {
                 csv.enabled = false
-                csv.destination project.file("${project.jacoco.reportsDir}/junitReport.csv")
+                csv.destination project.file("${project.jacoco.reportsDir}/report.csv")
                 xml.enabled = true
-                xml.destination project.file("${project.jacoco.reportsDir}/junitReport.xml")
+                xml.destination project.file("${project.jacoco.reportsDir}/report.xml")
                 html.enabled = false
-                html.destination project.file("${project.jacoco.reportsDir}/junitHtml/")
+                html.destination project.file("${project.jacoco.reportsDir}/html/")
             }
         }
         project.check.dependsOn jacocoReport
