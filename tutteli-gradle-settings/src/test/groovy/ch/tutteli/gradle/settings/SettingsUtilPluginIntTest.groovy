@@ -82,6 +82,7 @@ class SettingsUtilPluginIntTest {
             }
         }
         apply plugin: 'ch.tutteli.settings'
+        
         includePrefixed 'one'
         includePrefixed ('one', 'two')
         includePrefixedInFolder('test', 'three')

@@ -7,10 +7,8 @@ buildscript {
 
     apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
     includeLocalRepo(gradle.ext.repo, 'settings', gradle.ext.version, this)
-}
 
-if (!ext.localPluginExists) {
-    buildscript {
+    if (!ext.localPluginExists) {
         repositories {
             maven {
                 url "https://plugins.gradle.org/m2/"
@@ -22,31 +20,13 @@ if (!ext.localPluginExists) {
     }
 }
 
-//TODO remove as soon as 0.2.0 is published
-def includeTopLevel(String name) { includeInSubFolder(name, "/") }
-def includeInSubFolder(String nameWithoutPrefix, String folder) {
-    def name = "${rootProject.name}-$nameWithoutPrefix"
-    include ":$name"
-    project(":$name").projectDir = new File("${rootProject.projectDir}/$folder/$name")
-}
+apply plugin: 'ch.tutteli.settings'
 
-def error = false
+/**
+ * Shortcut for `include "${rootProject.name}-settings"; include "${rootProject.name}-jacoco"`
+ */
+includePrefixed ('settings', 'junitjacoco')
 
-//TODO remove `if` as soon as 0.2.0 is published
-if (ext.localPluginExists && !error) {
-    apply plugin: 'ch.tutteli.settings'
-}
-
-//TODO enable as soon as 0.2.0 is publsihed
-if (ext.localPluginExists && !error) {
-    /**
-     * Shortcut for `include "${rootProject.name}-settings"; include "${rootProject.name}-jacoco"`
-     */
-    includePrefixed ('settings', 'junitjacoco')
-} else {
-    includeTopLevel 'settings'
-    includeTopLevel 'junitjacoco'
-}
 
 /**
  * Shortcut for `include ":${rootProject.name}-name"`
