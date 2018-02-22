@@ -2,7 +2,7 @@ rootProject.name = 'tutteli-gradle'
 
 
 buildscript {
-    gradle.ext.version = '0.2.0'
+    gradle.ext.version = '0.3.0-SNAPSHOT'
     gradle.ext.repo = "${rootProject.projectDir}/repo"
 
     apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
