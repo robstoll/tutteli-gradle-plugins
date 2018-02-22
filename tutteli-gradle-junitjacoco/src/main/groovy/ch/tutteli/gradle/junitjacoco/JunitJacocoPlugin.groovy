@@ -2,54 +2,34 @@ package ch.tutteli.gradle.junitjacoco
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
-import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
-import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.junit.platform.gradle.plugin.JUnitPlatformPlugin
 
 class JunitJacocoPlugin implements Plugin<Project> {
+    private static final Logger LOGGER = Logging.getLogger(JunitJacocoPlugin.class)
+
     @Override
     void apply(Project project) {
-        Task junitPlatformTestTask = applyJunitPlatform(project)
-        applyJacoco(project, junitPlatformTestTask)
-    }
-
-    private static Task applyJunitPlatform(Project project) {
         project.getPluginManager().apply(JUnitPlatformPlugin)
-
-        def junitPlatformTestTask = project.tasks.getByName('junitPlatformTest')
-        //TODO make configurable, with/without junit report
-        def reportIndex = junitPlatformTestTask.args.findIndexOf { it == '--reports-dir' }
-        def keep = (0..(junitPlatformTestTask.args.size() - 1)) - [reportIndex, reportIndex + 1]
-        junitPlatformTestTask.args = junitPlatformTestTask.args[keep]
-        return junitPlatformTestTask
-    }
-
-    private static void applyJacoco(Project project, Task junitPlatformTestTask) {
         project.getPluginManager().apply(JacocoPlugin)
+        def junitPlatformTestTask = project.tasks.getByName('junitPlatformTest')
+        def extension = project.extensions.create('junitjacoco', JunitJacocoPluginExtension, project, junitPlatformTestTask)
 
-        JacocoPluginExtension jacocoExtension = project.extensions.getByName('jacoco') as JacocoPluginExtension
-        jacocoExtension.with {
-            toolVersion = '0.8.0'
-            applyTo junitPlatformTestTask
-        }
-
-        //TODO make configurable currently one would need to do tasks.getByName('junitPlatformJacocoReport')
-        JacocoReport jacocoReport = project.task(type: JacocoReport, 'junitPlatformJacocoReport') as JacocoReport
-        jacocoReport.with {
-            sourceDirectories = project.sourceSets.main.allJava.sourceDirectories
-            classDirectories = project.files(project.sourceSets.main.output.classesDirs)
-            executionData junitPlatformTestTask; reports {
-                csv.enabled = false
-                csv.destination project.file("${project.jacoco.reportsDir}/junitReport.csv")
-                xml.enabled = true
-                xml.destination project.file("${project.jacoco.reportsDir}/junitReport.xml")
-                html.enabled = false
-                html.destination project.file("${project.jacoco.reportsDir}/junitHtml/")
+        project.afterEvaluate {
+            def keepItEnabled = extension.enableJunitReport.get()
+            LOGGER.debug("enable junit report: ${keepItEnabled}")
+            if (!keepItEnabled) {
+                List args = junitPlatformTestTask.args
+                def reportIndex = args.findIndexOf { it == '--reports-dir' }
+                if (reportIndex != -1) {
+                    def keep = (0..(args.size() - 1)) - [reportIndex, reportIndex + 1]
+                    junitPlatformTestTask.args = args[keep]
+                } else {
+                    LOGGER.warn("junit report was already disabled")
+                }
             }
         }
-        project.check.dependsOn jacocoReport
     }
-
 }

@@ -21,7 +21,7 @@ buildscript {
     ext.error = false
     if (!ext.error) {
         apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
-        includeLocalRepo(gradle.ext.repo, 'jacoco', gradle.ext.version, this)
+        includeLocalRepo(gradle.ext.repo, 'junitjacoco', gradle.ext.version, this)
     }
     //TODO enable as soon as 0.2.0 is published
 //    if (!ext.localPluginExists) {
@@ -41,10 +41,29 @@ subprojects { subproject ->
     if (error || !rootProject.ext.localPluginExists) {
         apply plugin: 'org.junit.platform.gradle.plugin'
     } else {
-        apply plugin: 'ch.tutteli.jacoco'
-        def report = subproject.tasks.getByName('junitPlatformJacocoReport')
-        report.reports {
-            html.enabled = true
+
+        apply plugin: 'ch.tutteli.junitjacoco'
+
+        junitjacoco {
+            //enable or disable junit xml (disabled by default, enable it as follows)
+            enableJunitReport = true
+
+            //allows to configure the JacocoReportTask
+            jacocoReport {
+                reports {
+                    html.enabled = true
+                }
+            }
+
+            //delegates to the jacoco extension (just for your convenience, everything in one place)
+            jacoco {
+                toolVersion = '0.8.0'
+            }
+
+            //delegates to the junitPlatform extension (just for your convenience, everything in one place)
+            junitPlatform {
+                reportsDir = file("${buildDir}/reports/junit")
+            }
         }
     }
 
@@ -91,7 +110,7 @@ subprojects { subproject ->
             vcsUrl = 'https://github.com/robstoll/tutteli-gradle-plugin.git'
 
             plugins {
-                tutteliSettings {
+                tutteliPlugin { //name does not matter
                     id = subproject.ext.plugin_id
                     displayName = subproject.ext.plugin_name
                     description = subproject.ext.plugin_description

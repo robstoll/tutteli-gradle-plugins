@@ -20,7 +20,7 @@ The following sections give a brief information what the different plugins offer
 Provides utility functions to include projects (in a multi-project setup).
 Is especially useful if you apply the naming convention that all modules start with the name of the `rootProject`.
 
-Have a look at [settings.gradle](https://github.com/robstoll/tutteli-gradle-plugin/tree/master/settings.gradle).
+Have a look at [settings.gradle](https://github.com/robstoll/tutteli-gradle-plugin/tree/master/settings.gradle#L36).
 
 # ch.tutteli.jacoco
 Applies the [junit-platform-gradle-plugin](https://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle)
@@ -30,7 +30,7 @@ and binds jacoco to the `junitPlatformTest` task.
 You need to specify the `classpath` for the junit-platform-gradle-plugin in the `buildscript` section 
 and you need to specify the junit engine you want to use. 
 
-Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugin/tree/master/build.gradle).
+Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugin/tree/master/build.gradle#L47).
 
 # License
 All tutteli gradle plugins are published under [Apache 2.0](http://opensource.org/licenses/Apache2.0).
