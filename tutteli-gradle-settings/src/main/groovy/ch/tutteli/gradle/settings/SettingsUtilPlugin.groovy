@@ -54,7 +54,6 @@ class SettingsUtilPlugin implements Plugin<Settings> {
     void apply(Settings settings) {
         settings.extensions.create('include', SettingsUtilPluginExtension, settings, "")
 
-        println("test: ${settings.ext.toString()}")
         settings.ext.includeCustomInFolder = { String folder, String... customNames ->
             IncludeCustomInFolder.includeCustomInFolder(settings, folder, customNames)
         }

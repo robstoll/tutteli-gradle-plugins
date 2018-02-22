@@ -1,7 +1,7 @@
 buildscript {
     ext {
         junit_version = '5.0.3'
-        junit_gradle_version = '1.0.3'
+        junit_platform_version = '1.0.3'
         publish_version = '0.9.10'
     }
 
@@ -12,7 +12,7 @@ buildscript {
 
     dependencies {
         classpath "com.gradle.publish:plugin-publish-plugin:$publish_version"
-        classpath "org.junit.platform:junit-platform-gradle-plugin:$junit_gradle_version"
+        classpath "org.junit.platform:junit-platform-gradle-plugin:$junit_platform_version"
     }
 }
 
@@ -23,6 +23,12 @@ buildscript {
         apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
         includeLocalRepo(gradle.ext.repo, 'jacoco', gradle.ext.version, this)
     }
+    //TODO enable as soon as 0.2.0 is published
+//    if (!ext.localPluginExists) {
+//        dependencies {
+//            classpath "ch.tutteli:tutteli-gradle-jacoco:0.2.0"
+//        }
+//    }
 }
 
 version = gradle.ext.version
@@ -32,7 +38,7 @@ subprojects { subproject ->
     apply plugin: 'groovy'
     apply plugin: 'java-gradle-plugin'
     apply plugin: "com.gradle.plugin-publish"
-    if (error || !subproject.localPluginExists) {
+    if (error || !rootProject.ext.localPluginExists) {
         apply plugin: 'org.junit.platform.gradle.plugin'
     } else {
         apply plugin: 'ch.tutteli.jacoco'
