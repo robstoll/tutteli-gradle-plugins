@@ -43,7 +43,7 @@ class JacocoPlugin implements Plugin<Project> {
             reports {
                 csv.enabled = false
                 csv.destination project.file("${project.jacoco.reportsDir}/junitReport.csv")
-                xml.enabled = false
+                xml.enabled = true
                 xml.destination project.file("${project.jacoco.reportsDir}/junitReport.xml")
                 html.enabled = false
                 html.destination project.file("${project.jacoco.reportsDir}/junitHtml/")
