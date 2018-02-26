@@ -15,7 +15,7 @@ buildscript {
                     }
                 }
             } else {
-                throw new IllegalStateException("local repo exists but not corresponding version of $pluginName, execute gr cleanRepo repo")
+                throw new IllegalStateException("local repo exists but not corresponding version of $pluginName, delete the repo manually")
             }
         }
     }

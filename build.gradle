@@ -26,7 +26,7 @@ buildscript {
 
     if (error || !ext.localPluginExists) {
         dependencies {
-            classpath "ch.tutteli:tutteli-gradle-junitjacoco:0.2.0"
+            classpath "ch.tutteli:tutteli-gradle-junitjacoco:${gradle.ext.previous_version}"
         }
     }
 }
