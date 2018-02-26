@@ -147,9 +147,8 @@ Release & deploy
 ----------------
 1. Update master:
     a) point to the tag
-        1) search for the old version and replace with new (e.g. search=1.0.0, replace=1.1.0)
-        2) search for `branch=master` and replace it with `tag=vX.Y.Z` (build status and coverage in README.md)
-        3) search for `tree/master` and replace it with `tree/vX.Y.Z` (README.md)
+        1) search for `branch=master` and replace it with `tag=vX.Y.Z` (build status and coverage in README.md)
+        2) search for `tree/master` and replace it with `tree/vX.Y.Z` (README.md)
     b) change `version` in settings.gradle to X.Y.Z (remove -SNAPSHOT)
     c) commit (modified build.gradle, README.md and differences.md)
     d) git tag vX.Y.Z
@@ -162,9 +161,10 @@ Release & deploy
 Prepare next dev cycle
 -----------------------
 1. change version in settings.gradle to X.Y.Z-SNAPSHOT
-2. point to master
+2. change previous_version in settings.gradle
+3. point to master
    a) search for `tag=vX.Y.Z` and replace it with `branch=master`
    b) search for `tree/vX.Y.Z` and replace it with `tree/master`
-3. commit & push changes
+4. commit & push changes
 
 */
