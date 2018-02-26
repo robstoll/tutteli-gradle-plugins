@@ -1,6 +1,6 @@
 buildscript {
     rootProject.name = 'tutteli-gradle'
-    gradle.ext.version = '0.3.0'
+    gradle.ext.version = '0.3.1-SNAPSHOT'
 
     gradle.ext.repo = "${rootProject.projectDir}/repo"
 
@@ -24,12 +24,8 @@ buildscript {
 
 apply plugin: 'ch.tutteli.settings'
 
-//TODO remove if 0.3.0 is published
-if(ext.localPluginExists) {
-    include {
-        settings
-        junitjacoco
-    }
-} else {
-    includePrefixed('settings', 'junitjacoco')
+//noinspection GroovyAssignabilityCheck
+include {
+    settings
+    junitjacoco
 }
