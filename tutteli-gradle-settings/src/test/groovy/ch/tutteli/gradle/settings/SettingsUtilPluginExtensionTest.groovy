@@ -1,6 +1,5 @@
 package ch.tutteli.gradle.settings
 
-import org.gradle.api.Action
 import org.gradle.api.initialization.ProjectDescriptor
 import org.gradle.api.initialization.Settings
 import org.junit.jupiter.api.AfterEach
@@ -10,6 +9,8 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
 
+import static org.junit.jupiter.api.Assertions.assertThrows
+import static org.junit.jupiter.api.Assertions.assertTrue
 import static org.mockito.Mockito.*
 
 class SettingsUtilPluginExtensionTest {
@@ -34,6 +35,7 @@ class SettingsUtilPluginExtensionTest {
     void tearDown() {
         SettingsUtilPluginIntTest.deleteTmp(tmp)
     }
+
 
     @Test
     void prefixed_oneProjectAndNotInFolder_includedInRoot() {
@@ -160,10 +162,8 @@ class SettingsUtilPluginExtensionTest {
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
         def testee = new SettingsUtilPluginExtension(settings, '')
         //act
-        testee.folder(folderName, new Action<SettingsUtilPluginExtension>() {
-            void execute(SettingsUtilPluginExtension ex) {
-                ex.prefixed('a')
-            }
+        testee.folder(folderName, {
+            prefixed('a')
         })
         //assert
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
@@ -180,14 +180,76 @@ class SettingsUtilPluginExtensionTest {
         def (descriptorB, projectDirB) = setUpProject(folder, nameB)
         def testee = new SettingsUtilPluginExtension(settings, '')
         //act
-        testee.folder(folderName, new Action<SettingsUtilPluginExtension>() {
-            void execute(SettingsUtilPluginExtension ex) {
-                ex.project(nameA, nameB)
-            }
+        testee.folder(folderName, {
+            project(nameA, nameB)
         })
         //assert
         verifyProjectIncluded(nameA, descriptorA, projectDirA)
         verifyProjectIncluded(nameB, descriptorB, projectDirB)
+    }
+
+    @Test
+    void unknownProperty_notInFolder_callsPrefixedThusIncludesProjectInRoot() {
+        //arrange
+        def nameA = 'test-a'
+        def (descriptorA, projectDirA) = setUpProject(nameA)
+        def testee = new SettingsUtilPluginExtension(settings, '')
+        //act
+        testee.a
+        //assert
+        verifyProjectIncluded(nameA, descriptorA, projectDirA)
+    }
+
+    @Test
+    void unknownProperty_inFolder_callsPrefixedThusIncludesInFolder() {
+        //arrange
+        def folder = new File(tmpDir, folderName)
+        folder.mkdir()
+        def nameA = 'test-a'
+        def (descriptorA, projectDirA) = setUpProject(folder, nameA)
+        def testee = new SettingsUtilPluginExtension(settings, folderName)
+        //act
+        testee.a
+        //assert
+        verifyProjectIncluded(nameA, descriptorA, projectDirA)
+    }
+
+    @Test
+    void unknownMethod_withoutParameter_throwsMethodMissingException() {
+        //arrange
+        def testee = new SettingsUtilPluginExtension(settings, '')
+        //assert & act
+        def e = assertThrows(MissingMethodException) {
+            testee.unknownMethod()
+        }
+        //assert
+        assertTrue(e.message.contains('unknownMethod'), 'contains unknownMethod')
+    }
+
+    @Test
+    void unknownMethod_withTwoParameters_throwsMethodMissingException() {
+        //arrange
+        def testee = new SettingsUtilPluginExtension(settings, '')
+        //assert & act
+        def e = assertThrows(MissingMethodException) {
+            testee.unknownMethod(1, 2)
+        }
+        //assert
+        assertTrue(e.message.contains('unknownMethod'), 'contains unknownMethod')
+        assertTrue(e.message.contains('[1, 2]'), 'contains [1, 2]')
+    }
+
+    @Test
+    void unknownMethod_oneParameterButNotClosure_throwsMethodMissingException() {
+        //arrange
+        def testee = new SettingsUtilPluginExtension(settings, '')
+        //assert & act
+        def e = assertThrows(MissingMethodException) {
+            testee.unknownMethod(1)
+        }
+        //assert
+        assertTrue(e.message.contains('unknownMethod'), 'contains unknownMethod')
+        assertTrue(e.message.contains('[1]'), 'contains [1]')
     }
 
     private List setUpProject(String name) {

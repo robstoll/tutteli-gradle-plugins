@@ -1,5 +1,6 @@
 package ch.tutteli.gradle.settings
 
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
@@ -63,17 +64,9 @@ class SettingsUtilPluginIntTest {
 
 
     @Test
-    void smokeTest() throws IOException {
+    void extensionVoodoo() throws IOException {
         //arrange
-        new File(tmpDir, 'test-project-one').mkdir()
-        new File(tmpDir, 'test-project-two').mkdir()
-        new File(tmpDir, 'test/test-project-three').mkdirs()
-        new File(tmpDir, 'test/test-project-four').mkdirs()
-        new File(tmpDir, 'test/five').mkdir()
-        new File(tmpDir, 'test/six').mkdir()
-        new File(tmpDir, 'seven').mkdir()
-        new File(tmpDir, 'eight').mkdir()
-
+        createDirs()
         settingsFile << """
         rootProject.name='test-project'
         buildscript {
@@ -82,30 +75,25 @@ class SettingsUtilPluginIntTest {
             }
         }
         apply plugin: 'ch.tutteli.settings'
+
+        // The most consice style, Extension object paired with propertyMissing/methodMissing voodoo
         
-        includePrefixed 'one'
-        includePrefixed ('one', 'two')
-        includePrefixedInFolder('test', 'three')
-        includePrefixedInFolder('test', 'three', 'four')
-        includeCustomInFolder('test', 'five')
-        includeCustomInFolder('test', 'five', 'six')
-               
         include {
-            prefixed 'one'
-            prefixed ('one', 'two')
+            one            // short for `include ":\${rootProject.name}-one"`
+            two            // short for `include ":\${rootProject.name}-two"`
             
-            folder ('test') {
-                prefixed 'three'
-                prefixed ('three', 'four')
+            test {         // defines that the following projects are in folder test
+    
+                three      // short for `include ":\${rootProject.name}-three"`
+                           // and it sets `project.projectDir` to: 
+                           // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
+ 
+                four       // same as for three but with four ;)
             }
             
-            folder ('test') {
-                project 'five'
-                project ('five', 'six')
-            }
-            
-            project 'seven'
-            project ('seven', 'eight')
+            // You can also include non prefixed projects with this style. 
+            // Have a look at the method extensionWithMethodCalls, 
+            // you can use all methods shown there also here (mix both styles)
         }
         """
         //act
@@ -114,9 +102,151 @@ class SettingsUtilPluginIntTest {
             .withArguments("projects")
             .build()
         //assert
-        assertTrue(result.output.contains('test-project-one'), "project test-project-one in output: ${result.output}")
-        assertTrue(result.output.contains('test-project-two'), "project test-project-two in output: ${result.output}")
-        assertTrue(result.output.contains('three'), "project test-project-two in output: ${result.output}")
+        assertProjectOneTwoFourInOutput(result)
+        assertStatus(result)
+    }
+
+
+    @Test
+    void extensionWithMethodCalls() {
+        //arrange
+        createDirs()
+        settingsFile << """        
+        rootProject.name='test-project'
+        buildscript {
+            dependencies {
+                classpath files($pluginClasspath)
+            }
+        }
+        apply plugin: 'ch.tutteli.settings'
+        
+        // The style using an extension object and calling methods
+        
+        include {
+            prefixed 'one'                  // short for `include ":\${rootProject.name}-one"`
+            prefixed ('one', 'two')         // you can also define multiple projects in one line
+            
+            folder ('test') {               // defines that the following projects are in folder test
+            
+                prefixed 'three'            // short for `include ":\${rootProject.name}-three"`
+                                            // and it sets `project.projectDir` to: 
+                                            // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
+                                      
+                prefixed ('three', 'four')  //also here, you can define multiple projects
+            }
+            
+            folder ('test') {
+                project 'five'              // short for `include ":five"`
+                                            // and it sets `project.projectDir` to:
+                                            // "\${rootProject.projectDir}/test/five"
+                                      
+                project ('five', 'six')     // also here, you can define multiple projects
+            }
+            
+            project 'seven'                 // short for `include ":three"`
+            project ('seven', 'eight')      // also here, you can define multiple projects
+        }
+        """
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(tmpDir)
+            .withArguments("projects")
+            .build()
+        //assert
+        assertProjectOneTwoFourInOutput(result)
+        assertProjectInOutput(result, ':five')
+        assertProjectInOutput(result, ':six')
+        assertProjectInOutput(result, ':seven')
+        assertProjectInOutput(result, ':eight')
+        assertStatus(result)
+    }
+
+    @Test
+    void functions() {
+        //arrange
+        createDirs()
+        settingsFile << """   
+        rootProject.name='test-project'
+        buildscript {
+            dependencies {
+                classpath files($pluginClasspath)
+            }
+        }
+        apply plugin: 'ch.tutteli.settings'
+             
+        // Simple functions
+        
+        //short for `include ":\${rootProject.name}-one"`
+        includePrefixed 'one'
+        
+        //short for `include(":\${rootProject.name}-one", ":\${rootProject.name}-two")`
+        includePrefixed ('one', 'two')
+        
+        /**
+         * Shortcut for `include ":\${rootProject.name}-three"`
+         * and it sets `project.projectDir` accordingly: 
+         * "\${rootProject.projectDir}/test/\${rootProject.name}-three"
+         */
+        includePrefixedInFolder('test', 'three')
+        
+        /**
+         * Shortcut for `include(":\${rootProject.name}-three", "\${rootProject.name}-four;")`
+         * and it sets `project.projectDir` accordingly: 
+         * "\${rootProject.projectDir}/test/\${rootProject.name}-three"    and
+         * "\${rootProject.projectDir}/test/\${rootProject.name}-four"
+         */
+        includePrefixedInFolder('test', 'three', 'four')
+        
+        /**
+         * Shortcut for `include ":five"`
+         * and it sets `project.projectDir` accordingly: 
+         * "\${rootProject.projectDir}/test/three"
+         */
+        includeCustomInFolder('test', 'five')
+        
+        /**
+         * Shortcut for `include(":five", ":six")`
+         * and it sets `project.projectDir` accordingly: 
+         * "\${rootProject.projectDir}/test/five"    and
+         * "\${rootProject.projectDir}/test/six"
+         */
+        includeCustomInFolder('test', 'five', 'six')
+        """
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(tmpDir)
+            .withArguments("projects")
+            .build()
+        //assert
+        assertProjectOneTwoFourInOutput(result)
+        assertProjectInOutput(result, ':five')
+        assertProjectInOutput(result, ':six')
+        assertStatus(result)
+    }
+
+    private void createDirs() {
+        new File(tmpDir, 'test-project-one').mkdir()
+        new File(tmpDir, 'test-project-two').mkdir()
+        new File(tmpDir, 'test/test-project-three').mkdirs()
+        new File(tmpDir, 'test/test-project-four').mkdirs()
+        new File(tmpDir, 'test/five').mkdir()
+        new File(tmpDir, 'test/six').mkdir()
+        new File(tmpDir, 'seven').mkdir()
+        new File(tmpDir, 'eight').mkdir()
+    }
+
+    private void assertProjectOneTwoFourInOutput(BuildResult result) {
+        assertProjectInOutput(result, ':test-project-one')
+        assertProjectInOutput(result, ':test-project-two')
+        assertProjectInOutput(result, ':test-project-three')
+        assertProjectInOutput(result, ':test-project-four')
+    }
+
+    private assertProjectInOutput(BuildResult result, String projectName) {
+        assertTrue(result.output.contains(projectName), "project $projectName in output: ${result.output}")
+    }
+
+    private static void assertStatus(BuildResult result) {
         assertEquals([':projects'], result.taskPaths(TaskOutcome.SUCCESS))
         assertTrue(result.taskPaths(TaskOutcome.SKIPPED).empty, 'SKIPPED is empty')
         assertTrue(result.taskPaths(TaskOutcome.UP_TO_DATE).empty, 'UP_TO_DATE is empty')

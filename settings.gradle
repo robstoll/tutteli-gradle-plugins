@@ -4,10 +4,13 @@ buildscript {
 
     gradle.ext.repo = "${rootProject.projectDir}/repo"
 
-    apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
-    includeLocalRepo(gradle.ext.repo, 'settings', gradle.ext.version, this)
+    def error = false
+    if(!error) {
+        apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
+        includeLocalRepo(gradle.ext.repo, 'settings', gradle.ext.version, this)
+    }
 
-    if (!ext.localPluginExists) {
+    if (error || !ext.localPluginExists) {
         repositories {
             maven {
                 url "https://plugins.gradle.org/m2/"
@@ -21,44 +24,12 @@ buildscript {
 
 apply plugin: 'ch.tutteli.settings'
 
-/**
- * Shortcut for `include "${rootProject.name}-settings"; include "${rootProject.name}-jacoco"`
- */
-includePrefixed ('settings', 'junitjacoco')
-
-
-/**
- * Shortcut for `include ":${rootProject.name}-name"`
- * and it sets `project.projectDir` accordingly (to "${rootProject.projectDir}/folder/${rootProject.name}-name")
- */
-//includePrefixedInFolder('folder', 'name')
-
-/**
- * Does not use naming convention.
- * Shortcut for `include ":$name"`
- * and it sets `project.projectDir` accordingly (to "${rootProject.projectDir}/folder/name")
- */
-//includeCustomInFolder('folder', 'name')
-
-/**
- * Or you can use the extension object `include`
- *
- * include {
- *     //same as includePrefixed
- *     prefixed 'one module'
- *     prefixed ('or', 'several', 'modules')
- *
- *     folder ('test') {
- *          //same as includePrefixedInFolder
- *          prefixed 'in-folder'
- *
- *          //same as includeCustomInFolder
- *          project 'without-prefix'
- *          project ('also', 'multiple', 'without', 'prefix', 'is', 'possible')
- *     }
- *
- *     //same as a normal `include` -- or in other words, not prefixed with `rootProject.name`
- *     project 'toplevel'
- * }
- *
- */
+//TODO remove if 0.3.0 is published
+if(ext.localPluginExists) {
+    include {
+        settings
+        junitjacoco
+    }
+} else {
+    includePrefixed('settings', 'junitjacoco')
+}
