@@ -40,6 +40,10 @@ class SettingsUtilPluginExtension {
             throw new MissingMethodException(name, this.class, args)
         }
     }
+
+    void _(String name) {
+        prefixed(name)
+    }
 }
 
 class SettingsUtilPlugin implements Plugin<Settings> {

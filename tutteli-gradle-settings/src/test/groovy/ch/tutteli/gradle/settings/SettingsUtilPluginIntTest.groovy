@@ -79,16 +79,16 @@ class SettingsUtilPluginIntTest {
         // The most consice style, Extension object paired with propertyMissing/methodMissing voodoo
         
         include {
-            one            // short for `include ":\${rootProject.name}-one"`
-            two            // short for `include ":\${rootProject.name}-two"`
+            one                 // short for `include ":\${rootProject.name}-one"`
+            _ 'two-with-slash'  // short for `include ":\${rootProject.name}-two-with-slash"`
             
-            test {         // defines that the following projects are in folder test
+            test {              // defines that the following projects are in folder test
     
-                three      // short for `include ":\${rootProject.name}-three"`
-                           // and it sets `project.projectDir` to: 
-                           // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
+                three           // short for `include ":\${rootProject.name}-three"`
+                                // and it sets `project.projectDir` to: 
+                                // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
  
-                four       // same as for three but with four ;)
+                four            // same as for three but with four ;)
             }
             
             // You can also include non prefixed projects with this style. 
@@ -123,28 +123,28 @@ class SettingsUtilPluginIntTest {
         // The style using an extension object and calling methods
         
         include {
-            prefixed 'one'                  // short for `include ":\${rootProject.name}-one"`
-            prefixed ('one', 'two')         // you can also define multiple projects in one line
+            prefixed 'one'                      // short for `include ":\${rootProject.name}-one"`
+            prefixed ('one', 'two-with-slash')  // you can also define multiple projects in one line
             
-            folder ('test') {               // defines that the following projects are in folder test
+            folder ('test') {                   // defines that the following projects are in folder test
             
-                prefixed 'three'            // short for `include ":\${rootProject.name}-three"`
-                                            // and it sets `project.projectDir` to: 
-                                            // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
+                prefixed 'three'                // short for `include ":\${rootProject.name}-three"`
+                                                // and it sets `project.projectDir` to: 
+                                                // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
                                       
-                prefixed ('three', 'four')  //also here, you can define multiple projects
+                prefixed ('three', 'four')      //also here, you can define multiple projects
             }
             
             folder ('test') {
-                project 'five'              // short for `include ":five"`
-                                            // and it sets `project.projectDir` to:
-                                            // "\${rootProject.projectDir}/test/five"
+                project 'five'                  // short for `include ":five"`
+                                                // and it sets `project.projectDir` to:
+                                                // "\${rootProject.projectDir}/test/five"
                                       
-                project ('five', 'six')     // also here, you can define multiple projects
+                project ('five', 'six')         // also here, you can define multiple projects
             }
             
-            project 'seven'                 // short for `include ":three"`
-            project ('seven', 'eight')      // also here, you can define multiple projects
+            project 'seven'                     // short for `include ":three"`
+            project ('seven', 'eight')          // also here, you can define multiple projects
         }
         """
         //act
@@ -179,8 +179,8 @@ class SettingsUtilPluginIntTest {
         //short for `include ":\${rootProject.name}-one"`
         includePrefixed 'one'
         
-        //short for `include(":\${rootProject.name}-one", ":\${rootProject.name}-two")`
-        includePrefixed ('one', 'two')
+        //short for `include(":\${rootProject.name}-one", ":\${rootProject.name}-two-with-slash")`
+        includePrefixed ('one', 'two-with-slash')
         
         /**
          * Shortcut for `include ":\${rootProject.name}-three"`
@@ -226,7 +226,7 @@ class SettingsUtilPluginIntTest {
 
     private void createDirs() {
         new File(tmpDir, 'test-project-one').mkdir()
-        new File(tmpDir, 'test-project-two').mkdir()
+        new File(tmpDir, 'test-project-two-with-slash').mkdir()
         new File(tmpDir, 'test/test-project-three').mkdirs()
         new File(tmpDir, 'test/test-project-four').mkdirs()
         new File(tmpDir, 'test/five').mkdir()
@@ -237,7 +237,7 @@ class SettingsUtilPluginIntTest {
 
     private void assertProjectOneTwoFourInOutput(BuildResult result) {
         assertProjectInOutput(result, ':test-project-one')
-        assertProjectInOutput(result, ':test-project-two')
+        assertProjectInOutput(result, ':test-project-two-with-slash')
         assertProjectInOutput(result, ':test-project-three')
         assertProjectInOutput(result, ':test-project-four')
     }
