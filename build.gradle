@@ -138,7 +138,7 @@ subprojects { subproject ->
     }
 }
 
-task cleanRepo(type: Delete) {
+task removeRepo(type: Delete) {
     delete gradle.ext.repo
 }
 
