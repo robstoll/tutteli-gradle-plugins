@@ -5,15 +5,15 @@ import org.gradle.api.initialization.Settings
 
 class SettingsUtilPluginExtension {
     private Settings settings
-    private String folder
+    private String currentFolder
 
-    SettingsUtilPluginExtension(Settings settings, String folder) {
+    SettingsUtilPluginExtension(Settings settings, String currentFolder) {
         this.settings = settings
-        this.folder = folder
+        this.currentFolder = currentFolder
     }
 
     void folder(String folderName, Closure configure) {
-        def innerExtension = new SettingsUtilPluginExtension(settings, folderName)
+        def innerExtension = new SettingsUtilPluginExtension(settings, "$currentFolder/$folderName")
         def conf = configure.clone()
         conf.resolveStrategy = Closure.DELEGATE_FIRST
         conf.delegate = innerExtension
@@ -21,11 +21,11 @@ class SettingsUtilPluginExtension {
     }
 
     void prefixed(String... modules) {
-        IncludeCustomInFolder.includePrefixedInFolder(settings, folder, modules)
+        IncludeCustomInFolder.includePrefixedInFolder(settings, currentFolder, modules)
     }
 
     void project(String... modulesWithoutPrefix) {
-        IncludeCustomInFolder.includeCustomInFolder(settings, folder, modulesWithoutPrefix)
+        IncludeCustomInFolder.includeCustomInFolder(settings, currentFolder, modulesWithoutPrefix)
     }
 
     def propertyMissing(String name) {

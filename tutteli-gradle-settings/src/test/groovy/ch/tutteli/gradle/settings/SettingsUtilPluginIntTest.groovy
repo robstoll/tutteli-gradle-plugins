@@ -87,8 +87,12 @@ class SettingsUtilPluginIntTest {
                 three           // short for `include ":\${rootProject.name}-three"`
                                 // and it sets `project.projectDir` to: 
                                 // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
- 
+                
                 four            // same as for three but with four ;)
+                
+                subfolder {     // defines that the following projects are in folder test/subfolder
+                    five        // same as three but projectDir base path is \${rootProject.projectDir}/test/subfolder     
+                }
             }
             
             // You can also include non prefixed projects with this style. 
@@ -102,7 +106,7 @@ class SettingsUtilPluginIntTest {
             .withArguments("projects")
             .build()
         //assert
-        assertProjectOneTwoFourInOutput(result)
+        assertProjectOneTwoFiveInOutput(result)
         assertStatus(result)
     }
 
@@ -133,18 +137,23 @@ class SettingsUtilPluginIntTest {
                                                 // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
                                       
                 prefixed ('three', 'four')      //also here, you can define multiple projects
+                
+                folder ('subfolder') {
+                    prefixed 'five'             // same as three but `project.projectDir` is 
+                                                // \${rootProject.projectDir}/test/subfolder/\${rootProject.name}-five 
+                }
             }
             
             folder ('test') {
-                project 'five'                  // short for `include ":five"`
+                project 'six'                   // short for `include ":six"`
                                                 // and it sets `project.projectDir` to:
-                                                // "\${rootProject.projectDir}/test/five"
+                                                // "\${rootProject.projectDir}/test/six"
                                       
-                project ('five', 'six')         // also here, you can define multiple projects
+                project ('six', 'seven')        // also here, you can define multiple projects
             }
             
-            project 'seven'                     // short for `include ":three"`
-            project ('seven', 'eight')          // also here, you can define multiple projects
+            project 'eight'                     // short for `include ":eight"`
+            project ('eight', 'nine')           // also here, you can define multiple projects
         }
         """
         //act
@@ -153,11 +162,11 @@ class SettingsUtilPluginIntTest {
             .withArguments("projects")
             .build()
         //assert
-        assertProjectOneTwoFourInOutput(result)
-        assertProjectInOutput(result, ':five')
+        assertProjectOneTwoFiveInOutput(result)
         assertProjectInOutput(result, ':six')
         assertProjectInOutput(result, ':seven')
         assertProjectInOutput(result, ':eight')
+        assertProjectInOutput(result, ':nine')
         assertStatus(result)
     }
 
@@ -197,20 +206,27 @@ class SettingsUtilPluginIntTest {
          */
         includePrefixedInFolder('test', 'three', 'four')
         
-        /**
-         * Shortcut for `include ":five"`
+         /**
+         * Shortcut for `include ":\${rootProject.name}-five"`
          * and it sets `project.projectDir` accordingly: 
-         * "\${rootProject.projectDir}/test/three"
+         * "\${rootProject.projectDir}/test/subfolder/\${rootProject.name}-five"
          */
-        includeCustomInFolder('test', 'five')
+        includePrefixedInFolder('test/subfolder', 'five')
         
         /**
-         * Shortcut for `include(":five", ":six")`
+         * Shortcut for `include ":six"`
          * and it sets `project.projectDir` accordingly: 
-         * "\${rootProject.projectDir}/test/five"    and
          * "\${rootProject.projectDir}/test/six"
          */
-        includeCustomInFolder('test', 'five', 'six')
+        includeCustomInFolder('test', 'six')
+        
+        /**
+         * Shortcut for `include(":six", ":seven")`
+         * and it sets `project.projectDir` accordingly: 
+         * "\${rootProject.projectDir}/test/six"    and
+         * "\${rootProject.projectDir}/test/seven"
+         */
+        includeCustomInFolder('test', 'six', 'seven')
         """
         //act
         def result = GradleRunner.create()
@@ -218,9 +234,9 @@ class SettingsUtilPluginIntTest {
             .withArguments("projects")
             .build()
         //assert
-        assertProjectOneTwoFourInOutput(result)
-        assertProjectInOutput(result, ':five')
+        assertProjectOneTwoFiveInOutput(result)
         assertProjectInOutput(result, ':six')
+        assertProjectInOutput(result, ':seven')
         assertStatus(result)
     }
 
@@ -229,20 +245,22 @@ class SettingsUtilPluginIntTest {
         new File(tmpDir, 'test-project-two-with-slash').mkdir()
         new File(tmpDir, 'test/test-project-three').mkdirs()
         new File(tmpDir, 'test/test-project-four').mkdirs()
-        new File(tmpDir, 'test/five').mkdir()
+        new File(tmpDir, 'test/subfolder/test-project-five').mkdirs()
         new File(tmpDir, 'test/six').mkdir()
-        new File(tmpDir, 'seven').mkdir()
+        new File(tmpDir, 'test/seven').mkdir()
         new File(tmpDir, 'eight').mkdir()
+        new File(tmpDir, 'nine').mkdir()
     }
 
-    private void assertProjectOneTwoFourInOutput(BuildResult result) {
+    private static void assertProjectOneTwoFiveInOutput(BuildResult result) {
         assertProjectInOutput(result, ':test-project-one')
         assertProjectInOutput(result, ':test-project-two-with-slash')
         assertProjectInOutput(result, ':test-project-three')
         assertProjectInOutput(result, ':test-project-four')
+        assertProjectInOutput(result, ':test-project-five')
     }
 
-    private assertProjectInOutput(BuildResult result, String projectName) {
+    private static assertProjectInOutput(BuildResult result, String projectName) {
         assertTrue(result.output.contains(projectName), "project $projectName in output: ${result.output}")
     }
 
