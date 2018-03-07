@@ -1,77 +1,29 @@
 package ch.tutteli.gradle.settings
 
+import ch.tutteli.gradle.test.SettingsExtension
+import ch.tutteli.gradle.test.SettingsExtensionObject
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
+import org.junit.jupiter.api.extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.junit.jupiter.api.Assertions.assertTrue
 
+@ExtendWith(SettingsExtension)
 class SettingsUtilPluginIntTest {
-    private File settingsFile
-    private Path tmp
-    private File tmpDir
-    private List<String> pluginClasspath
-
-    @BeforeEach
-    void setup() throws IOException {
-        tmp = Files.createTempDirectory("myTests")
-        tmpDir = tmp.toFile()
-        settingsFile = new File(tmpDir, "settings.gradle")
-        URL pluginClasspathResource = getClass().classLoader.getResource('plugin-classpath.txt')
-        if (pluginClasspathResource == null) {
-            throw new IllegalStateException('Did not find plugin classpath resource, run `testClasses` build task.')
-        }
-
-        pluginClasspath = pluginClasspathResource.readLines()
-            .collect { it.replace('\\', '\\\\') }
-            .collect { "\'${it}\'" }
-    }
-
-    @AfterEach
-    void tearDown() {
-        deleteTmp(tmp)
-    }
-
-    static void deleteTmp(Path tmpFolder) {
-        Files.walkFileTree(tmpFolder, new SimpleFileVisitor<Path>() {
-
-            @Override
-            FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                return deleteAndContinue(file)
-            }
-
-            @Override
-            FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                return deleteAndContinue(dir)
-            }
-
-            private FileVisitResult deleteAndContinue(Path path) throws IOException {
-                Files.delete(path)
-                return FileVisitResult.CONTINUE
-            }
-        })
-    }
-
 
     @Test
-    void extensionVoodoo() throws IOException {
+    void extensionVoodoo(SettingsExtensionObject settingsSetup) throws IOException {
+
         //arrange
-        createDirs()
-        settingsFile << """
+        createDirs(settingsSetup.tmp)
+        settingsSetup.settings << """
         rootProject.name='test-project'
         buildscript {
             dependencies {
-                classpath files($pluginClasspath)
+                classpath files($settingsSetup.pluginClasspath)
             }
         }
         apply plugin: 'ch.tutteli.settings'
@@ -102,7 +54,7 @@ class SettingsUtilPluginIntTest {
         """
         //act
         def result = GradleRunner.create()
-            .withProjectDir(tmpDir)
+            .withProjectDir(settingsSetup.tmp)
             .withArguments("projects")
             .build()
         //assert
@@ -110,16 +62,15 @@ class SettingsUtilPluginIntTest {
         assertStatus(result)
     }
 
-
     @Test
-    void extensionWithMethodCalls() {
+    void extensionWithMethodCalls(SettingsExtensionObject settingsSetup) {
         //arrange
-        createDirs()
-        settingsFile << """        
+        createDirs(settingsSetup.tmp)
+        settingsSetup.settings << """        
         rootProject.name='test-project'
         buildscript {
             dependencies {
-                classpath files($pluginClasspath)
+                classpath files($settingsSetup.pluginClasspath)
             }
         }
         apply plugin: 'ch.tutteli.settings'
@@ -158,7 +109,7 @@ class SettingsUtilPluginIntTest {
         """
         //act
         def result = GradleRunner.create()
-            .withProjectDir(tmpDir)
+            .withProjectDir(settingsSetup.tmp)
             .withArguments("projects")
             .build()
         //assert
@@ -171,14 +122,14 @@ class SettingsUtilPluginIntTest {
     }
 
     @Test
-    void functions() {
+    void functions(SettingsExtensionObject settingsSetup) {
         //arrange
-        createDirs()
-        settingsFile << """   
+        createDirs(settingsSetup.tmp)
+        settingsSetup.settings << """   
         rootProject.name='test-project'
         buildscript {
             dependencies {
-                classpath files($pluginClasspath)
+                classpath files($settingsSetup.pluginClasspath)
             }
         }
         apply plugin: 'ch.tutteli.settings'
@@ -230,7 +181,7 @@ class SettingsUtilPluginIntTest {
         """
         //act
         def result = GradleRunner.create()
-            .withProjectDir(tmpDir)
+            .withProjectDir(settingsSetup.tmp)
             .withArguments("projects")
             .build()
         //assert
@@ -240,16 +191,16 @@ class SettingsUtilPluginIntTest {
         assertStatus(result)
     }
 
-    private void createDirs() {
-        new File(tmpDir, 'test-project-one').mkdir()
-        new File(tmpDir, 'test-project-two-with-slash').mkdir()
-        new File(tmpDir, 'test/test-project-three').mkdirs()
-        new File(tmpDir, 'test/test-project-four').mkdirs()
-        new File(tmpDir, 'test/subfolder/test-project-five').mkdirs()
-        new File(tmpDir, 'test/six').mkdir()
-        new File(tmpDir, 'test/seven').mkdir()
-        new File(tmpDir, 'eight').mkdir()
-        new File(tmpDir, 'nine').mkdir()
+    private static void createDirs(File tmp) {
+        new File(tmp, 'test-project-one').mkdir()
+        new File(tmp, 'test-project-two-with-slash').mkdir()
+        new File(tmp, 'test/test-project-three').mkdirs()
+        new File(tmp, 'test/test-project-four').mkdirs()
+        new File(tmp, 'test/subfolder/test-project-five').mkdirs()
+        new File(tmp, 'test/six').mkdir()
+        new File(tmp, 'test/seven').mkdir()
+        new File(tmp, 'eight').mkdir()
+        new File(tmp, 'nine').mkdir()
     }
 
     private static void assertProjectOneTwoFiveInOutput(BuildResult result) {

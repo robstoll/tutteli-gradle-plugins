@@ -1,5 +1,6 @@
 package ch.tutteli.gradle.settings
 
+import ch.tutteli.gradle.test.SettingsExtension
 import org.gradle.api.initialization.ProjectDescriptor
 import org.gradle.api.initialization.Settings
 import org.junit.jupiter.api.AfterEach
@@ -33,7 +34,7 @@ class SettingsUtilPluginExtensionTest {
 
     @AfterEach
     void tearDown() {
-        SettingsUtilPluginIntTest.deleteTmp(tmp)
+        SettingsExtension.deleteTmp(tmp)
     }
 
 

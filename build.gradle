@@ -36,14 +36,21 @@ group = 'ch.tutteli'
 
 subprojects {
     apply plugin: 'groovy'
-    apply plugin: 'java-gradle-plugin'
-    apply plugin: 'com.gradle.plugin-publish'
-
     version = rootProject.version
     group = rootProject.group
+
+    repositories {
+        jcenter()
+    }
 }
 
-subprojects {
+def pluginProjects = subprojects - project('test-utils')
+configure(pluginProjects) {
+    apply plugin: 'java-gradle-plugin'
+    apply plugin: 'com.gradle.plugin-publish'
+}
+
+configure(pluginProjects) {
     if (error || !rootProject.ext.localPluginExists) {
         apply plugin: 'org.junit.platform.gradle.plugin'
     } else {
@@ -74,11 +81,7 @@ subprojects {
     }
 }
 
-subprojects { subproject ->
-
-    repositories {
-        jcenter()
-    }
+configure(pluginProjects) { subproject ->
 
     //TODO can be removed if plugin DSL is also applicable to settings.gradle
     task createClasspathManifest {
@@ -95,6 +98,9 @@ subprojects { subproject ->
     test.dependsOn(createClasspathManifest)
 
     dependencies {
+        testCompile(project(':test-utils')) {
+            exclude group: 'org.codehaus.groovy'
+        }
         testCompile("org.junit.jupiter:junit-jupiter-api:$junit_version")
         testRuntime("org.junit.jupiter:junit-jupiter-engine:$junit_version")
         testRuntime files(createClasspathManifest) //required for settings.gradle test
