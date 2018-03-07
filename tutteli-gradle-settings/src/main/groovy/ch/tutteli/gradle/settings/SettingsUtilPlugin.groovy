@@ -32,9 +32,10 @@ class SettingsUtilPluginExtension {
         prefixed(name)
     }
 
-    def methodMissing(String name, args) {
+    def methodMissing(String name, arguments) {
+        Object[] args = arguments as Object[]
         if (args.length == 1 && args[0] instanceof Closure) {
-            folder(name, args[0])
+            folder(name, args[0] as Closure)
             return null
         } else {
             throw new MissingMethodException(name, this.class, args)
