@@ -29,6 +29,7 @@ apply plugin: 'ch.tutteli.settings'
 include {
     settings
     junitjacoco
+    _ 'project-utils'
 
     project 'test-utils'
 }

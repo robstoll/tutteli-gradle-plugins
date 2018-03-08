@@ -9,14 +9,14 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 
 class SettingsExtensionObject {
-    public final Path tmpDir
+    public final Path tmpPath
     public final File tmp
     public final File settings
     public final List<String> pluginClasspath
 
-    SettingsExtensionObject(Path tmpDir) {
-        this.tmpDir = tmpDir
-        tmp = tmpDir.toFile()
+    SettingsExtensionObject(Path tmpPath) {
+        this.tmpPath = tmpPath
+        tmp = tmpPath.toFile()
         settings = new File(tmp, 'settings.gradle')
 
         URL pluginClasspathResource = getClass().classLoader.getResource('plugin-classpath.txt')
@@ -53,7 +53,7 @@ class SettingsExtension implements ParameterResolver, AfterEachCallback {
     void afterEach(ExtensionContext context) throws Exception {
         SettingsExtensionObject settingsSetup = getStore(context).get("settingsSetup") as SettingsExtensionObject
         if (settingsSetup != null) {
-            deleteTmp(settingsSetup.tmpDir)
+            deleteTmp(settingsSetup.tmpPath)
         }
 
     }
