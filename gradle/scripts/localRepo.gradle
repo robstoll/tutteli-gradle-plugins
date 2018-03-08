@@ -1,10 +1,11 @@
 buildscript {
     ext.includeLocalRepo = { String repo, String pluginName, String version, entity ->
         def repoDir = file(repo)
-        entity.ext.localPluginExists = false
+        def propName = "plugin_${pluginName}_exists"
+        entity.ext."$propName" = false
         if (repoDir.exists()) {
-            entity.ext.localPluginExists = file("${repoDir.absolutePath}/ch/tutteli/${rootProject.name}-$pluginName/$version").exists()
-            if (entity.ext.localPluginExists) {
+            entity.ext."$propName" = file("${repoDir.absolutePath}/ch/tutteli/${rootProject.name}-$pluginName/$version").exists()
+            if (entity.ext."$propName") {
                 entity.buildscript {
                     repositories {
                         //for local development

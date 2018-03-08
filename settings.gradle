@@ -11,7 +11,7 @@ buildscript {
         includeLocalRepo(gradle.ext.repo, 'settings', gradle.ext.version, this)
     }
 
-    if (error || !ext.localPluginExists) {
+    if (error || !ext.plugin_settings_exists) {
         repositories {
             maven {
                 url "https://plugins.gradle.org/m2/"

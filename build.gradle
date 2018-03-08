@@ -22,9 +22,10 @@ buildscript {
     if (!ext.error) {
         apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
         includeLocalRepo(gradle.ext.repo, 'junitjacoco', gradle.ext.version, this)
+        includeLocalRepo(gradle.ext.repo, 'project-utils', gradle.ext.version, this)
     }
 
-    if (error || !ext.localPluginExists) {
+    if (error || !ext.plugin_junitjacoco_exists) {
         dependencies {
             classpath "ch.tutteli:tutteli-gradle-junitjacoco:${gradle.ext.previous_version}"
         }
@@ -51,10 +52,9 @@ configure(pluginProjects) {
 }
 
 configure(pluginProjects) {
-    if (error || !rootProject.ext.localPluginExists) {
+    if (error || !rootProject.ext.plugin_junitjacoco_exists) {
         apply plugin: 'org.junit.platform.gradle.plugin'
     } else {
-
         apply plugin: 'ch.tutteli.junitjacoco'
 
         junitjacoco {
@@ -78,6 +78,9 @@ configure(pluginProjects) {
                 reportsDir = file("${buildDir}/reports/junit")
             }
         }
+    }
+    if (!error && rootProject.ext.'plugin_project-utils_exists') {
+        apply plugin: 'ch.tutteli.project.utils'
     }
 }
 
