@@ -25,15 +25,28 @@ It supports three styles:
 - [Extension Object with method calls](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L123)
 - [simply functions](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L177)
 
-# ch.tutteli.jacoco
+# ch.tutteli.project.utils
+This plugin is the complement of the settings plugin and you will typically use it together. 
+Yet, you apply it in your `build.gradle` instead of the `settings.gradle` and accordingly this plugin adds utility functions to `Project`.
+
+Currently, it provides just one function named `prefixedProject(name)` which is a shortcut for `project("${rootProject.name}-$name")`.
+You find an example in the [build.gradle of the spek plugin](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-spek/build.gradle#L20).
+
+# ch.tutteli.junitjacoco
 Applies the [junit-platform-gradle-plugin](https://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle)
 as well as the [jacoco-plugin](https://docs.gradle.org/current/userguide/jacoco_plugin.html)
 and binds jacoco to the `junitPlatformTest` task.
 
-You need to specify the `classpath` for the junit-platform-gradle-plugin in the `buildscript` section 
-and you need to specify the junit engine you want to use. 
+This plugin does not set up a junit engine and you need to define it yourself. 
+Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/build.gradle#L51)
+for an example.
+In case you should use Spek as your engine, then you might want to have a look at the next plugin.
 
-Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/build.gradle#L51).
+# ch.tutteli.spek
+Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see section above) 
+and sets up [Spek](http://spekframework.org/) as junit engine.
+Moreover, it adds `mavenCentral()` to the repositories and sets up kotlin dependencies 
+where kotlin-stdlib as compile and kotlin-reflect as testCompile dependency -- kotlin-reflect is required by spek.
 
 # License
 All tutteli gradle plugins are published under [Apache 2.0](http://opensource.org/licenses/Apache2.0).

@@ -14,6 +14,9 @@ dependencies {
     if (rootProject.ext.error || !rootProject.ext.'plugin_project-utils_exists') {
         compile project(':tutteli-gradle-junitjacoco')
     } else {
+        /**
+         * Short for `compile project(":${rootProject.name}-junitjacoco")`
+         */
         compile prefixedProject('junitjacoco')
     }
 }
