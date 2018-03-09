@@ -25,7 +25,7 @@ buildscript {
         includeLocalRepo(gradle.ext.repo, 'project-utils', gradle.ext.version, this)
     }
 
-    if (error || !ext.plugin_junitjacoco_exists) {
+    if (ext.error || !ext.plugin_junitjacoco_exists) {
         dependencies {
             classpath "ch.tutteli:tutteli-gradle-junitjacoco:${gradle.ext.previous_version}"
         }
@@ -53,34 +53,32 @@ configure(pluginProjects) {
 }
 
 configure(pluginProjects) {
-    if (error || !rootProject.ext.plugin_junitjacoco_exists) {
-        apply plugin: 'org.junit.platform.gradle.plugin'
-    } else {
-        apply plugin: 'ch.tutteli.junitjacoco'
 
-        junitjacoco {
-            //enable or disable junit xml (disabled by default, enable it as follows)
-            enableJunitReport = true
+    apply plugin: 'ch.tutteli.junitjacoco'
 
-            //allows to configure the JacocoReportTask
-            jacocoReport {
-                reports {
-                    html.enabled = true
-                }
-            }
+    junitjacoco {
+        //enable or disable junit xml (disabled by default, enable it as follows)
+        enableJunitReport = true
 
-            //delegates to the jacoco extension (just for your convenience, everything in one place)
-            jacoco {
-                toolVersion = '0.8.0'
-            }
-
-            //delegates to the junitPlatform extension (just for your convenience, everything in one place)
-            junitPlatform {
-                reportsDir = file("${buildDir}/reports/junit")
+        //allows to configure the JacocoReportTask
+        jacocoReport {
+            reports {
+                html.enabled = true
             }
         }
+
+        //delegates to the jacoco extension (just for your convenience, everything in one place)
+        jacoco {
+            toolVersion = '0.8.0'
+        }
+
+        //delegates to the junitPlatform extension (just for your convenience, everything in one place)
+        junitPlatform {
+            reportsDir = file("${buildDir}/reports/junit")
+        }
     }
-    if (!error && rootProject.ext.'plugin_project-utils_exists') {
+
+    if (!rootProject.ext.error && rootProject.ext.'plugin_project-utils_exists') {
         apply plugin: 'ch.tutteli.project.utils'
     }
 }
