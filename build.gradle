@@ -1,7 +1,7 @@
 buildscript {
     ext {
         junit_version = '5.0.3'
-        junit_platform_version = '1.0.3'
+        junit_platform_version = '1.1.0'
         publish_version = '0.9.10'
     }
 
@@ -12,7 +12,6 @@ buildscript {
 
     dependencies {
         classpath "com.gradle.publish:plugin-publish-plugin:$publish_version"
-        classpath "org.junit.platform:junit-platform-gradle-plugin:$junit_platform_version"
     }
 }
 
@@ -41,6 +40,7 @@ subprojects {
     group = rootProject.group
 
     repositories {
+        mavenCentral()
         jcenter()
     }
 }
@@ -87,7 +87,7 @@ configure(pluginProjects) {
 configure(pluginProjects) { subproject ->
 
     //TODO can be removed if plugin DSL is also applicable to settings.gradle
-    task createClasspathManifest {
+    def createClasspathManifest = task('createClasspathManifest') {
         def outputDir = file("${buildDir}/${name}")
 
         inputs.files sourceSets.main.runtimeClasspath
@@ -139,10 +139,14 @@ configure(pluginProjects) { subproject ->
         }
     }
 
+    apply plugin: 'maven-publish'
+
     task repo(type: Copy) {
         def outputJar = "${gradle.ext.repo}/ch/tutteli/${project.name}/${project.version}/"
         outputs.dir outputJar
         from jar
+        from tasks.matching { it.name == 'generatePomFileForPluginMavenPublication' }
+        rename('pom-default.xml', "${project.name}-${project.version}.pom")
         into outputJar
     }
 }
