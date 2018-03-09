@@ -40,6 +40,6 @@ class UtilsPluginIntTest {
         //assert
         assertProjectInOutput(result, ':test-project-one')
         assertTrue(result.output.contains("here we are: test-project-one"), "println in output")
-        assertStatusOk(result)
+        assertStatusOk(result, ":projects")
     }
 }

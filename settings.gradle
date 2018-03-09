@@ -28,8 +28,10 @@ apply plugin: 'ch.tutteli.settings'
 //noinspection GroovyAssignabilityCheck
 include {
     settings
-    junitjacoco
     _ 'project-utils'
+
+    junitjacoco
+    spek
 
     project 'test-utils'
 }

@@ -1,0 +1,18 @@
+buildscript {
+    ext {
+        plugin_id = 'ch.tutteli.spek'
+        plugin_class = 'ch.tutteli.gradle.spek.SpekPlugin'
+        plugin_name = 'Tutteli Jacoco Plugin'
+        plugin_description = 'Applies the junitjacoco plugin and defines Spek as engine. Applies the kotlin plugin and sets up compile and test dependencies.'
+        plugin_tags = ['spek', 'junit', 'kotlin']
+    }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    if (rootProject.ext.error || !rootProject.ext.'plugin_project-utils_exists') {
+        compile project(':tutteli-gradle-junitjacoco')
+    } else {
+        compile prefixedProject('junitjacoco')
+    }
+}

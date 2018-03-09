@@ -1,5 +1,6 @@
 package ch.tutteli.gradle.settings
 
+import ch.tutteli.gradle.test.Asserts
 import ch.tutteli.gradle.test.SettingsExtension
 import ch.tutteli.gradle.test.SettingsExtensionObject
 import org.gradle.testkit.runner.BuildResult
@@ -8,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 import static ch.tutteli.gradle.test.Asserts.assertProjectInOutput
-import static ch.tutteli.gradle.test.Asserts.assertStatusOk
 
 @ExtendWith(SettingsExtension)
 class SettingsUtilPluginIntTest {
@@ -208,5 +208,9 @@ class SettingsUtilPluginIntTest {
         assertProjectInOutput(result, ':test-project-three')
         assertProjectInOutput(result, ':test-project-four')
         assertProjectInOutput(result, ':test-project-five')
+    }
+
+    private static assertStatusOk(BuildResult result) {
+        Asserts.assertStatusOk(result, ":projects")
     }
 }
