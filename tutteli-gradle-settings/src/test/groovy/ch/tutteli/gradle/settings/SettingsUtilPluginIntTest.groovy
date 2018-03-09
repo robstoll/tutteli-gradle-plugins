@@ -4,12 +4,11 @@ import ch.tutteli.gradle.test.SettingsExtension
 import ch.tutteli.gradle.test.SettingsExtensionObject
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-import static org.junit.jupiter.api.Assertions.assertEquals
-import static org.junit.jupiter.api.Assertions.assertTrue
+import static ch.tutteli.gradle.test.Asserts.assertProjectInOutput
+import static ch.tutteli.gradle.test.Asserts.assertStatusOk
 
 @ExtendWith(SettingsExtension)
 class SettingsUtilPluginIntTest {
@@ -59,7 +58,7 @@ class SettingsUtilPluginIntTest {
             .build()
         //assert
         assertProjectOneTwoFiveInOutput(result)
-        assertStatus(result)
+        assertStatusOk(result)
     }
 
     @Test
@@ -118,7 +117,7 @@ class SettingsUtilPluginIntTest {
         assertProjectInOutput(result, ':seven')
         assertProjectInOutput(result, ':eight')
         assertProjectInOutput(result, ':nine')
-        assertStatus(result)
+        assertStatusOk(result)
     }
 
     @Test
@@ -188,7 +187,7 @@ class SettingsUtilPluginIntTest {
         assertProjectOneTwoFiveInOutput(result)
         assertProjectInOutput(result, ':six')
         assertProjectInOutput(result, ':seven')
-        assertStatus(result)
+        assertStatusOk(result)
     }
 
     private static void createDirs(File tmp) {
@@ -209,16 +208,5 @@ class SettingsUtilPluginIntTest {
         assertProjectInOutput(result, ':test-project-three')
         assertProjectInOutput(result, ':test-project-four')
         assertProjectInOutput(result, ':test-project-five')
-    }
-
-    private static assertProjectInOutput(BuildResult result, String projectName) {
-        assertTrue(result.output.contains(projectName), "project $projectName in output: ${result.output}")
-    }
-
-    private static void assertStatus(BuildResult result) {
-        assertEquals([':projects'], result.taskPaths(TaskOutcome.SUCCESS))
-        assertTrue(result.taskPaths(TaskOutcome.SKIPPED).empty, 'SKIPPED is empty')
-        assertTrue(result.taskPaths(TaskOutcome.UP_TO_DATE).empty, 'UP_TO_DATE is empty')
-        assertTrue(result.taskPaths(TaskOutcome.FAILED).empty, 'FAILED is empty')
     }
 }

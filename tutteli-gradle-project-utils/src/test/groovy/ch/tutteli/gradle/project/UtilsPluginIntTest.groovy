@@ -2,13 +2,12 @@ package ch.tutteli.gradle.project
 
 import ch.tutteli.gradle.test.SettingsExtension
 import ch.tutteli.gradle.test.SettingsExtensionObject
-import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-import static org.junit.jupiter.api.Assertions.assertEquals
+import static ch.tutteli.gradle.test.Asserts.assertProjectInOutput
+import static ch.tutteli.gradle.test.Asserts.assertStatusOk
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
@@ -41,17 +40,6 @@ class UtilsPluginIntTest {
         //assert
         assertProjectInOutput(result, ':test-project-one')
         assertTrue(result.output.contains("here we are: test-project-one"), "println in output")
-        assertStatus(result)
-    }
-
-    private static assertProjectInOutput(BuildResult result, String projectName) {
-        assertTrue(result.output.contains(projectName), "project $projectName in output: ${result.output}")
-    }
-
-    private static void assertStatus(BuildResult result) {
-        assertEquals([':projects'], result.taskPaths(TaskOutcome.SUCCESS))
-        assertTrue(result.taskPaths(TaskOutcome.SKIPPED).empty, 'SKIPPED is empty')
-        assertTrue(result.taskPaths(TaskOutcome.UP_TO_DATE).empty, 'UP_TO_DATE is empty')
-        assertTrue(result.taskPaths(TaskOutcome.FAILED).empty, 'FAILED is empty')
+        assertStatusOk(result)
     }
 }
