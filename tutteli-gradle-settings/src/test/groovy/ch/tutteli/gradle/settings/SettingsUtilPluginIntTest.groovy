@@ -37,12 +37,18 @@ class SettingsUtilPluginIntTest {
     
                 three           // short for `include ":\${rootProject.name}-three"`
                                 // and it sets `project.projectDir` to: 
-                                // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
-                
-                four            // same as for three but with four ;)
+                                // "\${rootProject.projectDir}/test/\${rootProject.name}-three"                                
+            }
+            
+            apis('api-') {      // defines that the following projects are in folder `apis` 
+                                // and all prefixed projects are additionally prefixed with `api-`
+                                   
+                four            // short for `include ":\${rootProject.name}-api-four"`
+                                // and it sets `project.projectDir` to: 
+                                // "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
                 
                 subfolder {     // defines that the following projects are in folder test/subfolder
-                    five        // same as three but projectDir base path is \${rootProject.projectDir}/test/subfolder     
+                    five        // same as four but projectDir base path is \${rootProject.projectDir}/apis/subfolder     
                 }
             }
             
@@ -80,30 +86,40 @@ class SettingsUtilPluginIntTest {
             prefixed 'one'                      // short for `include ":\${rootProject.name}-one"`
             prefixed ('one', 'two-with-slash')  // you can also define multiple projects in one line
             
-            folder ('test') {                   // defines that the following projects are in folder test
+            folder('test') {                    // defines that the following projects are in folder test
             
                 prefixed 'three'                // short for `include ":\${rootProject.name}-three"`
                                                 // and it sets `project.projectDir` to: 
                                                 // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
-                                      
-                prefixed ('three', 'four')      //also here, you can define multiple projects
+            }
+            
+            folder('apis', 'api-') {            // defines that the following projects are in folder `apis` 
+                                                // and all prefixed projects are additionally prefixed with `api-`
+                                                  
+                prefixed ('four')               // short for `include ":\${rootProject.name}-api-four"`
+                                                // and it sets `project.projectDir` to: 
+                                                // "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
                 
                 folder ('subfolder') {
-                    prefixed 'five'             // same as three but `project.projectDir` is 
-                                                // \${rootProject.projectDir}/test/subfolder/\${rootProject.name}-five 
+                    prefixed 'five'             // same as four but `project.projectDir` is 
+                                                // \${rootProject.projectDir}/api/subfolder/\${rootProject.name}-api-five 
                 }
+                
+                project 'six'                   // short for `include ":six"` => additional prefix is ignored
+                                                // and it sets `project.projectDir` to:
+                                                // "\${rootProject.projectDir}/apis/six"
             }
             
             folder ('test') {
-                project 'six'                   // short for `include ":six"`
+                project 'seven'                 // short for `include ":seven"`
                                                 // and it sets `project.projectDir` to:
-                                                // "\${rootProject.projectDir}/test/six"
+                                                // "\${rootProject.projectDir}/test/seven"
                                       
-                project ('six', 'seven')        // also here, you can define multiple projects
+                project ('seven', 'eight')      // also here, you can define multiple projects
             }
             
-            project 'eight'                     // short for `include ":eight"`
-            project ('eight', 'nine')           // also here, you can define multiple projects
+            project 'nine'                      // short for `include ":eight"`
+            project ('nine', 'ten')             // also here, you can define multiple projects
         }
         """
         //act
@@ -149,34 +165,33 @@ class SettingsUtilPluginIntTest {
         includePrefixedInFolder('test', 'three')
         
         /**
-         * Shortcut for `include(":\${rootProject.name}-three", "\${rootProject.name}-four;")`
+         * Shortcut for `include(":"\${rootProject.name}-api-four")`
          * and it sets `project.projectDir` accordingly: 
-         * "\${rootProject.projectDir}/test/\${rootProject.name}-three"    and
-         * "\${rootProject.projectDir}/test/\${rootProject.name}-four"
+         * "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
          */
-        includePrefixedInFolder('test', 'three', 'four')
+        includePrefixedInFolder('apis', 'api-four')
         
          /**
-         * Shortcut for `include ":\${rootProject.name}-five"`
+         * Shortcut for `include ":\${rootProject.name}-api-five"`
          * and it sets `project.projectDir` accordingly: 
-         * "\${rootProject.projectDir}/test/subfolder/\${rootProject.name}-five"
+         * "\${rootProject.projectDir}/apis/subfolder/\${rootProject.name}-api-five"
          */
-        includePrefixedInFolder('test/subfolder', 'five')
+        includePrefixedInFolder('apis/subfolder', 'api-five')
         
         /**
          * Shortcut for `include ":six"`
          * and it sets `project.projectDir` accordingly: 
-         * "\${rootProject.projectDir}/test/six"
+         * "\${rootProject.projectDir}/apis/six"
          */
-        includeCustomInFolder('test', 'six')
+        includeCustomInFolder('apis', 'six')
         
         /**
          * Shortcut for `include(":six", ":seven")`
          * and it sets `project.projectDir` accordingly: 
-         * "\${rootProject.projectDir}/test/six"    and
-         * "\${rootProject.projectDir}/test/seven"
+         * "\${rootProject.projectDir}/test/seven"    and
+         * "\${rootProject.projectDir}/test/eight"
          */
-        includeCustomInFolder('test', 'six', 'seven')
+        includeCustomInFolder('test', 'seven', 'eight')
         """
         //act
         def result = GradleRunner.create()
@@ -194,20 +209,21 @@ class SettingsUtilPluginIntTest {
         new File(tmp, 'test-project-one').mkdir()
         new File(tmp, 'test-project-two-with-slash').mkdir()
         new File(tmp, 'test/test-project-three').mkdirs()
-        new File(tmp, 'test/test-project-four').mkdirs()
-        new File(tmp, 'test/subfolder/test-project-five').mkdirs()
-        new File(tmp, 'test/six').mkdir()
+        new File(tmp, 'apis/test-project-api-four').mkdirs()
+        new File(tmp, 'apis/subfolder/test-project-api-five').mkdirs()
+        new File(tmp, 'apis/six').mkdir()
         new File(tmp, 'test/seven').mkdir()
-        new File(tmp, 'eight').mkdir()
+        new File(tmp, 'test/eight').mkdir()
         new File(tmp, 'nine').mkdir()
+        new File(tmp, 'ten').mkdir()
     }
 
     private static void assertProjectOneTwoFiveInOutput(BuildResult result) {
         assertProjectInOutput(result, ':test-project-one')
         assertProjectInOutput(result, ':test-project-two-with-slash')
         assertProjectInOutput(result, ':test-project-three')
-        assertProjectInOutput(result, ':test-project-four')
-        assertProjectInOutput(result, ':test-project-five')
+        assertProjectInOutput(result, ':test-project-api-four')
+        assertProjectInOutput(result, ':test-project-api-five')
     }
 
     private static assertStatusOk(BuildResult result) {

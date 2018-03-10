@@ -43,7 +43,7 @@ class SettingsUtilPluginExtensionTest {
         //arrange
         def nameA = 'test-a'
         def (descriptorA, projectDirA) = setUpProject(nameA)
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //act
         testee.prefixed('a')
         //assert
@@ -57,7 +57,7 @@ class SettingsUtilPluginExtensionTest {
         def nameB = 'test-b'
         def (descriptorA, projectDirA) = setUpProject(nameA)
         def (descriptorB, projectDirB) = setUpProject(nameB)
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //act
         testee.prefixed('a', 'b')
         //assert
@@ -70,7 +70,7 @@ class SettingsUtilPluginExtensionTest {
         //arrange
         def nameA = 'a'
         def (descriptorA, projectDirA) = setUpProject(tmpDir, nameA)
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //act
         testee.project(nameA)
         //assert
@@ -84,7 +84,7 @@ class SettingsUtilPluginExtensionTest {
         def nameB = 'b'
         def (descriptorA, projectDirA) = setUpProject(tmpDir, nameA)
         def (descriptorB, projectDirB) = setUpProject(tmpDir, nameB)
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //act
         testee.project(nameA, nameB)
         //assert
@@ -99,7 +99,7 @@ class SettingsUtilPluginExtensionTest {
         folder.mkdir()
         def nameA = 'test-a'
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
-        def testee = new SettingsUtilPluginExtension(settings, folderName)
+        def testee = new SettingsUtilPluginExtension(settings, folderName, '')
         //act
         testee.prefixed('a')
         //assert
@@ -115,7 +115,7 @@ class SettingsUtilPluginExtensionTest {
         def nameB = 'test-b'
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
         def (descriptorB, projectDirB) = setUpProject(folder, nameB)
-        def testee = new SettingsUtilPluginExtension(settings, folderName)
+        def testee = new SettingsUtilPluginExtension(settings, folderName, '')
         //act
         testee.prefixed('a', 'b')
         //assert
@@ -130,7 +130,7 @@ class SettingsUtilPluginExtensionTest {
         folder.mkdir()
         def nameA = 'a'
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
-        def testee = new SettingsUtilPluginExtension(settings, folderName)
+        def testee = new SettingsUtilPluginExtension(settings, folderName, '')
         //act
         testee.project(nameA)
         //assert
@@ -146,7 +146,7 @@ class SettingsUtilPluginExtensionTest {
         def nameB = 'b'
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
         def (descriptorB, projectDirB) = setUpProject(folder, nameB)
-        def testee = new SettingsUtilPluginExtension(settings, folderName)
+        def testee = new SettingsUtilPluginExtension(settings, folderName, '')
         //act
         testee.project(nameA, nameB)
         //assert
@@ -161,7 +161,7 @@ class SettingsUtilPluginExtensionTest {
         folder.mkdir()
         def nameA = 'test-a'
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //act
         testee.folder(folderName, {
             prefixed('a')
@@ -179,7 +179,7 @@ class SettingsUtilPluginExtensionTest {
         def nameB = 'b'
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
         def (descriptorB, projectDirB) = setUpProject(folder, nameB)
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //act
         testee.folder(folderName, {
             project(nameA, nameB)
@@ -194,7 +194,7 @@ class SettingsUtilPluginExtensionTest {
         //arrange
         def nameA = 'test-a'
         def (descriptorA, projectDirA) = setUpProject(nameA)
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //act
         testee.a
         //assert
@@ -208,7 +208,7 @@ class SettingsUtilPluginExtensionTest {
         folder.mkdir()
         def nameA = 'test-a'
         def (descriptorA, projectDirA) = setUpProject(folder, nameA)
-        def testee = new SettingsUtilPluginExtension(settings, folderName)
+        def testee = new SettingsUtilPluginExtension(settings, folderName, '')
         //act
         testee.a
         //assert
@@ -218,7 +218,7 @@ class SettingsUtilPluginExtensionTest {
     @Test
     void unknownMethod_withoutParameter_throwsMethodMissingException() {
         //arrange
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //assert & act
         def e = assertThrows(MissingMethodException) {
             testee.unknownMethod()
@@ -230,7 +230,7 @@ class SettingsUtilPluginExtensionTest {
     @Test
     void unknownMethod_withTwoParameters_throwsMethodMissingException() {
         //arrange
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //assert & act
         def e = assertThrows(MissingMethodException) {
             testee.unknownMethod(1, 2)
@@ -243,7 +243,7 @@ class SettingsUtilPluginExtensionTest {
     @Test
     void unknownMethod_oneParameterButNotClosure_throwsMethodMissingException() {
         //arrange
-        def testee = new SettingsUtilPluginExtension(settings, '')
+        def testee = new SettingsUtilPluginExtension(settings, '', '')
         //assert & act
         def e = assertThrows(MissingMethodException) {
             testee.unknownMethod(1)

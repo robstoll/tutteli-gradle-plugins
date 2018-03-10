@@ -46,7 +46,7 @@ class SettingsUtilPluginTest {
         //act
         testee.apply(settings)
         //assert
-        verify(defaultConvention).create('include', SettingsUtilPluginExtension, settings, '')
+        verify(defaultConvention).create('include', SettingsUtilPluginExtension, settings, '', '')
         def captor = ArgumentCaptor.forClass(Closure)
         verify(ext).set(eq('includeCustomInFolder'), captor.capture())
         includeCustomInFolder = captor.getValue()
