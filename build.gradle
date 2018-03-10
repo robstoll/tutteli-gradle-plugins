@@ -157,17 +157,18 @@ task removeRepo(type: Delete) {
 /*
 Release & deploy
 ----------------
-1. Update master:
+1. gr removeRepo
+2. Update master:
     a) point to the tag
         1) search for `branch=master` and replace it with `tag=vX.Y.Z` (build status and coverage in README.md)
         2) search for `tree/master` and replace it with `tree/vX.Y.Z` (README.md)
     b) change `version` in settings.gradle to X.Y.Z (remove -SNAPSHOT)
-    c) commit (modified build.gradle, README.md and settings.gradle)
+    c) commit & push (modified build.gradle, README.md and settings.gradle)
     d) git tag vX.Y.Z
     e) git push origin vX.Y.Z
-2. publish plugins
+3. publish plugins
    a) gr publishPlugins
-3. create release on github
+4. create release on github
 
 
 Prepare next dev cycle
