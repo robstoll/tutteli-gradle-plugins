@@ -32,7 +32,7 @@ class JunitJacocoPluginExtension {
         //necessary that it is accessible within the closure without the need of a public getter
         def junitTask = junitPlatformTestTask
         jacoco {
-            toolVersion = '0.8.0'
+            toolVersion = '0.8.1'
             applyTo junitTask
         }
 
