@@ -15,4 +15,5 @@ dependencies {
      * Short for `compile project(":${rootProject.name}-junitjacoco")`
      */
     compile prefixedProject('junitjacoco')
+    compile prefixedProject('kotlin')
 }

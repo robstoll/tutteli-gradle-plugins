@@ -40,13 +40,19 @@ and binds jacoco to the `junitPlatformTest` task.
 This plugin does not set up a junit engine and you need to define it yourself. 
 Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.5.0/build.gradle#L51)
 for an example.
-In case you should use Spek as your engine, then you might want to have a look at the next plugin.
+In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin.
+
+# ch.tutteli.kotlin
+Applies the kotlin plugin and provides some utility functions to declare dependencies on kotlin projects 
+as well as utility functions to exclude kotlin.
+You find an example in [KotlinPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.5.0/tutteli-gradle-kotlin/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinPluginIntTest.groovy#L35).
 
 # ch.tutteli.spek
-Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see section above) 
+Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 
+as well as the `ch.tutteli.kotlin` plugin (which itself applies the kotlin plugin, see section above)
 and sets up [Spek](http://spekframework.org/) as junit engine.
-Moreover, it adds `mavenCentral()` to the repositories and sets up kotlin dependencies 
-where kotlin-stdlib as compile and kotlin-reflect as testCompile dependency -- kotlin-reflect is required by spek.
+Moreover, it adds `mavenCentral()` to the repositories and sets up kotlin dependencies:
+kotlin-stdlib as compile and kotlin-reflect as testCompile dependency -- kotlin-reflect is required by spek.
 
 # License
 All tutteli gradle plugins are published under [Apache 2.0](http://opensource.org/licenses/Apache2.0).

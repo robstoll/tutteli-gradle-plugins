@@ -46,7 +46,7 @@ class SpekPluginIntTest {
             .withArguments("build")
             .build()
         //assert
-        assertTrue(result.output.contains("was here"), "println in output")
+        assertTrue(result.output.contains("was here"), "println in output:\n" + result.output)
         Asserts.assertStatusOk(result,
             [
                 ":jar",

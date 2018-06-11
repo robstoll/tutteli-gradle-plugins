@@ -1,6 +1,7 @@
 package ch.tutteli.gradle.spek
 
 import ch.tutteli.gradle.junitjacoco.JunitJacocoPlugin
+import ch.tutteli.gradle.kotlin.KotlinPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
@@ -16,10 +17,9 @@ class SpekPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         project.pluginManager.apply(JunitJacocoPlugin)
-        project.pluginManager.apply(KotlinPluginWrapper)
+        project.pluginManager.apply(KotlinPlugin)
         def kotlinPlugin = project.plugins.getPlugin(KotlinPluginWrapper)
         def kotlinVersion = kotlinPlugin.getKotlinPluginVersion()
-
 
         project.extensions.getByType(JUnitPlatformExtension).filters {
             engines {
