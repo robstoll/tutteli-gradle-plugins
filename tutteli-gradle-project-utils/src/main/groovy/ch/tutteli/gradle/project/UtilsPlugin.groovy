@@ -7,8 +7,13 @@ class UtilsPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.ext.prefixedProject = { String name ->
-            project.project(":${project.rootProject.name}-$name")
+        def prefixedProjectName = { String name ->
+            ":${project.rootProject.name}-$name"
         }
+
+        project.ext.prefixedProject = { String name ->
+            project.project(prefixedProjectName(name))
+        }
+        project.ext.prefixedProjectName = prefixedProjectName
     }
 }

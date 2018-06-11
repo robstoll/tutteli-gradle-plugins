@@ -31,6 +31,7 @@ class UtilsPluginIntTest {
         apply plugin: 'ch.tutteli.project.utils'
         
         println("here we are: \${prefixedProject('one').name}")
+        println("another one: \${prefixedProjectName('one')}")
         """
         //act
         def result = GradleRunner.create()
@@ -39,7 +40,8 @@ class UtilsPluginIntTest {
             .build()
         //assert
         assertProjectInOutput(result, ':test-project-one')
-        assertTrue(result.output.contains("here we are: test-project-one"), "println in output")
+        assertTrue(result.output.contains("here we are: test-project-one"), "println `here we are` in output:\n" + result.output)
+        assertTrue(result.output.contains("another one: :test-project-one"), "println `another one` in output:\n" + result.output)
         assertStatusOk(result, ":projects")
     }
 }
