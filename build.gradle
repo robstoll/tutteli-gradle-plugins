@@ -2,7 +2,7 @@ buildscript {
     ext {
         junit_version = '5.2.0'
         junit_platform_version = '1.2.0'
-        kotlin_version = '1.2.30'
+        kotlin_version = '1.2.41'
         publish_version = '0.9.10'
     }
 
