@@ -10,13 +10,9 @@ buildscript {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    //TODO remove as soon as 0.4.0 is published
-    if (rootProject.ext.error || !rootProject.ext.'plugin_project-utils_exists') {
-        compile project(':tutteli-gradle-junitjacoco')
-    } else {
-        /**
-         * Short for `compile project(":${rootProject.name}-junitjacoco")`
-         */
-        compile prefixedProject('junitjacoco')
-    }
+
+    /**
+     * Short for `compile project(":${rootProject.name}-junitjacoco")`
+     */
+    compile prefixedProject('junitjacoco')
 }
