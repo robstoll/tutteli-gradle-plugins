@@ -49,6 +49,7 @@ class SpekPluginIntTest {
         assertTrue(result.output.contains("was here"), "println in output:\n" + result.output)
         Asserts.assertStatusOk(result,
             [
+                ":inspectClassesForKotlinIC",
                 ":jar",
                 ":assemble",
                 ":compileTestKotlin",
