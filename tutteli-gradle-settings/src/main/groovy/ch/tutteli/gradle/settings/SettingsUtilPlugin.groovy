@@ -26,6 +26,12 @@ class SettingsUtilPluginExtension {
         conf.call()
     }
 
+    void kotlinMulti(String folderName, String additionalPrefix) {
+        folder(folderName, additionalPrefix) {
+            prefixed("common", "js", "jvm")
+        }
+    }
+
     void prefixed(String... projects) {
         //we need a local variable if we want to keep the field private
         def currentPrefix = this.currentPrefix

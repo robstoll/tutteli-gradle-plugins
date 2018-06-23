@@ -30,28 +30,33 @@ class SettingsUtilPluginIntTest {
         // The most consice style, Extension object paired with propertyMissing/methodMissing voodoo
         
         include {
-            one                 // short for `include ":\${rootProject.name}-one"`
-            _ 'two-with-slash'  // short for `include ":\${rootProject.name}-two-with-slash"`
-            
-            test {              // defines that the following projects are in folder test
-    
-                three           // short for `include ":\${rootProject.name}-three"`
-                                // and it sets `project.projectDir` to: 
-                                // "\${rootProject.projectDir}/test/\${rootProject.name}-three"                                
-            }
-            
-            apis('api-') {      // defines that the following projects are in folder `apis` 
-                                // and all prefixed projects are additionally prefixed with `api-`
-                                   
-                four            // short for `include ":\${rootProject.name}-api-four"`
-                                // and it sets `project.projectDir` to: 
-                                // "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
-                
-                subfolder {     // defines that the following projects are in folder test/subfolder
-                    five        // same as four but projectDir base path is \${rootProject.projectDir}/apis/subfolder     
+            one                              // short for `include ":\${rootProject.name}-one"`
+            _ 'two-with-slash'               // short for `include ":\${rootProject.name}-two-with-slash"`
+
+            test {                           // defines that the following projects are in folder test
+
+                three                        // short for `include ":\${rootProject.name}-three"`
+                                             // and it sets `project.projectDir` to: 
+                                             // "\${rootProject.projectDir}/test/\${rootProject.name}-three"                                
+            }     
+
+            apis('api-') {                   // defines that the following projects are in folder `apis` 
+                                             // and all prefixed projects are additionally prefixed with `api-`
+
+                four                         // short for `include ":\${rootProject.name}-api-four"`
+                                             // and it sets `project.projectDir` to: 
+                                             // "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
+
+                subfolder {                  // defines that the following projects are in folder apis/subfolder
+                    five                     // same as four but projectDir base path is \${rootProject.projectDir}/apis/subfolder     
                 }
             }
-            
+
+            kotlinMulti('core', 'core-')   // defines three projects which are contained in folder 'core' and are 
+                                             // additionally prefixed with 'eleven-' named 'common', 'js' and 'jvm'
+                                             // and sets `project.projectDir` accordingly. For instance, for 'jvm':
+                                             // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm" 
+
             // You can also include non prefixed projects with this style. 
             // Have a look at the method extensionWithMethodCalls, 
             // you can use all methods shown there also here (mix both styles)
@@ -64,6 +69,9 @@ class SettingsUtilPluginIntTest {
             .build()
         //assert
         assertProjectOneTwoFiveInOutput(result)
+        assertProjectInOutput(result, ':test-project-core-common')
+        assertProjectInOutput(result, ':test-project-core-js')
+        assertProjectInOutput(result, ':test-project-core-jvm')
         assertStatusOk(result)
     }
 
@@ -120,6 +128,11 @@ class SettingsUtilPluginIntTest {
             
             project 'nine'                      // short for `include ":eight"`
             project ('nine', 'ten')             // also here, you can define multiple projects
+            
+            kotlinMulti('core', 'core-')        // defines three projects which are contained in folder 'core' and are 
+                                                // additionally prefixed with 'eleven-' named 'common', 'js' and 'jvm'
+                                                // and sets `project.projectDir` accordingly. For instance, for 'jvm':
+                                                // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm" 
         }
         """
         //act
@@ -133,6 +146,9 @@ class SettingsUtilPluginIntTest {
         assertProjectInOutput(result, ':seven')
         assertProjectInOutput(result, ':eight')
         assertProjectInOutput(result, ':nine')
+        assertProjectInOutput(result, ':test-project-core-common')
+        assertProjectInOutput(result, ':test-project-core-js')
+        assertProjectInOutput(result, ':test-project-core-jvm')
         assertStatusOk(result)
     }
 
@@ -216,6 +232,10 @@ class SettingsUtilPluginIntTest {
         new File(tmp, 'test/eight').mkdir()
         new File(tmp, 'nine').mkdir()
         new File(tmp, 'ten').mkdir()
+        new File(tmp, 'core').mkdir()
+        new File(tmp, 'core/test-project-core-common').mkdir()
+        new File(tmp, 'core/test-project-core-js').mkdir()
+        new File(tmp, 'core/test-project-core-jvm').mkdir()
     }
 
     private static void assertProjectOneTwoFiveInOutput(BuildResult result) {
