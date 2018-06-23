@@ -31,7 +31,7 @@ include {
     _ 'project-utils'
 
     junitjacoco
-    kotlin
+    _ 'kotlin-utils'
     spek
 
     project 'test-utils'

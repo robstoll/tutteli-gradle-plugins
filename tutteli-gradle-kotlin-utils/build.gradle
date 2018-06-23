@@ -1,0 +1,13 @@
+buildscript {
+    ext {
+        plugin_id = 'ch.tutteli.kotlin.utils'
+        plugin_class = 'ch.tutteli.gradle.kotlin.KotlinUtilsPlugin'
+        plugin_name = 'Tutteli Kotlin Utils Plugin'
+        plugin_description = 'Provides a few utility functions which makes it easier to manage kotlin projects.'
+        plugin_tags = ['kotlin', 'utility']
+    }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+}

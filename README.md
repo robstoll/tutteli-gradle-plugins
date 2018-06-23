@@ -42,15 +42,15 @@ Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins
 for an example.
 In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin.
 
-# ch.tutteli.kotlin
-Applies the kotlin plugin and provides some utility functions to declare dependencies on kotlin projects 
-as well as utility functions to exclude kotlin.
-You find an example in [KotlinPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.6.0/tutteli-gradle-kotlin/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinPluginIntTest.groovy#L35).
+# ch.tutteli.kotlin.utils
+Provides some utility functions to declare dependencies on kotlin projects as well as utility functions to exclude kotlin.
+Requires that a kotlin plugin is applied first.
+You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.6.0/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L35).
 
 # ch.tutteli.spek
 Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 
-as well as the `ch.tutteli.kotlin` plugin (which itself applies the kotlin plugin, see section above)
 and sets up [Spek](http://spekframework.org/) as junit engine.
+Requires that a JVM compliant kotlin plugin is applied first.
 Moreover, it adds `mavenCentral()` to the repositories and sets up kotlin dependencies:
 kotlin-stdlib as compile and kotlin-reflect as testCompile dependency -- kotlin-reflect is required by spek.
 

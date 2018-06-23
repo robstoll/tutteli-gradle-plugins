@@ -25,6 +25,7 @@ class SpekPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
+        apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.spek'
         """
         File kotlin = new File(settingsSetup.tmp, 'src/test/kotlin/')

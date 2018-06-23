@@ -1,9 +1,9 @@
 package ch.tutteli.gradle.spek
 
 import ch.tutteli.gradle.junitjacoco.JunitJacocoPlugin
-import ch.tutteli.gradle.kotlin.KotlinPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.UnknownPluginException
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.junit.platform.gradle.plugin.JUnitPlatformExtension
 
@@ -17,9 +17,7 @@ class SpekPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         project.pluginManager.apply(JunitJacocoPlugin)
-        project.pluginManager.apply(KotlinPlugin)
-        def kotlinPlugin = project.plugins.getPlugin(KotlinPluginWrapper)
-        def kotlinVersion = kotlinPlugin.getKotlinPluginVersion()
+        def kotlinVersion = getKotlinVersion(project)
 
         project.extensions.getByType(JUnitPlatformExtension).filters {
             engines {
@@ -47,6 +45,16 @@ class SpekPlugin implements Plugin<Project> {
                 }
 
             }
+        }
+    }
+
+    private static String getKotlinVersion(Project project){
+        try {
+            def kotlinPlugin = project.plugins.getPlugin(KotlinPluginWrapper)
+            return kotlinPlugin.getKotlinPluginVersion()
+        } catch(UnknownPluginException e) {
+            throw new IllegalStateException("You need to apply a JVM compliant kotlin plugin before applying the ch.tutteli.spek plugin." +
+                "\n For instance, the 'kotlin' or the 'kotlin-platform-jvm' plugin.", e)
         }
     }
 }

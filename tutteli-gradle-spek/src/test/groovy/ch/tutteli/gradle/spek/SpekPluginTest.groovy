@@ -3,6 +3,7 @@ package ch.tutteli.gradle.spek
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.testfixtures.ProjectBuilder
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.junit.jupiter.api.Test
 
 import static ch.tutteli.gradle.spek.SpekPlugin.EXTENSION_NAME
@@ -15,6 +16,7 @@ class SpekPluginTest {
     void version_differentThanDefault_compileAndRuntimeClasspathAccordingly() {
         //arrange
         Project project = ProjectBuilder.builder().build()
+        project.plugins.apply(KotlinPluginWrapper)
         project.plugins.apply(SpekPlugin)
         def extension = project.extensions.getByName(EXTENSION_NAME)
         extension.version = '1.1.2'

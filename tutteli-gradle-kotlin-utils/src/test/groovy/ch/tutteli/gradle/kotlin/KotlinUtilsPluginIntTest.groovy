@@ -1,4 +1,4 @@
-package ch.tutteli.gradle.spek
+package ch.tutteli.gradle.kotlin
 
 import ch.tutteli.gradle.test.Asserts
 import ch.tutteli.gradle.test.SettingsExtension
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import static org.junit.jupiter.api.Assertions.assertFalse
 
 @ExtendWith(SettingsExtension)
-class KotlinPluginIntTest {
+class KotlinUtilsPluginIntTest {
 
     @Test
     void smokeTest(SettingsExtensionObject settingsSetup) throws IOException {
@@ -25,7 +25,8 @@ class KotlinPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        apply plugin: 'ch.tutteli.kotlin'
+        apply plugin: 'kotlin-platform-js'
+        apply plugin: 'ch.tutteli.kotlin.utils'
         
         repositories{
             mavenCentral()
@@ -33,6 +34,8 @@ class KotlinPluginIntTest {
         
         dependencies {
             compile kotlinStdLib(), withoutKbox
+            compile kotlinStdJsLib(), withoutKbox
+            compile kotlinStdCommonLib(), withoutKbox
             compile kotlinReflect(), withoutKotlin
         }
         """
@@ -42,7 +45,8 @@ class KotlinPluginIntTest {
             .withArguments("dependencies")
             .build()
         //assert
-        assertFalse(result.output.contains("\\--- org.jetbrains.kotlin:kotlin-stdlib"), "kotlin was not excluded:\n" + result.output)
+        assertFalse(result.output.contains("  \\--- org.jetbrains.kotlin:kotlin-stdlib:"), "kotlin should have been excluded:\n" + result.output)
+        assertFalse(result.output.contains("  +--- org.jetbrains.kotlin:kotlin-stdlib:"), "kotlin should have been excluded:\n" + result.output)
         Asserts.assertStatusOk(result, ":dependencies")
     }
 }
