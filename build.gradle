@@ -163,6 +163,7 @@ Release & deploy
         1) search for `branch=master` and replace it with `tag=vX.Y.Z` (build status and coverage in README.md)
         2) search for `tree/master` and replace it with `tree/vX.Y.Z` (README.md)
     b) change `version` in settings.gradle to X.Y.Z (remove -SNAPSHOT)
+    c) update version of link to Gradle Plugin Portal in README => vX.Y.Z-blue.svg
     c) commit & push (modified README.md and settings.gradle)
     d) git tag vX.Y.Z
     e) git push origin vX.Y.Z
