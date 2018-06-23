@@ -1,3 +1,4 @@
+[![Gradle Plugin Portal](https://img.shields.io/badge/gradle%20plugin-v0.7.0-blue.svg)](https://plugins.gradle.org/plugin/com.google.cloud.tools.jib)
 [![Apache license](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](http://opensource.org/licenses/Apache2.0)
 [![Build Status](https://travis-ci.org/robstoll/tutteli-gradle-plugins.svg?tag=v0.7.0)](https://travis-ci.org/robstoll/tutteli-gradle-plugins/branches)
 [![Coverage](https://codecov.io/github/robstoll/tutteli-gradle-plugins/coverage.svg?tag=v0.7.0)](https://codecov.io/github/robstoll/tutteli-gradle-plugins?tag=v0.7.0)
