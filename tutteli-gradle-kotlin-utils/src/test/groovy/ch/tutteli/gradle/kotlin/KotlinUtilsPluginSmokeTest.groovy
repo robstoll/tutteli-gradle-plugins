@@ -1,59 +1,45 @@
 package ch.tutteli.gradle.kotlin
 
-import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.testfixtures.ProjectBuilder
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformCommonPlugin
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJsPlugin
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
-import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.function.Executable
 
+import static ch.tutteli.gradle.kotlin.KotlinUtilsPlugin.EXTENSION_NAME
 import static org.junit.jupiter.api.Assertions.*
 
 class KotlinUtilsPluginSmokeTest {
 
     @Test
-    void smokeTest_KotlinPlugin() {
-        smokeTest(KotlinPluginWrapper)
-    }
-
-    @Test
-    void smokeTest_KotlinPlatformJvmPlugin() {
-        smokeTest(KotlinPlatformJvmPlugin)
-    }
-
-    @Test
-    void smokeTest_KotlinPlatformJsPlugin() {
-        smokeTest(KotlinPlatformJsPlugin)
-    }
-
-    @Test
-    void smokeTest_KotlinPlatformCommonPlugin() {
-        smokeTest(KotlinPlatformCommonPlugin)
-    }
-
-    private static void smokeTest(Class<? extends Plugin> plugin) {
+    void smokeTest() {
         //arrange
         Project project = ProjectBuilder.builder().build()
         //act
-        project.plugins.apply(plugin)
         project.plugins.apply(KotlinUtilsPlugin)
+        def extension = project.extensions.getByName(EXTENSION_NAME)
+        extension.kotlinVersion = '1.2.50'
         //assert
+        assertNotNull(project.extensions.getByName(EXTENSION_NAME), EXTENSION_NAME)
+
+        //assert no exception
+        project.evaluate()
     }
 
-
     @Test
-    void errorIfKotlinNotApplied() {
+    void errorIfKotlinVersionNotDefined() {
         //arrange
         Project project = ProjectBuilder.builder().build()
-        //pre-assert
-        def ex = assertThrows(PluginApplicationException) {
-            //act
-            project.plugins.apply(KotlinUtilsPlugin)
-        }
+        project.plugins.apply(KotlinUtilsPlugin)
+        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinStdLib() }
+        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinStdJsLib() }
+        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinStdCommonLib() }
+        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinReflect() }
+    }
+
+    private static void assertThrowsIllegalStateKotlinVersionNotDefined(Executable executable) {
+        //act
+        def ex = assertThrows(IllegalStateException, executable)
         //assert
-        assertEquals(IllegalStateException, ex.cause.class)
+        assertEquals(KotlinUtilsPlugin.ERR_KOTLIN_VERSION, ex.message)
     }
 }

@@ -13,6 +13,9 @@ class SpekPluginExtension {
 
 class SpekPlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = 'spek'
+    protected static
+    final String ERR_KOTLIN_PLUGIN = "You need to apply a JVM compliant kotlin plugin before applying the ch.tutteli.spek plugin." +
+        "\n For instance, the 'kotlin' or the 'kotlin-platform-jvm' plugin."
 
     @Override
     void apply(Project project) {
@@ -48,13 +51,12 @@ class SpekPlugin implements Plugin<Project> {
         }
     }
 
-    private static String getKotlinVersion(Project project){
+    private static String getKotlinVersion(Project project) {
         try {
             def kotlinPlugin = project.plugins.getPlugin(KotlinPluginWrapper)
             return kotlinPlugin.getKotlinPluginVersion()
-        } catch(UnknownPluginException e) {
-            throw new IllegalStateException("You need to apply a JVM compliant kotlin plugin before applying the ch.tutteli.spek plugin." +
-                "\n For instance, the 'kotlin' or the 'kotlin-platform-jvm' plugin.", e)
+        } catch (UnknownPluginException e) {
+            throw new IllegalStateException(ERR_KOTLIN_PLUGIN, e)
         }
     }
 }

@@ -44,9 +44,9 @@ for an example.
 In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin.
 
 # ch.tutteli.kotlin.utils
-Provides some utility functions to declare dependencies on kotlin projects as well as utility functions to exclude kotlin.
-Requires that a kotlin plugin is applied first.
-You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/=master/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L35).
+Provides some utility functions to declare dependencies on kotlin projects, configure projects as well as utility functions to exclude kotlin.
+Requires that `kotlinutils.kotlinVersion` (property on the extension) is configured.
+You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/=master/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L31).
 
 # ch.tutteli.spek
 Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 

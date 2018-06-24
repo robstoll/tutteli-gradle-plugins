@@ -47,5 +47,7 @@ class SpekPluginSmokeTest {
         }
         //assert
         assertEquals(IllegalStateException, ex.cause.class)
+        assertEquals(SpekPlugin.ERR_KOTLIN_PLUGIN, ex.cause.message)
+
     }
 }
