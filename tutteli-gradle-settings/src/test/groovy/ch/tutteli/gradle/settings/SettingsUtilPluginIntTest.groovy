@@ -52,7 +52,7 @@ class SettingsUtilPluginIntTest {
                 }
             }
 
-            kotlinMulti('core', 'core-')   // defines three projects which are contained in folder 'core' and are 
+            kotlinJvmJs('core', 'core-')   // defines three projects which are contained in folder 'core' and are 
                                              // additionally prefixed with 'eleven-' named 'common', 'js' and 'jvm'
                                              // and sets `project.projectDir` accordingly. For instance, for 'jvm':
                                              // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm" 
@@ -129,7 +129,7 @@ class SettingsUtilPluginIntTest {
             project 'nine'                      // short for `include ":eight"`
             project ('nine', 'ten')             // also here, you can define multiple projects
             
-            kotlinMulti('core', 'core-')        // defines three projects which are contained in folder 'core' and are 
+            kotlinJvmJs('core', 'core-')        // defines three projects which are contained in folder 'core' and are 
                                                 // additionally prefixed with 'eleven-' named 'common', 'js' and 'jvm'
                                                 // and sets `project.projectDir` accordingly. For instance, for 'jvm':
                                                 // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm" 

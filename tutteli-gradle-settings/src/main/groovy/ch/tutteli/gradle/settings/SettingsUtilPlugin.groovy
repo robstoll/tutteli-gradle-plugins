@@ -26,7 +26,7 @@ class SettingsUtilPluginExtension {
         conf.call()
     }
 
-    void kotlinMulti(String folderName, String additionalPrefix) {
+    void kotlinJvmJs(String folderName, String additionalPrefix) {
         folder(folderName, additionalPrefix) {
             prefixed("common", "js", "jvm")
         }
