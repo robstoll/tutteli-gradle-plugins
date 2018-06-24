@@ -31,9 +31,11 @@ class KotlinUtilsPlugin implements Plugin<Project> {
 
         def getCommonProjects = { getSubrojectsWithSuffix(project, "-common") }
         def getJsProjects = { getSubrojectsWithSuffix(project, "-js") }
+        def getJvmProjects = { getSubrojectsWithSuffix(project, "-jvm") }
 
         project.ext.getCommonProjects = getCommonProjects
         project.ext.getJsProjects = getJsProjects
+        project.ext.getJvmProjects = getJvmProjects
 
         project.ext.configureCommonProjects = {
 
@@ -59,6 +61,17 @@ class KotlinUtilsPlugin implements Plugin<Project> {
                     kotlinOptions.moduleKind = "umd"
                     kotlinOptions.sourceMap = true
                     kotlinOptions.sourceMapEmbedSources = "always"
+                }
+            }
+        }
+
+        project.ext.configureJvmProjects = {
+            project.configure(getJvmProjects()) { Project subproject ->
+                apply plugin: 'kotlin-platform-jvm'
+
+                dependencies {
+                    compile kotlinStdlib()
+                    expectedBy getCommonProject(project, subproject)
                 }
             }
         }

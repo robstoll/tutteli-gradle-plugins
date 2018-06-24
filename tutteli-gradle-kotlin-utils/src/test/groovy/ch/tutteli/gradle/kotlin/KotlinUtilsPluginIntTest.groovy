@@ -101,11 +101,49 @@ class KotlinUtilsPluginIntTest {
 
         executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test1-common")
         executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test2-common")
-        executeDependenciesAndAssertJsAndCommon(gradleRunner, ":test1")
-        executeDependenciesAndAssertJsAndCommon(gradleRunner, ":test2")
+        executeDependenciesAndAssertCommonAndJs(gradleRunner, ":test1")
+        executeDependenciesAndAssertCommonAndJs(gradleRunner, ":test2")
 
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+    }
+
+    @Test
+    void configureCommonAndJvmProjects(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
+        buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJvmProjects()"
+        //act
+        def gradleRunner = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test1-common")
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test2-common")
+        executeDependenciesAndAssertCommonAndJvm(gradleRunner, ":test1")
+        executeDependenciesAndAssertCommonAndJvm(gradleRunner, ":test2")
+
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-js")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
+    }
+
+    @Test
+    void configureCommonJsAndJvmProjects(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
+        buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects() \n configureJvmProjects()"
+        //act
+        def gradleRunner = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+
+
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test1-common")
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test2-common")
+        executeDependenciesAndAssertCommonAndJs(gradleRunner, ":test1")
+        executeDependenciesAndAssertCommonAndJs(gradleRunner, ":test2")
+        executeDependenciesAndAssertCommonAndJvm(gradleRunner, ":test1")
+        executeDependenciesAndAssertCommonAndJvm(gradleRunner, ":test2")
     }
 
     private static GString headerBuildFile(SettingsExtensionObject settingsSetup) {
@@ -140,16 +178,32 @@ class KotlinUtilsPluginIntTest {
         Asserts.assertStatusOk(result, subproject + ":dependencies")
     }
 
-    private static void executeDependenciesAndAssertJsAndCommon(GradleRunner gradleRunner, String prefix) {
+    private static void executeDependenciesAndAssertCommonAndJs(GradleRunner gradleRunner, String prefix) {
+        executeDependenciesAndAssertCommonAnd(gradleRunner, prefix, "-js", "stdlib-js", "stdlib")
+    }
+
+    private static void executeDependenciesAndAssertCommonAndJvm(GradleRunner gradleRunner, String prefix) {
+        executeDependenciesAndAssertCommonAnd(gradleRunner, prefix, "-jvm", "stdlib", "stdlib-js")
+    }
+
+    private static void executeDependenciesAndAssertCommonAnd(
+        GradleRunner gradleRunner,
+        String prefix,
+        String suffix,
+        String libInThere,
+        String libNotInThere
+    ) {
+        //act
         def result = gradleRunner
-            .withArguments(prefix + "-js:dependencies")
+            .withArguments(prefix + suffix + ":dependencies")
             .build()
         //assert
-        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-js:$KOTLIN_VERSION"), "should contain stdlib-js:\n" + result.output)
+        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-" + libInThere + ":$KOTLIN_VERSION"), "should contain $libInThere:\n" + result.output)
         assertTrue(result.output.contains("\n\\--- project $prefix-common"), "should contain project $prefix-common:\n" + result.output)
         assertTrue(result.output.contains("  \\--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + result.output)
-        assertFalse(result.output.contains("org.jetbrains.kotlin:kotlin-stdlib:"), "stdlib should not be in output:\n" + result.output)
-        Asserts.assertStatusOk(result, prefix + "-js:dependencies")
+        assertFalse(result.output.contains("org.jetbrains.kotlin:kotlin-" + libNotInThere + ":"), "$libNotInThere should not be in output:\n" + result.output)
+
+        Asserts.assertStatusOk(result, prefix + suffix + ":dependencies")
     }
 
     private static void executeDependenciesAndAssertNotExisting(GradleRunner gradleRunner, String subproject) {
