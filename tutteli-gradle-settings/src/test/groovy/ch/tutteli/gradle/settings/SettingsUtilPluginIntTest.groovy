@@ -8,6 +8,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import static ch.tutteli.gradle.test.Asserts.assertJvmJsInOutput
 import static ch.tutteli.gradle.test.Asserts.assertProjectInOutput
 
 @ExtendWith(SettingsExtension)
@@ -52,10 +53,15 @@ class SettingsUtilPluginIntTest {
                 }
             }
 
-            kotlinJvmJs('core', 'core-')   // defines three projects which are contained in folder 'core' and are 
+            kotlinJvmJs('core', 'core-')     // defines three projects which are contained in folder 'core' and are 
                                              // additionally prefixed with 'eleven-' named 'common', 'js' and 'jvm'
                                              // and sets `project.projectDir` accordingly. For instance, for 'jvm':
                                              // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm" 
+                                             
+            kotlinJvmJs('domain')            // similar to kotlinJvmJs('core', 'core-') above but this time we do 
+                                             // not specify the additional prefix which means it will use the folder
+                                             // name + '-' suffix for the prefix resulting in the following for 'js':
+                                             // "\${rootProject.projectDir}/domain/\${rootProject.name}-domain-js"                                                 
 
             // You can also include non prefixed projects with this style. 
             // Have a look at the method extensionWithMethodCalls, 
@@ -69,9 +75,8 @@ class SettingsUtilPluginIntTest {
             .build()
         //assert
         assertProjectOneTwoFiveInOutput(result)
-        assertProjectInOutput(result, ':test-project-core-common')
-        assertProjectInOutput(result, ':test-project-core-js')
-        assertProjectInOutput(result, ':test-project-core-jvm')
+        assertJvmJsInOutput(result, ':test-project-core')
+        assertJvmJsInOutput(result, ':test-project-domain')
         assertStatusOk(result)
     }
 
@@ -130,9 +135,14 @@ class SettingsUtilPluginIntTest {
             project ('nine', 'ten')             // also here, you can define multiple projects
             
             kotlinJvmJs('core', 'core-')        // defines three projects which are contained in folder 'core' and are 
-                                                // additionally prefixed with 'eleven-' named 'common', 'js' and 'jvm'
+                                                // additionally prefixed with 'core-' named 'common', 'js' and 'jvm'
                                                 // and sets `project.projectDir` accordingly. For instance, for 'jvm':
                                                 // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm" 
+                                                
+            kotlinJvmJs('domain')               // similar to kotlinJvmJs('core', 'core-') above but this time we do 
+                                                // not specify the additional prefix which means it will use the folder
+                                                // name + '-' suffix for the prefix resulting in the following for 'js':
+                                                // "\${rootProject.projectDir}/domain/\${rootProject.name}-domain-js"                                                 
         }
         """
         //act
@@ -146,9 +156,8 @@ class SettingsUtilPluginIntTest {
         assertProjectInOutput(result, ':seven')
         assertProjectInOutput(result, ':eight')
         assertProjectInOutput(result, ':nine')
-        assertProjectInOutput(result, ':test-project-core-common')
-        assertProjectInOutput(result, ':test-project-core-js')
-        assertProjectInOutput(result, ':test-project-core-jvm')
+        assertJvmJsInOutput(result, ':test-project-core')
+        assertJvmJsInOutput(result, ':test-project-domain')
         assertStatusOk(result)
     }
 
@@ -236,6 +245,10 @@ class SettingsUtilPluginIntTest {
         new File(tmp, 'core/test-project-core-common').mkdir()
         new File(tmp, 'core/test-project-core-js').mkdir()
         new File(tmp, 'core/test-project-core-jvm').mkdir()
+        new File(tmp, 'domain').mkdir()
+        new File(tmp, 'domain/test-project-domain-common').mkdir()
+        new File(tmp, 'domain/test-project-domain-js').mkdir()
+        new File(tmp, 'domain/test-project-domain-jvm').mkdir()
     }
 
     private static void assertProjectOneTwoFiveInOutput(BuildResult result) {

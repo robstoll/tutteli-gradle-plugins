@@ -7,9 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 class Asserts {
+
+    static void assertJvmJsInOutput(BuildResult result, String prefix) {
+        assertProjectInOutput(result, prefix + '-common')
+        assertProjectInOutput(result, prefix + '-js')
+        assertProjectInOutput(result, prefix + '-jvm')
+    }
+
     static void assertProjectInOutput(BuildResult result, String projectName) {
         assertTrue(result.output.contains(projectName), "project $projectName in output: ${result.output}")
     }
+
 
     static void assertStatusOk(BuildResult result, String taskName) {
         assertStatusOk(result, [taskName], [], [])

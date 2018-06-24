@@ -22,9 +22,9 @@ Provides utility functions to include projects (in a multi-project setup).
 Is especially useful if you apply the naming convention that all modules start with the name of the `rootProject`.
 
 It supports three styles:
-- [Extension Object paired with property/methodMissing](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L28)
-- [Extension Object with method calls](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L89)
-- [simply functions](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L166)
+- [Extension Object paired with property/methodMissing](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L29)
+- [Extension Object with method calls](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L94)
+- [simply functions](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L175)
 
 # ch.tutteli.project.utils
 This plugin is the complement of the settings plugin and you will typically use it together. 
