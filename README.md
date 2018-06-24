@@ -50,7 +50,7 @@ Provides some utility functions to declare dependencies on kotlin projects, conf
 Requires that `kotlinutils.kotlinVersion` (property on the extension) is configured.
 
 Following a list of functions it supports:
-- declare dependencies on libs: `kotlinStdLib()`, `kotlinStdJsLib()`, `kotlinStdCommonLib()`, `kotlinReflect()`  
+- declare dependencies on libs: `kotlinStdlib()`, `kotlinStdlibJs()`, `kotlinStdlibCommon()`, `kotlinReflect()`  
 - exclude dependencies: `withoutKotlin`, `withoutKbox`
 - configure projects: `configureCommonProjects`, `configureJsProjects`   
 

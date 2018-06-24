@@ -30,9 +30,9 @@ class KotlinUtilsPluginSmokeTest {
         //arrange
         Project project = ProjectBuilder.builder().build()
         project.plugins.apply(KotlinUtilsPlugin)
-        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinStdLib() }
-        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinStdJsLib() }
-        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinStdCommonLib() }
+        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinStdlib() }
+        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinStdlibJs() }
+        assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinStdlibCommon() }
         assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinReflect() }
     }
 

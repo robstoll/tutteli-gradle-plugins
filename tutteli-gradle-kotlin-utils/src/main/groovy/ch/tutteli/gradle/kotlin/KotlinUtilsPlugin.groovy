@@ -21,9 +21,9 @@ class KotlinUtilsPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create(EXTENSION_NAME, KotlinUtilsPluginExtension, project)
 
-        project.ext.kotlinStdLib = { getKotlinDependency(extension, 'stdlib') }
-        project.ext.kotlinStdJsLib= { getKotlinDependency(extension, 'stdlib-js') }
-        project.ext.kotlinStdCommonLib = { getKotlinDependency(extension, 'stdlib-common') }
+        project.ext.kotlinStdlib = { getKotlinDependency(extension, 'stdlib') }
+        project.ext.kotlinStdlibJs= { getKotlinDependency(extension, 'stdlib-js') }
+        project.ext.kotlinStdlibCommon = { getKotlinDependency(extension, 'stdlib-common') }
         project.ext.kotlinReflect = { getKotlinDependency(extension, 'reflect') }
 
         project.ext.withoutKbox = { exclude group: 'ch.tutteli.kbox' }
@@ -41,7 +41,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
                 apply plugin: 'kotlin-platform-common'
 
                 dependencies {
-                    compile kotlinStdCommonLib()
+                    compile kotlinStdlibCommon()
                 }
             }
         }
@@ -51,7 +51,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
                 apply plugin: 'kotlin-platform-js'
 
                 dependencies {
-                    compile kotlinStdJsLib()
+                    compile kotlinStdlibJs()
                     expectedBy getCommonProject(project, subproject)
                 }
 

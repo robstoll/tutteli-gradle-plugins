@@ -48,9 +48,9 @@ class KotlinUtilsPluginIntTest {
         }
         
         dependencies {
-            compile kotlinStdLib(), withoutKbox
-            compile kotlinStdJsLib(), withoutKbox
-            compile kotlinStdCommonLib(), withoutKbox
+            compile kotlinStdlib(), withoutKbox
+            compile kotlinStdlibJs(), withoutKbox
+            compile kotlinStdlibCommon(), withoutKbox
             compile kotlinReflect(), withoutKotlin
         }
         """
