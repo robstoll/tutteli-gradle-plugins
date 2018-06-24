@@ -30,7 +30,10 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.withoutKotlin = { exclude group: 'org.jetbrains.kotlin' }
 
         def getCommonProjects = { getSubrojectsWithSuffix(project, "-common") }
+        def getJsProjects = { getSubrojectsWithSuffix(project, "-js") }
+
         project.ext.getCommonProjects = getCommonProjects
+        project.ext.getJsProjects = getJsProjects
 
         project.ext.configureCommonProjects = {
 
@@ -39,6 +42,23 @@ class KotlinUtilsPlugin implements Plugin<Project> {
 
                 dependencies {
                     compile kotlinStdCommonLib()
+                }
+            }
+        }
+
+        project.ext.configureJsProjects = {
+            project.configure(getJsProjects()) { Project subproject ->
+                apply plugin: 'kotlin-platform-js'
+
+                dependencies {
+                    compile kotlinStdJsLib()
+                    expectedBy getCommonProject(project, subproject)
+                }
+
+                compileKotlin2Js {
+                    kotlinOptions.moduleKind = "umd"
+                    kotlinOptions.sourceMap = true
+                    kotlinOptions.sourceMapEmbedSources = "always"
                 }
             }
         }
@@ -62,5 +82,16 @@ class KotlinUtilsPlugin implements Plugin<Project> {
 
     private static Set<Project> getSubrojectsWithSuffix(project, suffix) {
         return project.subprojects.findAll { it.name.endsWith(suffix) }
+    }
+
+    private static Project getCommonProject(Project project, Project subproject) {
+        def name = subproject.name
+        def suffix = name.endsWith('-jvm') ? '-jvm'
+            : name.endsWith('-js') ? '-js'
+            : null
+        if (suffix == null) throw new IllegalArgumentException("unknown project suffix, expected -jvm or -js. Project name was: $name")
+
+        def commonName = ":${name.substring(0, name.indexOf(suffix))}-common"
+        return project.project(commonName)
     }
 }
