@@ -8,6 +8,8 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import java.util.regex.Matcher
+
 import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertTrue
 
@@ -65,8 +67,8 @@ class KotlinUtilsPluginIntTest {
         assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + result.output)
         assertTrue(result.output.contains("\n\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"), "should contain reflect:\n" + result.output)
 
-        assertFalse(result.output.contains("  \\--- org.jetbrains.kotlin:kotlin-stdlib:"), "stdlib should have been excluded:\n" + result.output)
-        assertFalse(result.output.contains("  +--- org.jetbrains.kotlin:kotlin-stdlib:"), "stdlib should have been excluded:\n" + result.output)
+        def matcher = result.output =~ /(compile|default|runtime)[\S\s]+?\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION\r?\n\s*\\--- org.jetbrains.kotlin:kotlin-stdlib:/
+        assertFalse(matcher.find(), "stdlib should have been excluded:\n" + result.output)
         Asserts.assertStatusOk(result, ":dependencies")
     }
 
