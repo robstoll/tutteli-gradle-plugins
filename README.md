@@ -41,9 +41,9 @@ as well as the [jacoco-plugin](https://docs.gradle.org/current/userguide/jacoco_
 and binds jacoco to the `junitPlatformTest` task.
 
 This plugin does not set up a junit engine and you need to define it yourself. 
-Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/build.gradle#L51)
+Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/build.gradle#L61)
 for an example.
-In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin.
+In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin below.
 
 # ch.tutteli.kotlin.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.utils/0.9.0)
 Provides some utility functions to declare dependencies on kotlin projects, configure projects as well as utility functions to exclude kotlin.
@@ -64,4 +64,4 @@ Moreover, it adds `mavenCentral()` to the repositories and sets up kotlin depend
 kotlin-stdlib as compile and kotlin-reflect as testCompile dependency -- kotlin-reflect is required by spek.
 
 # License
-All tutteli gradle plugins are published under [Apache 2.0](http://opensource.org/licenses/Apache2.0).
+All tutteli gradle plugins are licensed under [Apache 2.0](http://opensource.org/licenses/Apache2.0).
