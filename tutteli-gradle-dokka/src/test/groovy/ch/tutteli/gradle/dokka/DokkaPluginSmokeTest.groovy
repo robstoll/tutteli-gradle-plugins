@@ -1,6 +1,7 @@
 package ch.tutteli.gradle.dokka
 
 import org.gradle.api.Project
+import org.gradle.jvm.tasks.Jar
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.dokka.gradle.DokkaVersion
@@ -15,7 +16,7 @@ class DokkaPluginSmokeTest {
     void smokeTest() {
         //arrange
         def projectName = "projectName"
-        def repoUrl = "https://github.com/robstoll/tutteli-gradle-plugin"
+        def repoUrl = "https://github.com/robstoll/tutteli-gradle-plugins"
         Project project = ProjectBuilder.builder()
             .withName(projectName)
             .build()
@@ -29,12 +30,17 @@ class DokkaPluginSmokeTest {
         assertEquals('html', dokkaTask.outputFormat)
         assertEquals(projectName, dokkaTask.moduleName)
         assertEquals("$project.buildDir/kdoc".toString(), dokkaTask.outputDirectory,)
-        assertEquals(1, dokkaTask.linkMappings.size())
+        assertEquals(1, dokkaTask.linkMappings.size(), "linkMappings: " + dokkaTask.linkMappings)
         def linkMapping = dokkaTask.linkMappings.get(0)
         assertEquals(project.projectDir.absolutePath, linkMapping.dir,)
         assertEquals(repoUrl + "/tree/vunspecified", linkMapping.url)
         assertEquals('#L', linkMapping.suffix)
         assertEquals('0.9.17', DokkaVersion.version)
+
+        Jar javadocTask = project.tasks.getByName(DokkaPlugin.JAVADOC_JAR_TASK_NAME) as Jar
+        assertNotNull(javadocTask, DokkaPlugin.JAVADOC_JAR_TASK_NAME)
+        assertEquals('javadoc', javadocTask.classifier)
+        assertTrue(javadocTask.dependsOn.contains(dokkaTask), "$DokkaPlugin.JAVADOC_JAR_TASK_NAME should depend on Dokka task")
     }
 
     @Test

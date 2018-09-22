@@ -18,7 +18,7 @@ class DokkaPluginIntTest {
         settingsSetup.settings << """
         rootProject.name='test-project'
         """
-        def url = 'https://github.com/robstoll/tutteli-gradle-plugin'
+        def url = 'https://github.com/robstoll/tutteli-gradle-plugins'
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
         buildGradle << """
         buildscript {
