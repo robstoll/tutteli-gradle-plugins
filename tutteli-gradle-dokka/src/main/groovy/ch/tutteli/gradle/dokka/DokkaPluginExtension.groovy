@@ -9,11 +9,14 @@ import org.jetbrains.dokka.gradle.LinkMapping
 class DokkaPluginExtension {
 
     Property<String> repoUrl
+    Property<String> githubUser
     private DokkaTask dokkaTask
 
     DokkaPluginExtension(Project project) {
         dokkaTask = project.tasks.getByName('dokka') as DokkaTask
         repoUrl = project.objects.property(String)
+        githubUser = project.objects.property(String)
+
         dokka {
             outputFormat = 'html'
             outputDirectory = "$project.buildDir/kdoc"
@@ -26,7 +29,7 @@ class DokkaPluginExtension {
     }
 
     static class LazyUrlLinkMapping extends LinkMapping {
-        protected static final String ERR_REPO_URL = 'tutteliDokka.repoUrl has to be defined'
+        protected static final String ERR_REPO_URL = 'tutteliDokka.repoUrl or tutteliDokka.githubUser has to be defined'
         private Project project
         private DokkaPluginExtension extension
 
@@ -39,7 +42,10 @@ class DokkaPluginExtension {
 
         @Override
         String getUrl() {
-            if (!extension.repoUrl.isPresent()) throw new IllegalStateException(ERR_REPO_URL)
+            if (!extension.repoUrl.isPresent() && !extension.githubUser.isPresent()) throw new IllegalStateException(ERR_REPO_URL)
+            if (!extension.repoUrl.isPresent()) {
+                extension.repoUrl.set("https://github.com/${extension.githubUser.get()}/$project.name".toString())
+            }
             def urlWithPossibleSlash = extension.repoUrl.get()
             def urlWithSlash = urlWithPossibleSlash.endsWith("/") ? urlWithPossibleSlash : urlWithPossibleSlash + "/"
             def gitRef = project.version.endsWith("-SNAPSHOT") ? 'master' : 'v' + project.version
