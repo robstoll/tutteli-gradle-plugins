@@ -27,7 +27,7 @@ class JunitJacocoPluginExtension {
         defaultConfig()
     }
 
-    void defaultConfig() {
+    private void defaultConfig() {
 
         //necessary that it is accessible within the closure without the need of a public getter
         def junitTask = junitPlatformTestTask

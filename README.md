@@ -35,6 +35,10 @@ Yet, you apply it in your `build.gradle` instead of the `settings.gradle` and ac
 Currently, it provides just one function named `prefixedProject(name)` which is a shortcut for `project("${rootProject.name}-$name")`.
 You find an example in the [build.gradle of the spek plugin](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-spek/build.gradle#L20).
 
+# ch.tutteli.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/0.9.0)
+Applies the [dokka-plugin](https://github.com/Kotlin/dokka) and creates a `javadocJar` task which can be used for publishing.
+Moreover it applies a [default configuration to dokka](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-dokka/src/main/groovy/ch/tutteli/gradle/dokka/DokkaPlugin.groovy#L17)
+
 # ch.tutteli.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/0.9.0)
 Applies the [junit-platform-gradle-plugin](https://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle)
 as well as the [jacoco-plugin](https://docs.gradle.org/current/userguide/jacoco_plugin.html)

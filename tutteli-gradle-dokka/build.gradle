@@ -1,0 +1,13 @@
+buildscript {
+    ext {
+        plugin_id = 'ch.tutteli.dokka'
+        plugin_class = 'ch.tutteli.gradle.dokka.DokkaPlugin'
+        plugin_name = 'Tutteli Dokka Plugin'
+        plugin_description = 'Applies the dokka plugin and provides a javadocJar Task.'
+        plugin_tags = ['dokka', 'kotlin']
+    }
+}
+
+dependencies {
+    compile "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
+}

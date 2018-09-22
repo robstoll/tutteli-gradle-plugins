@@ -4,6 +4,7 @@ buildscript {
         junit_platform_version = '1.2.0'
         kotlin_version = '1.2.61'
         publish_version = '0.9.10'
+        dokka_version = '0.9.17'
     }
 
     repositories {
@@ -73,7 +74,8 @@ configure(pluginProjects) {
 
         //delegates to the jacoco extension (just for your convenience, everything in one place)
         jacoco {
-            toolVersion = '0.8.1'
+            //e.g. set the version to a different version than the default
+            //toolVersion = '0.8.1'
         }
 
         //delegates to the junitPlatform extension (just for your convenience, everything in one place)

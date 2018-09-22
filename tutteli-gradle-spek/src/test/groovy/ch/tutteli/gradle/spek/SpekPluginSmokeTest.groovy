@@ -1,10 +1,10 @@
 package ch.tutteli.gradle.spek
 
+import ch.tutteli.gradle.junitjacoco.JunitJacocoPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.testfixtures.ProjectBuilder
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJsPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.junit.jupiter.api.Test
@@ -32,9 +32,8 @@ class SpekPluginSmokeTest {
         project.plugins.apply(SpekPlugin)
         //assert
         assertNotNull(project.extensions.getByName(EXTENSION_NAME), EXTENSION_NAME)
-        assertNotNull(project.extensions.getByName('junitjacoco'), 'junitjacoco')
+        assertNotNull(project.extensions.getByName(JunitJacocoPlugin.EXTENSION_NAME), JunitJacocoPlugin.EXTENSION_NAME)
     }
-
 
     @Test
     void errorIfKotlinNotApplied() {
@@ -48,6 +47,5 @@ class SpekPluginSmokeTest {
         //assert
         assertEquals(IllegalStateException, ex.cause.class)
         assertEquals(SpekPlugin.ERR_KOTLIN_PLUGIN, ex.cause.message)
-
     }
 }

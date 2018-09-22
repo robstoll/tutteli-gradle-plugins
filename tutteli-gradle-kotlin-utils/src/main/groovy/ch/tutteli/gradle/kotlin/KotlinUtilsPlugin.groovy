@@ -22,7 +22,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         def extension = project.extensions.create(EXTENSION_NAME, KotlinUtilsPluginExtension, project)
 
         project.ext.kotlinStdlib = { getKotlinDependency(extension, 'stdlib') }
-        project.ext.kotlinStdlibJs= { getKotlinDependency(extension, 'stdlib-js') }
+        project.ext.kotlinStdlibJs = { getKotlinDependency(extension, 'stdlib-js') }
         project.ext.kotlinStdlibCommon = { getKotlinDependency(extension, 'stdlib-common') }
         project.ext.kotlinReflect = { getKotlinDependency(extension, 'reflect') }
 
@@ -77,18 +77,13 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         }
     }
 
-    private static String getKotlinDependency(KotlinUtilsPluginExtension extension, String name){
+    private static String getKotlinDependency(KotlinUtilsPluginExtension extension, String name) {
         def kotlinVersion = resolveKotlinVersion(extension)
         return "org.jetbrains.kotlin:kotlin-$name:$kotlinVersion"
     }
 
     private static String resolveKotlinVersion(KotlinUtilsPluginExtension extension) {
-        String kotlinVersion
-        try {
-            kotlinVersion = extension.kotlinVersion.get()
-        } catch (IllegalStateException ex) {
-            throw new IllegalStateException(ERR_KOTLIN_VERSION, ex)
-        }
+        final String kotlinVersion = extension.kotlinVersion.getOrNull()
         if (kotlinVersion == null || kotlinVersion.isEmpty()) throw new IllegalStateException(ERR_KOTLIN_VERSION)
         return kotlinVersion
     }
