@@ -1,6 +1,7 @@
 package ch.tutteli.gradle.dokka
 
 import org.gradle.api.Project
+import org.gradle.api.ProjectConfigurationException
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.dokka.gradle.DokkaTask
@@ -45,15 +46,33 @@ class DokkaPluginSmokeTest {
 
     @Test
     void accessUrlOfLinkMapping_throwsIllegalArgumentIfRepoUrlIsNotSet() {
+        //arrange
         Project project = ProjectBuilder.builder().build()
         //act
         project.plugins.apply(DokkaPlugin)
+        //assert
         def linkMappings = project.tasks.getByName('dokka').linkMappings
         assertEquals(1, linkMappings.size())
         def exception = assertThrows(IllegalStateException) {
             linkMappings.get(0).url
         }
-        //assert
         assertEquals(DokkaPluginExtension.LazyUrlLinkMapping.ERR_REPO_URL, exception.message)
+    }
+
+    @Test
+    void ghPagesDefinedWithoutUser_throwsIllegalArgumentWhenEvaluatingProject() {
+        //arrange
+        Project project = ProjectBuilder.builder().build()
+        project.plugins.apply(DokkaPlugin)
+        def extension = project.extensions.getByName(EXTENSION_NAME)
+        extension.ghPages = true
+        //act
+
+        def exception = assertThrows(ProjectConfigurationException) {
+            project.evaluate()
+        }
+        //assert
+        assertEquals(IllegalStateException, exception.cause.class)
+        assertEquals(DokkaPlugin.ERR_GH_PAGES_WITHOUT_USER, exception.cause.message)
     }
 }

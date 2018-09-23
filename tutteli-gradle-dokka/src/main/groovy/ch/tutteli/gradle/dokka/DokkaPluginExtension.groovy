@@ -10,12 +10,14 @@ class DokkaPluginExtension {
 
     Property<String> repoUrl
     Property<String> githubUser
+    Property<Boolean> ghPages
     private DokkaTask dokkaTask
 
     DokkaPluginExtension(Project project) {
         dokkaTask = project.tasks.getByName('dokka') as DokkaTask
         repoUrl = project.objects.property(String)
         githubUser = project.objects.property(String)
+        ghPages = project.objects.property(Boolean)
 
         dokka {
             outputFormat = 'html'
@@ -34,9 +36,9 @@ class DokkaPluginExtension {
         private DokkaPluginExtension extension
 
         LazyUrlLinkMapping(Project project, DokkaPluginExtension extension) {
-            super.setDir(project.projectDir.absolutePath)
+            super.setDir(project.rootProject.projectDir.absolutePath)
             super.setSuffix('#L')
-            this.project = project
+            this.project = project.rootProject
             this.extension = extension
         }
 
