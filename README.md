@@ -1,8 +1,8 @@
 [![Gradle Plugin Portal](https://img.shields.io/badge/gradle%20plugin-v0.10.0-blue.svg)](https://plugins.gradle.org/u/robstoll)
 [![Apache license](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](http://opensource.org/licenses/Apache2.0)
 [![Build Status Travis](https://travis-ci.org/robstoll/tutteli-gradle-plugins.svg?branch=master)](https://travis-ci.org/robstoll/tutteli-gradle-plugins/branches)
-[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/bv5e7rhsjko5mqy4/?branch=master&svg=true)](https://ci.appveyor.com/project/robstoll/tutteli-gradle-plugins/?branch=master)
-[![Coverage](https://codecov.io/github/robstoll/tutteli-gradle-plugins/coverage.svg?branch=master)](https://codecov.io/github/robstoll/tutteli-gradle-plugins?branch=master)
+[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/bv5e7rhsjko5mqy4/branch/master/?svg=true)](https://ci.appveyor.com/project/robstoll/tutteli-gradle-plugins/branch/master)
+[![Coverage](https://codecov.io/gh/robstoll/tutteli-gradle-plugins/branch/master/graph/badge.svg)](https://codecov.io/github/robstoll/tutteli-gradle-plugins/branch/master)
 
 # Tutteli gradle plugin
 A set of gradle plugins which provide utility tasks and functions which I often use in my projects.
@@ -39,7 +39,7 @@ You find an example in the [build.gradle of the spek plugin](https://github.com/
 # ch.tutteli.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/0.10.0)
 Applies the [dokka-plugin](https://github.com/Kotlin/dokka) and creates a `javadocJar` task which can be used for publishing.
 Moreover it applies a [default configuration to dokka](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-dokka/src/main/groovy/ch/tutteli/gradle/dokka/DokkaPluginExtension.groovy#L22)
-and allows to add an `externalDocumentationLink` based on the given `githubUser`. 
+and allows to add an `externalDocumentationLink` based on the given `githubUser` with the `ghPages` flag. 
 See [DokkaPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-dokka/src/test/groovy/ch/tutteli/gradle/dokka/DokkaPluginIntTest.groovy#L112)
 for an example.
 

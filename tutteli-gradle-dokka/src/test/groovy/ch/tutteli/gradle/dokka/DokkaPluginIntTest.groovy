@@ -67,7 +67,7 @@ class DokkaPluginIntTest {
         apply plugin: 'ch.tutteli.dokka'
         
         tutteliDokka {
-            //uses the githubUser to create the repo url as well if one enables ghPages
+            //uses the githubUser to create the repo url as well as the externalDocumentationLink if one enables ghPages
             githubUser = 'robstoll'
             
             //adds an externalDocumentationLink based on the given githubUser as follows:
@@ -110,7 +110,7 @@ class DokkaPluginIntTest {
         apply plugin: 'ch.tutteli.dokka'
         
         tutteliDokka {
-            //uses the githubUser to create the repo url as well if one enables ghPages
+            //uses the githubUser to create the repo url as well as the externalDocumentationLink if one enables ghPages
             githubUser = 'robstoll'
             
             //adds an externalDocumentationLink based on the given githubUser as follows:
