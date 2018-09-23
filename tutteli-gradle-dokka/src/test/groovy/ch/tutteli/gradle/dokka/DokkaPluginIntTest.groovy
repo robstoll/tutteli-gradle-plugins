@@ -1,12 +1,12 @@
 package ch.tutteli.gradle.dokka
 
-
 import ch.tutteli.gradle.test.SettingsExtension
 import ch.tutteli.gradle.test.SettingsExtensionObject
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
@@ -15,10 +15,10 @@ class DokkaPluginIntTest {
     @Test
     void smokeTest_repoUrl(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
-        settingsSetup.settings << """
-        rootProject.name='test-project'
-        """
+        settingsSetup.settings << "rootProject.name='test-project'"
         def url = 'https://github.com/robstoll/tutteli-gradle-plugins'
+        def outputFormat = "javadoc"
+
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
         buildGradle << """
         buildscript {
@@ -34,26 +34,28 @@ class DokkaPluginIntTest {
             
             //delegates to the Dokka task (just for your convenience, everything in one place)
             dokka {
-                outputFormat = 'javadoc'
+                outputFormat = '$outputFormat'
             }
         }
-        dokka.linkMappings.each{ println("was here url: \$it.url") } 
+        ${printInfos()}
         """
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("projects")
+            .withArguments("dokka")
             .build()
         //assert
-        assertTrue(result.output.contains("was here url: $url/tree/master"), "println in output:\n" + result.output)
+        assertTrue(result.output.contains("was here url: $url/tree/master"), "url should be in output:\n" + result.output)
+        assertFalse(result.output.contains("was here extLink"), "should not contain extLink in output:\n" + result.output)
+        assertTrue(result.output.contains("outputFormat: $outputFormat"), "outputFormat should be in output:\n" + result.output)
     }
 
     @Test
     void smokeTest_githubUser(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
-        settingsSetup.settings << """
-        rootProject.name='test-project'
-        """
+        settingsSetup.settings << "rootProject.name='test-project'"
+        def outputFormat = "markdown"
+
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
         buildGradle << """
         buildscript {
@@ -74,31 +76,29 @@ class DokkaPluginIntTest {
             
             //delegates to the Dokka task (just for your convenience, everything in one place)
             dokka {
-                outputFormat = 'javadoc'
+                outputFormat = '$outputFormat'
             }
         }
-        project.afterEvaluate {
-            dokka.linkMappings.each{ println("was here url: \$it.url") } 
-            dokka.externalDocumentationLinks.each{ println("was here extLink: \$it.url") }
-        }
+        ${printInfos()}
         """
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("projects")
+            .withArguments("dokka")
             .build()
         //assert
-        assertTrue(result.output.contains("was here url: https://github.com/robstoll/test-project/tree/master"), "url in output:\n" + result.output)
-        assertTrue(!result.output.contains("was here extLink"), "should not contain extLink in output:\n" + result.output)
+        assertTrue(result.output.contains("was here url: https://github.com/robstoll/test-project/tree/master"), "url should be in output:\n" + result.output)
+        assertFalse(result.output.contains("was here extLink"), "should not contain extLink in output:\n" + result.output)
+        assertTrue(result.output.contains("outputFormat: $outputFormat"), "outputFormat should be in output:\n" + result.output)
     }
 
 
     @Test
     void smokeTest_githubUserAndGhPages(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
-        settingsSetup.settings << """
-        rootProject.name='test-project'
-        """
+        settingsSetup.settings << "rootProject.name='test-project'"
+        def outputFormat = "markdown"
+
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
         buildGradle << """
         buildscript {
@@ -119,21 +119,29 @@ class DokkaPluginIntTest {
             
             //delegates to the Dokka task (just for your convenience, everything in one place)
             dokka {
-                outputFormat = 'javadoc'
+                outputFormat = '$outputFormat'
             }
         }
-        project.afterEvaluate {
-            dokka.linkMappings.each{ println("was here url: \$it.url") } 
-            dokka.externalDocumentationLinks.each{ println("was here extLink: \$it.url") }
-        }
+        ${printInfos()}
         """
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("projects")
+            .withArguments("dokka")
             .build()
         //assert
-        assertTrue(result.output.contains("was here url: https://github.com/robstoll/test-project/tree/v1.0.0"), "url in output:\n" + result.output)
-        assertTrue(result.output.contains("was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "extLink in output:\n" + result.output)
+        assertTrue(result.output.contains("was here url: https://github.com/robstoll/test-project/tree/v1.0.0"), "url should be in output:\n" + result.output)
+        assertTrue(result.output.contains("was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("outputFormat: $outputFormat"), "outputFormat should be in output:\n" + result.output)
+    }
+
+    private static String printInfos() {
+        """
+        project.afterEvaluate {
+            dokka.linkMappings.each{ println("was here url: \$it.url") } 
+            dokka.externalDocumentationLinks.each{ println("was here extLink: \$it.url") }
+            println("outputFormat: \${dokka.outputFormat}")
+        }
+        """
     }
 }

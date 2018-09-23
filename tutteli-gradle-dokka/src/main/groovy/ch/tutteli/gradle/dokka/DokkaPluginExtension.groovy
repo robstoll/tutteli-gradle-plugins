@@ -4,7 +4,6 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.dokka.gradle.LinkMapping
 
 class DokkaPluginExtension {
 
@@ -12,6 +11,7 @@ class DokkaPluginExtension {
     Property<String> githubUser
     Property<Boolean> ghPages
     private DokkaTask dokkaTask
+    protected static final String DEFAULT_REPO_URL = "repoUrlWillBeReplacedDuringProjectEvaluation"
 
     DokkaPluginExtension(Project project) {
         dokkaTask = project.tasks.getByName('dokka') as DokkaTask
@@ -22,42 +22,16 @@ class DokkaPluginExtension {
         dokka {
             outputFormat = 'html'
             outputDirectory = "$project.buildDir/kdoc"
-            linkMappings = linkMappings + new LazyUrlLinkMapping(project, this)
+            linkMapping {
+                dir = project.rootProject.projectDir.absolutePath
+                url = DEFAULT_REPO_URL
+                suffix = '#L'
+            }
         }
     }
 
     void dokka(Action<DokkaTask> configure) {
         configure.execute(dokkaTask)
-    }
-
-    static class LazyUrlLinkMapping extends LinkMapping {
-        protected static final String ERR_REPO_URL = 'tutteliDokka.repoUrl or tutteliDokka.githubUser has to be defined'
-        private Project project
-        private DokkaPluginExtension extension
-
-        LazyUrlLinkMapping(Project project, DokkaPluginExtension extension) {
-            super.setDir(project.rootProject.projectDir.absolutePath)
-            super.setSuffix('#L')
-            this.project = project.rootProject
-            this.extension = extension
-        }
-
-        @Override
-        String getUrl() {
-            if (!extension.repoUrl.isPresent() && !extension.githubUser.isPresent()) throw new IllegalStateException(ERR_REPO_URL)
-            if (!extension.repoUrl.isPresent()) {
-                extension.repoUrl.set("https://github.com/${extension.githubUser.get()}/$project.name".toString())
-            }
-            def urlWithPossibleSlash = extension.repoUrl.get()
-            def urlWithSlash = urlWithPossibleSlash.endsWith("/") ? urlWithPossibleSlash : urlWithPossibleSlash + "/"
-            def gitRef = project.version.endsWith("-SNAPSHOT") ? 'master' : 'v' + project.version
-            return "${urlWithSlash}tree/$gitRef"
-        }
-
-        @Override
-        void setUrl(String s) {
-            throw new IllegalStateException("Cannot set URL of a ${LazyUrlLinkMapping.class.name}")
-        }
     }
 }
 

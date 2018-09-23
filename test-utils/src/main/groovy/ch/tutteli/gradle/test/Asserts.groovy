@@ -1,9 +1,12 @@
 package ch.tutteli.gradle.test
 
+import org.gradle.api.ProjectConfigurationException
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
+import org.junit.jupiter.api.function.Executable
 
 import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertThrows
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 class Asserts {
@@ -34,5 +37,14 @@ class Asserts {
         assertEquals(upToDate, result.taskPaths(TaskOutcome.UP_TO_DATE), "UP_TO_DATE was different")
         def failed = result.taskPaths(TaskOutcome.FAILED)
         assertTrue(failed.empty, 'FAILED is empty but was not: ' + failed)
+    }
+
+    static void assertThrowsProjectConfigExceptionWithCause(Class<? extends Throwable> cause, String message, Executable executable) {
+        def exception = assertThrows(ProjectConfigurationException) {
+           executable.execute()
+        }
+        //assert
+        assertEquals(cause, exception.cause.class)
+        assertEquals(message, exception.cause.message)
     }
 }
