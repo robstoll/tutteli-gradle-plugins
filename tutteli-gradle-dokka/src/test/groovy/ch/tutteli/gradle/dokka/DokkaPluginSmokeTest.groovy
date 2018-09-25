@@ -27,7 +27,6 @@ class DokkaPluginSmokeTest {
         extension.repoUrl = repoUrl
         //assert
         DokkaTask dokkaTask = getDokkaTask(project)
-        assertNotNull(dokkaTask, 'dokka task')
         assertEquals('html', dokkaTask.outputFormat)
         assertEquals(projectName, dokkaTask.moduleName)
         assertEquals("$project.buildDir/kdoc".toString(), dokkaTask.outputDirectory,)

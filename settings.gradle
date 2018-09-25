@@ -32,6 +32,7 @@ include {
     dokka
     junitjacoco
     _ 'kotlin-utils'
+    publish
     spek
 
     project 'test-utils'

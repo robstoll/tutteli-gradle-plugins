@@ -6,12 +6,12 @@ import org.gradle.api.provider.Property
 import org.jetbrains.dokka.gradle.DokkaTask
 
 class DokkaPluginExtension {
+    protected static final String DEFAULT_REPO_URL = "repoUrlWillBeReplacedDuringProjectEvaluation"
+    private DokkaTask dokkaTask
 
     Property<String> repoUrl
     Property<String> githubUser
     Property<Boolean> ghPages
-    private DokkaTask dokkaTask
-    protected static final String DEFAULT_REPO_URL = "repoUrlWillBeReplacedDuringProjectEvaluation"
 
     DokkaPluginExtension(Project project) {
         dokkaTask = project.tasks.getByName('dokka') as DokkaTask

@@ -19,11 +19,9 @@ class JunitJacocoPluginSmokeTest {
         assertNotNull(project.extensions.getByName(EXTENSION_NAME), EXTENSION_NAME)
         assertNotNull(project.extensions.getByName('junitPlatform'), 'junitPlatform')
         def junitPlatformTestTask = project.tasks.getByName(JUNIT_TASK_NAME)
-        assertNotNull(junitPlatformTestTask, JUNIT_TASK_NAME)
 
         assertNotNull(project.extensions.getByName('jacoco'), 'jacoco')
         def jacocoReport = project.tasks.getByName(REPORT_TASK_NAME)
-        assertNotNull(jacocoReport, REPORT_TASK_NAME)
         assertTrue(jacocoReport.reports.xml.enabled as Boolean, 'jacoco xml report is enabled by default')
         assertFalse(jacocoReport.reports.csv.enabled as Boolean, 'jacoco csv report is disabled by default')
         assertFalse(jacocoReport.reports.html.enabled as Boolean, 'jacoco html report is disabled by default')

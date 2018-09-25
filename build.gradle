@@ -3,8 +3,10 @@ buildscript {
         junit_version = '5.2.0'
         junit_platform_version = '1.2.0'
         kotlin_version = '1.2.61'
-        publish_version = '0.9.10'
         dokka_version = '0.9.17'
+        bintray_version = '1.8.4'
+
+        publish_version = '0.9.10'
     }
 
     repositories {

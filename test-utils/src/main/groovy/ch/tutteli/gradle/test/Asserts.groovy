@@ -5,11 +5,10 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.function.Executable
 
-import static org.junit.jupiter.api.Assertions.assertEquals
-import static org.junit.jupiter.api.Assertions.assertThrows
-import static org.junit.jupiter.api.Assertions.assertTrue
+import static org.junit.jupiter.api.Assertions.*
 
 class Asserts {
+    static final String NL_INDENT = "\r?\n\\s+"
 
     static void assertJvmJsInOutput(BuildResult result, String prefix) {
         assertProjectInOutput(result, prefix + '-common')
@@ -20,7 +19,6 @@ class Asserts {
     static void assertProjectInOutput(BuildResult result, String projectName) {
         assertTrue(result.output.contains(projectName), "project $projectName in output: ${result.output}")
     }
-
 
     static void assertStatusOk(BuildResult result, String taskName) {
         assertStatusOk(result, [taskName], [], [])
@@ -39,9 +37,14 @@ class Asserts {
         assertTrue(failed.empty, 'FAILED is empty but was not: ' + failed)
     }
 
+    static void assertContainsRegex(String pom, String what, String regex) {
+        def matcher = pom =~ regex
+        assertTrue(matcher.find(), what + "\n" + pom)
+    }
+
     static void assertThrowsProjectConfigExceptionWithCause(Class<? extends Throwable> cause, String message, Executable executable) {
         def exception = assertThrows(ProjectConfigurationException) {
-           executable.execute()
+            executable.execute()
         }
         //assert
         assertEquals(cause, exception.cause.class)
