@@ -3,6 +3,9 @@ package ch.tutteli.gradle.publish
 
 import com.jfrog.bintray.gradle.BintrayExtension as JFrogBintrayPluginExtension
 import org.gradle.api.Project
+import org.gradle.api.ProjectConfigurationException
+import org.gradle.api.internal.plugins.PluginApplicationException
+import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 
@@ -10,8 +13,25 @@ import static SetUp.*
 import static ch.tutteli.gradle.test.Asserts.assertThrowsProjectConfigExceptionWithCause
 import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.junit.jupiter.api.Assertions.assertThrows
+import static org.junit.jupiter.api.Assertions.assertTrue
 
 class PublishPluginValidationTest {
+
+    @Test
+    void evaluate_noSourceSets_throwsIllegalStateException() {
+        //arrange
+        Project project = ProjectBuilder.builder()
+            .withName(ARTIFACT_ID)
+            .build()
+        //act && assert
+        def exception = assertThrows(PluginApplicationException) {
+            project.plugins.apply(PublishPlugin)
+        }
+        //assert
+        assertEquals(IllegalStateException, exception.cause.class)
+        def message = "The project $project.name does not have any sources"
+        assertTrue(exception.cause.message.contains(message), "cause.message contains $message:\n$exception.cause.message")
+    }
 
     @Test
     void evaluate_versionUnspecified_throwsIllegalStateException() {
@@ -54,6 +74,7 @@ class PublishPluginValidationTest {
     void evaluate_artifactAndComponentNull_throwsIllegalStateException() {
         //arrange
         Project project = setUp()
+        getPluginExtension(project).component.set(null)
         getPluginExtension(project).artifacts.set(null)
         //act && assert
         assertThrowsProjectConfigWithCauseIllegalStateNotDefined("either ${PublishPlugin.EXTENSION_NAME}.component or ${PublishPlugin.EXTENSION_NAME}.artifacts", project)
@@ -63,6 +84,7 @@ class PublishPluginValidationTest {
     void evaluate_artifactsEmptyAndComponentNull_throwsIllegalStateException() {
         //arrange
         Project project = setUp()
+        getPluginExtension(project).component.set(null)
         getPluginExtension(project).artifacts.set(new ArrayList<>())
         //act && assert
         assertThrowsProjectConfigWithCauseIllegalStateNotDefined("either ${PublishPlugin.EXTENSION_NAME}.component or ${PublishPlugin.EXTENSION_NAME}.artifacts", project)
@@ -72,7 +94,8 @@ class PublishPluginValidationTest {
     void evaluate_artifactsNullButComponentSet_NoException() {
         //arrange
         Project project = setUp()
-        getPluginExtension(project).component.set(project.components.java)
+        getPluginExtension(project).component.set(project.components.getByName('java'))
+        getPluginExtension(project).artifacts.set(null)
         //act && assert
         //act && assert no exception
         project.evaluate()
@@ -82,6 +105,8 @@ class PublishPluginValidationTest {
     void evaluate_componentNullButArtifactsSet_NoException() {
         //arrange
         Project project = setUp()
+        getPluginExtension(project).component.set(null)
+        getPluginExtension(project).artifacts.add(project.tasks.getByName('jar'))
         //act && assert no exception
         project.evaluate()
     }

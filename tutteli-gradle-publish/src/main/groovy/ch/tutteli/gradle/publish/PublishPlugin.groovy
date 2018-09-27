@@ -24,6 +24,12 @@ class PublishPlugin implements Plugin<Project> {
         project.plugins.apply(MavenPublishPlugin)
         project.plugins.apply(BintrayPlugin)
 
+        if (!project.hasProperty('sourceSets')) throw new IllegalStateException(
+            "The project $project.name does not have any sources. We currently require a project to have sources in order to publish it." +
+                "\nPlease make sure you do not apply the ch.tutteli.$EXTENSION_NAME plugin before the plugin which provides the sourceSets (e.g. kotlin or java and the like)" +
+                "\nPlease open an issue if you would like to publish projects without sources: https://github.com/robstoll/tutteli-gradle-plugins/issues/new"
+        )
+
         project.tasks.create(name: SOURCES_JAR, type: Jar) {
             from project.sourceSets.main.allSource
             classifier = 'sources'
@@ -215,7 +221,7 @@ class PublishPlugin implements Plugin<Project> {
 
     private static String getKotlinVersion(Project project) {
         def plugins = project.plugins
-        def kotlinPlugin =  plugins.findPlugin('kotlin')
+        def kotlinPlugin = plugins.findPlugin('kotlin')
             ?: plugins.findPlugin('kotlin2js')
             ?: plugins.findPlugin('kotlin-platform-jvm')
             ?: plugins.findPlugin('kotlin-platform-js')

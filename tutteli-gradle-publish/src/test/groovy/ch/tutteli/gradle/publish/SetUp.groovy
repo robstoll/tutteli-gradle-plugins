@@ -20,11 +20,10 @@ class SetUp {
         project.version = VERSION
         project.group = GROUP_ID
         project.description = DESCRIPTION
+        project.pluginManager.apply('java')
         project.plugins.apply(PublishPlugin)
-        project.plugins.apply('java')
         PublishPluginExtension extension = getPluginExtension(project)
         extension.githubUser.set(GITHUB_USER)
-        extension.artifacts.add(project.tasks.getByName('jar'))
         extension.bintrayRepo.set('tutteli-jars')
         extension.bintrayPkg.set('atrium')
         def jfrogBintray = getJfrogBintrayExtension(project)
