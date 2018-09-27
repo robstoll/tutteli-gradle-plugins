@@ -12,7 +12,7 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.jvm.tasks.Jar
 
-import static Validation.*
+import static ch.tutteli.gradle.publish.Validation.*
 
 class PublishPlugin implements Plugin<Project> {
     private static final Logger LOGGER = Logging.getLogger(PublishPlugin.class)
@@ -56,6 +56,7 @@ class PublishPlugin implements Plugin<Project> {
 
             configurePublishing(project, extension, repoUrl, uniqueLicenses)
             configureBintray(project, extension, bintrayExtension, repoUrl, uniqueLicenses)
+            addManifestToJars(project, extension, repoUrl)
         }
     }
 
@@ -167,7 +168,7 @@ class PublishPlugin implements Plugin<Project> {
                     released = released ?: new Date().toTimestamp().toString()
                     vcsTag = vcsTag ?: "v$project.version"
                     gpg.with {
-                        def signIt = sign ?: extension.signWithGpg.getOrElse(true)
+                        boolean signIt = sign ?: extension.signWithGpg.getOrElse(true)
                         sign = signIt
                         if (signIt) {
                             passphrase = passphrase ?: getSystemEnvAndErrorIfBlank(extension.envNameBintrayGpgPassphrase.get())
@@ -183,5 +184,43 @@ class PublishPlugin implements Plugin<Project> {
         if (!value?.trim()) throw newIllegalState("System.env variable with name $envName")
         return value
     }
+
+    private static void addManifestToJars(Project project, PublishPluginExtension extension, String repoUrl) {
+        project.tasks.withType(Jar) { task ->
+            task.manifest {
+                attributes = [
+                    'Implementation-Title'  : project.name,
+                    'Implementation-Version': project.version,
+                    'Implementation-URL'    : repoUrl,
+                ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project)
+                def licenseTxt = project.file("$project.rootProject.projectDir/LICENSE.txt")
+                if (licenseTxt.exists()) task.from(licenseTxt)
+                def license = project.file("$project.rootProject.projectDir/LICENSE")
+                if (license.exists()) task.from(license)
+            }
+        }
+    }
+
+    private static Map<String, String> getVendorIfAvailable(PublishPluginExtension extension) {
+        if (extension.manifestVendor.isPresent()) return ['Implementation-Vendor': extension.manifestVendor.get()]
+        else return Collections.emptyMap()
+    }
+
+    private static Map<String, String> getImplementationKotlinVersionIfAvailable(Project project) {
+        def kotlin_version = getKotlinVersion(project)
+        if (kotlin_version != null) return ['Implementation-Kotlin-Version': kotlin_version]
+        else return Collections.emptyMap()
+    }
+
+    private static String getKotlinVersion(Project project) {
+        def plugins = project.plugins
+        def kotlinPlugin =  plugins.findPlugin('kotlin')
+            ?: plugins.findPlugin('kotlin2js')
+            ?: plugins.findPlugin('kotlin-platform-jvm')
+            ?: plugins.findPlugin('kotlin-platform-js')
+            ?: plugins.findPlugin('kotlin-platform-common')
+        return kotlinPlugin?.getKotlinPluginVersion()
+    }
+
 }
 

@@ -28,6 +28,7 @@ class PublishPluginExtension {
     final Property<String> bintrayRepo
     final Property<String> bintrayPkg
     final Property<Boolean> signWithGpg
+    final Property<String> manifestVendor
 
     PublishPluginExtension(Project project) {
         this.project = project
@@ -48,6 +49,7 @@ class PublishPluginExtension {
         bintrayRepo = project.objects.property(String)
         bintrayPkg = project.objects.property(String)
         signWithGpg = project.objects.property(Boolean)
+        manifestVendor = project.objects.property(String)
 
         useSourcesJarAsArtifact()
         useJavaComponentIfJavaPluginAvailable()

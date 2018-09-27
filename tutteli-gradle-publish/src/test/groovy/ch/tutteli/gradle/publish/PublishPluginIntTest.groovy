@@ -239,17 +239,20 @@ class PublishPluginIntTest {
         settingsSetup.settings << "rootProject.name='$projectName'"
         def version = '1.0.0-SNAPSHOT'
         def githubUser = 'robstoll'
+        def vendor = 'tutteli'
+        def kotlinVersion = '1.2.71'
 
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
         buildGradle << """
         buildscript {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
-                classpath "ch.tutteli:tutteli-gradle-dokka:0.10.1"
+                classpath 'ch.tutteli:tutteli-gradle-dokka:0.10.1'
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        apply plugin: 'java'
+        apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.dokka' 
         tutteliDokka.githubUser = '$githubUser'
 
@@ -265,6 +268,9 @@ class PublishPluginIntTest {
             githubUser = '$githubUser'
             // Apache License 2.0 is the default
             // developers are optional
+            
+            // Optional, in case you want to mention the vendor in the manifest file of all jars
+            manifestVendor = '$vendor'
 
             //minimal setup required for bintray extension
             bintrayRepo = 'tutteli-jars'
@@ -284,6 +290,11 @@ class PublishPluginIntTest {
                     println("artifact: \$it.extension - \$it.classifier")
                 }
             }
+            project.tasks.withType(Jar) {
+                it.manifest.attributes.each{
+                    println(it)
+                }
+            }
         }
         """
         //act
@@ -292,12 +303,14 @@ class PublishPluginIntTest {
             .withArguments("projects", "--stacktrace")
             .build()
         //assert
-
+        def repoUrl = "https://github.com/$githubUser/$projectName"
         assertTrue(result.output.contains("artifact: jar - null"), "java jar\n$result.output")
         assertTrue(result.output.contains("artifact: jar - sources"), "sources jar\n$result.output")
         assertTrue(result.output.contains("artifact: jar - javadoc"), "javadoc jar\n$result.output")
-
+        assertTrue(result.output.contains("Implementation-Title=$projectName"), "manifest title was not $projectName\n$result.output")
+        assertTrue(result.output.contains("Implementation-Version=$version"), "manifest version was not $version\n$result.output")
+        assertTrue(result.output.contains("Implementation-URL=$repoUrl"), "manifest url was not $repoUrl\n$result.output")
+        assertTrue(result.output.contains("Implementation-Vendor=$vendor"), "manifest vendor was not $vendor\n$result.output")
+        assertTrue(result.output.contains("Implementation-Kotlin-Version=$kotlinVersion"), "manifest kotlin version was not $kotlinVersion\n$result.output")
     }
-
-
 }

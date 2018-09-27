@@ -74,10 +74,14 @@ Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gr
 for more information.
 
 It provides a `sourcesJar` task which includes all sources and adds them to the artifacts which shall be published.
-It automatically uses `project.components.java` if available (apply the `java` plugin first), 
-the assigned artifacts respectively.   
+It automatically uses `project.components.java` if available -- apply the `java` or `kotlin` plugin (or similar) first.   
 Likewise it uses the `javadocJar` as additional artifact if available. 
 In case you use the `ch.tutteli.dokka` plugin (which provides the `javadocJar`) then make sure you apply it before you apply this plugin.
+
+The plugin also creates a manifest file for all jars mentioning the kotlin version if the kotlin plugin is available.
+See the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L310)
+for more information.
+Last but not least it adds the `License.txt` or `LICENSE` file to the jar if such a file exists in the root of the rootProject.
 
 # ch.tutteli.spek [🔗](https://plugins.gradle.org/plugin/ch.tutteli.spek/0.10.1)
 Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 
