@@ -21,6 +21,7 @@ class PublishPlugin implements Plugin<Project> {
     static final String TASK_NAME_INCLUDE_TIME = 'includeBuildTimeInManifest'
     static final String TASK_NAME_PUBLISH_TO_BINTRAY = 'publishToBintray'
     static final String TASK_NAME_SOURCES_JAR = 'sourcesJar'
+    static final String TASK_NAME_VALIDATE = 'validateBeforePublishToBintray'
 
     @Override
     void apply(Project project) {
@@ -38,6 +39,12 @@ class PublishPlugin implements Plugin<Project> {
             classifier = 'sources'
         }
 
+        def extension = project.extensions.create(EXTENSION_NAME, PublishPluginExtension, project)
+
+        def validateBeforePublish = project.tasks.create(name: TASK_NAME_VALIDATE, type: ValidateBeforePublishTask)
+        validateBeforePublish.project = project
+        validateBeforePublish.extension = extension
+
         def includeBuildTime = project.tasks.create(name: TASK_NAME_INCLUDE_TIME) {
             doLast {
                 project.tasks.withType(Jar) { jarTask ->
@@ -49,13 +56,14 @@ class PublishPlugin implements Plugin<Project> {
         }
 
         project.tasks.create(name: TASK_NAME_PUBLISH_TO_BINTRAY) {
-            dependsOn includeBuildTime
             def bintrayUpload = project.tasks.getByName('bintrayUpload')
+            dependsOn validateBeforePublish
+            dependsOn includeBuildTime
             dependsOn bintrayUpload
+
+            includeBuildTime.mustRunAfter(validateBeforePublish)
             bintrayUpload.mustRunAfter(includeBuildTime)
         }
-
-        def extension = project.extensions.create(EXTENSION_NAME, PublishPluginExtension, project)
 
         project.afterEvaluate {
             requireNotNullNorBlank(project.name, "project.name")
@@ -84,6 +92,7 @@ class PublishPlugin implements Plugin<Project> {
             addManifestToJars(project, extension, repoUrl)
         }
     }
+
 
     private static void requireComponentOrArtifactsPresent(PublishPluginExtension extension) {
         if (!extension.component.isPresent() && extension.artifacts.map { it.isEmpty() }.getOrElse(true)) {
@@ -177,8 +186,8 @@ class PublishPlugin implements Plugin<Project> {
         List<License> uniqueLicenses
     ) {
         bintrayExtension.with {
-            user = user ?: getPropertyOrSystemEnvAndErrorIfBlank(project, extension.propNameBintrayUser, extension.envNameBintrayUser)
-            key = key ?: getPropertyOrSystemEnvAndErrorIfBlank(project, extension.propNameBintrayApiKey, extension.envNameBintrayApiKey)
+            user = user ?: getPropertyOrSystemEnv(project, extension.propNameBintrayUser, extension.envNameBintrayUser)
+            key = key ?: getPropertyOrSystemEnv(project, extension.propNameBintrayApiKey, extension.envNameBintrayApiKey)
             publications = ['tutteli'] as String[]
 
             pkg.with {
@@ -196,7 +205,7 @@ class PublishPlugin implements Plugin<Project> {
                         boolean signIt = sign ?: extension.signWithGpg.getOrElse(true)
                         sign = signIt
                         if (signIt) {
-                            passphrase = passphrase ?: getPropertyOrSystemEnvAndErrorIfBlank(project, extension.propNameBintrayGpgPassphrase, extension.envNameBintrayGpgPassphrase)
+                            passphrase = passphrase ?: getPropertyOrSystemEnv(project, extension.propNameBintrayGpgPassphrase, extension.envNameBintrayGpgPassphrase)
                         }
                     }
                 }
@@ -204,12 +213,11 @@ class PublishPlugin implements Plugin<Project> {
         }
     }
 
-    private static String getPropertyOrSystemEnvAndErrorIfBlank(Project project, Property<String> propName, Property<String> envName) {
+    private static String getPropertyOrSystemEnv(Project project, Property<String> propName, Property<String> envName) {
         def value = project.findProperty(propName.get())
         if (!value?.trim()) {
             value = System.getenv(envName.get())
         }
-        if (!value?.trim()) throw newIllegalState("property with name ${propName.get()} or System.env variable with name ${envName.get()}")
         return value
     }
 
@@ -250,6 +258,5 @@ class PublishPlugin implements Plugin<Project> {
             ?: plugins.findPlugin('kotlin-platform-common')
         return kotlinPlugin?.getKotlinPluginVersion()
     }
-
 }
 

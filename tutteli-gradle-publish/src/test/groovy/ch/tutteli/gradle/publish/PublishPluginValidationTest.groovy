@@ -213,6 +213,7 @@ class PublishPluginValidationTest {
         getPluginExtension(project).bintrayRepo.set("  ")
         getBintrayExtension(project).pkg.repo = 'test'
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -233,6 +234,7 @@ class PublishPluginValidationTest {
         getPluginExtension(project).bintrayPkg.set("")
         getBintrayExtension(project).pkg.name = 'test'
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -240,8 +242,12 @@ class PublishPluginValidationTest {
         //arrange
         Project project = setUp()
         getBintrayExtension(project).user = null
-        //act & assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("property with name bintrayUser or System.env variable with name BINTRAY_USER", project)
+        //act
+        project.evaluate()
+        //assert
+        assertThrowsIllegalState("property with name bintrayUser or System.env variable with name BINTRAY_USER") {
+            validationTask(project).validate()
+        }
     }
 
     @Test
@@ -251,8 +257,12 @@ class PublishPluginValidationTest {
         def extension = getPluginExtension(project)
         extension.propNameBintrayUser.set('testName')
         getBintrayExtension(project).user = null
-        //act & assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("property with name testName or System.env variable with name BINTRAY_USER", project)
+        //act
+        project.evaluate()
+        //assert
+        assertThrowsIllegalState("property with name testName or System.env variable with name BINTRAY_USER") {
+            validationTask(project).validate()
+        }
     }
 
     @Test
@@ -262,8 +272,12 @@ class PublishPluginValidationTest {
         def extension = getPluginExtension(project)
         extension.envNameBintrayUser.set('TEST')
         getBintrayExtension(project).user = null
-        //act & assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("property with name bintrayUser or System.env variable with name TEST", project)
+        //act
+        project.evaluate()
+        //assert
+        assertThrowsIllegalState("property with name bintrayUser or System.env variable with name TEST") {
+            validationTask(project).validate()
+        }
     }
 
     @Test
@@ -272,6 +286,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         getBintrayExtension(project).user = 'test'
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -281,6 +296,7 @@ class PublishPluginValidationTest {
         project.ext.bintrayUser = 'test'
         getBintrayExtension(project).user = null
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -291,6 +307,7 @@ class PublishPluginValidationTest {
             System.setProperty('BINTRAY_USER', 'test')
             getBintrayExtension(project).user = null
             //act && assert no exception
+            project.evaluate()
         } finally {
             System.setProperty('BINTRAY_USER', "")
         }
@@ -305,6 +322,7 @@ class PublishPluginValidationTest {
         project.ext[propName] = 'test'
         getBintrayExtension(project).user = null
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -317,6 +335,7 @@ class PublishPluginValidationTest {
             System.setProperty(envName, 'test')
             getBintrayExtension(project).user = null
             //act && assert no exception
+            project.evaluate()
         } finally {
             System.setProperty(envName, "")
         }
@@ -328,19 +347,27 @@ class PublishPluginValidationTest {
         //arrange
         Project project = setUp()
         getBintrayExtension(project).key = null
-        //act & assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("property with name bintrayApiKey or System.env variable with name BINTRAY_API_KEY", project)
+        //act
+        project.evaluate()
+        //assert
+        assertThrowsIllegalState("property with name bintrayApiKey or System.env variable with name BINTRAY_API_KEY") {
+            validationTask(project).validate()
+        }
     }
 
     @Test
-    void evaluate_propApiKeyNameChangedButNullAndEnvApiKeyNullAndNotSetOnBintray_throwsIllegalStateException() {
+    void evaluate_propApiKeyNameChangedButNullAndEnvApiKeyNullAndNotSetOnBintray_publishToBintrayThrowsIllegalStateException() {
         //arrange
         Project project = setUp()
         def extension = getPluginExtension(project)
         extension.propNameBintrayApiKey.set('testName')
         getBintrayExtension(project).key = null
-        //act & assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("property with name testName or System.env variable with name BINTRAY_API_KEY", project)
+        //act
+        project.evaluate()
+        //assert
+        assertThrowsIllegalState("property with name testName or System.env variable with name BINTRAY_API_KEY") {
+            validationTask(project).validate()
+        }
     }
 
     @Test
@@ -350,8 +377,12 @@ class PublishPluginValidationTest {
         def extension = getPluginExtension(project)
         extension.envNameBintrayApiKey.set('TEST')
         getBintrayExtension(project).key = null
-        //act & assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("property with name bintrayApiKey or System.env variable with name TEST", project)
+        //act
+        project.evaluate()
+        //assert
+        assertThrowsIllegalState("property with name bintrayApiKey or System.env variable with name TEST") {
+            validationTask(project).validate()
+        }
     }
 
     @Test
@@ -360,6 +391,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         getBintrayExtension(project).key = 'test'
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -369,6 +401,7 @@ class PublishPluginValidationTest {
         project.ext.bintrayApiKey = 'key'
         getBintrayExtension(project).key = null
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -379,6 +412,7 @@ class PublishPluginValidationTest {
             System.setProperty('BINTRAY_API_KEY', 'test')
             getBintrayExtension(project).key = null
             //act && assert no exception
+            project.evaluate()
         } finally {
             System.setProperty('BINTRAY_API_KEY', "")
         }
@@ -393,6 +427,7 @@ class PublishPluginValidationTest {
         project.ext[propName] = 'test'
         getBintrayExtension(project).key = null
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -405,6 +440,7 @@ class PublishPluginValidationTest {
             System.setProperty(envName, 'test')
             getBintrayExtension(project).key = null
             //act && assert no exception
+            project.evaluate()
         } finally {
             System.setProperty(envName, "")
         }
@@ -416,6 +452,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         getPluginExtension(project).signWithGpg.set(false)
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -424,17 +461,22 @@ class PublishPluginValidationTest {
         Project project = setUp()
         getBintrayExtension(project).pkg.version.gpg.sign = false
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
-    void evaluate_propGpgPassphraseNullAndEnvGpgPassphraseNotSetAndNotSetOnBintray_noError() {
+    void evaluate_propGpgPassphraseNullAndEnvGpgPassphraseNotSetAndNotSetOnBintray_throwsIllegalStateException() {
         //arrange
         Project project = setUp()
         def jfrogExtension = getBintrayExtension(project)
         jfrogExtension.pkg.version.gpg.sign = true
         jfrogExtension.pkg.version.gpg.passphrase = null
-        //act & assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("property with name bintrayGpgPassphrase or System.env variable with name BINTRAY_GPG_PASSPHRASE", project)
+        //act
+        project.evaluate()
+        //assert
+        assertThrowsIllegalState("property with name bintrayGpgPassphrase or System.env variable with name BINTRAY_GPG_PASSPHRASE") {
+            validationTask(project).validate()
+        }
     }
 
     @Test
@@ -446,8 +488,12 @@ class PublishPluginValidationTest {
         def jfrogExtension = getBintrayExtension(project)
         jfrogExtension.pkg.version.gpg.sign = true
         jfrogExtension.pkg.version.gpg.passphrase = null
-        //act & assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("property with name testName or System.env variable with name BINTRAY_GPG_PASSPHRASE", project)
+        //act
+        project.evaluate()
+        //assert
+        assertThrowsIllegalState("property with name testName or System.env variable with name BINTRAY_GPG_PASSPHRASE") {
+            validationTask(project).validate()
+        }
     }
 
     @Test
@@ -459,8 +505,12 @@ class PublishPluginValidationTest {
         def jfrogExtension = getBintrayExtension(project)
         jfrogExtension.pkg.version.gpg.sign = true
         jfrogExtension.pkg.version.gpg.passphrase = null
-        //act & assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("property with name bintrayGpgPassphrase or System.env variable with name TEST", project)
+        //act
+        project.evaluate()
+        //assert
+        assertThrowsIllegalState("property with name bintrayGpgPassphrase or System.env variable with name TEST") {
+            validationTask(project).validate()
+        }
     }
 
     @Test
@@ -471,6 +521,7 @@ class PublishPluginValidationTest {
         jfroExtension.pkg.version.gpg.sign = true
         jfroExtension.pkg.version.gpg.passphrase = "test"
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -482,6 +533,7 @@ class PublishPluginValidationTest {
         jfrogExtension.pkg.version.gpg.sign = true
         jfrogExtension.pkg.version.gpg.passphrase = null
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -494,6 +546,7 @@ class PublishPluginValidationTest {
             jfrogExtension.pkg.version.gpg.sign = true
             jfrogExtension.pkg.version.gpg.passphrase = null
             //act && assert no exception
+            project.evaluate()
         } finally {
             System.setProperty('BINTRAY_GPG_PASSPHRASE', "")
         }
@@ -510,6 +563,7 @@ class PublishPluginValidationTest {
         jfrogExtension.pkg.version.gpg.sign = true
         jfrogExtension.pkg.version.gpg.passphrase = null
         //act && assert no exception
+        project.evaluate()
     }
 
     @Test
@@ -524,6 +578,7 @@ class PublishPluginValidationTest {
             jfrogExtension.pkg.version.gpg.sign = true
             jfrogExtension.pkg.version.gpg.passphrase = null
             //act && assert no exception
+            project.evaluate()
         } finally {
             System.setProperty(envName, "")
         }
@@ -540,6 +595,10 @@ class PublishPluginValidationTest {
         assertThrowsProjectConfigExceptionWithCause(IllegalStateException, getExceptionMessage(what)) {
             project.evaluate()
         }
+    }
+
+    private static ValidateBeforePublishTask validationTask(Project project) {
+        project.tasks.getByName(PublishPlugin.TASK_NAME_VALIDATE) as ValidateBeforePublishTask
     }
 
     private static String getExceptionMessage(String what) {

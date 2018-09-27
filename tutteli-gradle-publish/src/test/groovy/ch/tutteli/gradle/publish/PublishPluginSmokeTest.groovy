@@ -27,6 +27,8 @@ class PublishPluginSmokeTest {
         project.tasks.getByName(PublishPlugin.TASK_NAME_INCLUDE_TIME)
         project.tasks.getByName(PublishPlugin.TASK_NAME_PUBLISH_TO_BINTRAY)
         project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_VALIDATE)
     }
 
     @Test
