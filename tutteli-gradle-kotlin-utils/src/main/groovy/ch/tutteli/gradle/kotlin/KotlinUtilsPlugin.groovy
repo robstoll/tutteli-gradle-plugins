@@ -29,9 +29,9 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.withoutKbox = { exclude group: 'ch.tutteli.kbox' }
         project.ext.withoutKotlin = { exclude group: 'org.jetbrains.kotlin' }
 
-        def getCommonProjects = { getSubrojectsWithSuffix(project, "-common") }
-        def getJsProjects = { getSubrojectsWithSuffix(project, "-js") }
-        def getJvmProjects = { getSubrojectsWithSuffix(project, "-jvm") }
+        def getCommonProjects = { getSubprojectsWithSuffix(project, "-common") }
+        def getJsProjects = { getSubprojectsWithSuffix(project, "-js") }
+        def getJvmProjects = { getSubprojectsWithSuffix(project, "-jvm") }
 
         project.ext.getCommonProjects = getCommonProjects
         project.ext.getJsProjects = getJsProjects
@@ -84,11 +84,11 @@ class KotlinUtilsPlugin implements Plugin<Project> {
 
     private static String resolveKotlinVersion(KotlinUtilsPluginExtension extension) {
         final String kotlinVersion = extension.kotlinVersion.getOrNull()
-        if (kotlinVersion == null || kotlinVersion.isEmpty()) throw new IllegalStateException(ERR_KOTLIN_VERSION)
+        if (!kotlinVersion?.trim()) throw new IllegalStateException(ERR_KOTLIN_VERSION)
         return kotlinVersion
     }
 
-    private static Set<Project> getSubrojectsWithSuffix(project, suffix) {
+    private static Set<Project> getSubprojectsWithSuffix(project, suffix) {
         return project.subprojects.findAll { it.name.endsWith(suffix) }
     }
 
