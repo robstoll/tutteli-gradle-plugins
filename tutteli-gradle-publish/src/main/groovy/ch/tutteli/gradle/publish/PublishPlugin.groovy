@@ -199,7 +199,7 @@ class PublishPlugin implements Plugin<Project> {
                 version.with {
                     name = name ?: project.name
                     desc = desc ?: "$pkgName $project.version"
-                    released = released ?: new Date().toTimestamp().toString()
+                    released = released ?: new Date().format('yyyy-MM-dd\'T\'HH:mm:ssZ')
                     vcsTag = vcsTag ?: "v$project.version"
                     gpg.with {
                         boolean signIt = sign ?: extension.signWithGpg.getOrElse(true)
