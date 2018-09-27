@@ -20,6 +20,7 @@ class PublishPluginIntTest {
         settingsSetup.settings << "rootProject.name='$projectName'"
         def version = '1.0.0-SNAPSHOT'
         def githubUser = 'robstoll'
+        def pkgName = "tutteli-gradle"
 
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
         buildGradle << """
@@ -88,8 +89,9 @@ class PublishPluginIntTest {
             
             //minimal setup required for bintray extension
             bintrayRepo = 'tutteli-jars'
-            bintrayPkg = 'atrium'
             
+            // you can change the pkg name if it does not correspond to `project.name`
+            bintrayPkg = '$pkgName'
             // you can customise the env variable names if they differ from the convention
             envNameBintrayUser = 'MY_BINTRAY_USER'                      // default is BINTRAY_USER
             envNameBintrayApiKey = 'MY_BINTRAY_API_KEY'                 // default is BINTRAY_API_KEY
@@ -122,6 +124,7 @@ class PublishPluginIntTest {
             .withArguments("projects", "--stacktrace")
             .build()
         //assert
+        assertTrue(result.output.contains("Some licenses were duplicated. Please check if you made a mistake."), "should contain warning about duplicated licenses")
         assertContainsRegex(result.output, "licenses", "<licenses>$NL_INDENT" +
             "<license>$NL_INDENT" +
             "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
@@ -169,11 +172,12 @@ class PublishPluginIntTest {
         assertTrue(result.output.contains("bintrayExtension.key: test"), "bintrayExtension.key\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.publications: [tutteli]"), "bintrayExtension.publications\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.repo: tutteli-jars"), "bintrayExtension.pkg.repo\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.name: atrium"), "bintrayExtension.pkg.name\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.name: $pkgName"), "bintrayExtension.pkg.name\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.licenses: Apache-2.0,Apache-2.0,Apache-2.0,Lic-1.2"), "bintrayExtension.pkg.licenses\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.vcsUrl: $repoUrl"), "bintrayExtension.pkg.vcsUrl\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.name: $projectName"), "bintrayExtension.pkg.version.name\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: atrium $version"), "bintrayExtension.pkg.version.desc\n$result.output")
+
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + pkgName + " $version"), "bintrayExtension.pkg.version.desc\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.released: ${new Date().toTimestamp().toString().substring(0, 10)}"), "bintrayExtension.pkg.version.released\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.vcsTag: v$version"), "bintrayExtension.pkg.version.vcsTag\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.sign: true"), "bintrayExtension.pkg.version.gpg.sign\n$result.output")
@@ -274,7 +278,6 @@ class PublishPluginIntTest {
 
             //minimal setup required for bintray extension
             bintrayRepo = 'tutteli-jars'
-            bintrayPkg = 'atrium'  
             
             //required since we don't set the System.env variables
             bintray {

@@ -70,7 +70,6 @@ class PublishPlugin implements Plugin<Project> {
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayApiKey, "envNameBintrayApiKey")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayGpgPassphrase, "envNameBintrayGpgPassphrase")
             requireSetOnBintrayExtensionOrProperty(bintrayExtension.pkg.repo, extension.bintrayRepo, "bintrayRepo")
-            requireSetOnBintrayExtensionOrProperty(bintrayExtension.pkg.name, extension.bintrayPkg, "bintrayPkg")
 
             def repoUrl = "https://github.com/${extension.githubUser.get()}/$project.name"
             def licenses = extension.licenses.get()

@@ -3,7 +3,6 @@ package ch.tutteli.gradle.publish
 
 import com.jfrog.bintray.gradle.BintrayExtension as JFrogBintrayPluginExtension
 import org.gradle.api.Project
-import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
@@ -221,12 +220,14 @@ class PublishPluginValidationTest {
     }
 
     @Test
-    void evaluate_pkgNullAndAlsoNotSetOnJFrogBintray_throwsIllegalStateException() {
+    void evaluate_pkgNullAndAlsoNotSetOnJFrogBintray_noErrorCorrespondsToProjectName() {
         //arrange
         Project project = setUp()
         getPluginExtension(project).bintrayPkg.set(null)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.bintrayPkg", project)
+        //act
+        project.evaluate()
+        //assert
+        assertEquals(project.name, getBintrayExtension(project).pkg.name)
     }
 
     @Test
@@ -234,7 +235,7 @@ class PublishPluginValidationTest {
         //arrange
         Project project = setUp()
         getPluginExtension(project).bintrayPkg.set("")
-        getJfrogBintrayExtension(project).pkg.name = 'test'
+        getBintrayExtension(project).pkg.name = 'test'
         //act && assert no exception
     }
 
@@ -242,7 +243,7 @@ class PublishPluginValidationTest {
     void evaluate_envUserNullAndNotSetOnJFrogBintray_throwsIllegalStateException() {
         //arrange
         Project project = setUp()
-        getJfrogBintrayExtension(project).user = null
+        getBintrayExtension(project).user = null
         //act & assert
         assertThrowsProjectConfigWithCauseIllegalStateNotDefined("System.env variable with name BINTRAY_USER", project)
     }
@@ -253,7 +254,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         def extension = getPluginExtension(project)
         extension.envNameBintrayUser.set('TEST')
-        getJfrogBintrayExtension(project).user = null
+        getBintrayExtension(project).user = null
         //act & assert
         assertThrowsProjectConfigWithCauseIllegalStateNotDefined("System.env variable with name TEST", project)
     }
@@ -262,7 +263,7 @@ class PublishPluginValidationTest {
     void evaluate_envUserNotSetButSetOnJFrogBintray_noError() {
         //arrange
         Project project = setUp()
-        getJfrogBintrayExtension(project).user = 'test'
+        getBintrayExtension(project).user = 'test'
         //act && assert no exception
     }
 
@@ -273,7 +274,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         try {
             System.setProperty('BINTRAY_USER', 'test')
-            getJfrogBintrayExtension(project).user = null
+            getBintrayExtension(project).user = null
             //act && assert no exception
         } finally {
             System.setProperty('BINTRAY_USER', "")
@@ -288,7 +289,7 @@ class PublishPluginValidationTest {
         try {
             getPluginExtension(project).envNameBintrayUser.set(envName)
             System.setProperty(envName, 'test')
-            getJfrogBintrayExtension(project).user = null
+            getBintrayExtension(project).user = null
             //act && assert no exception
         } finally {
             System.setProperty(envName, "")
@@ -300,7 +301,7 @@ class PublishPluginValidationTest {
     void evaluate_envApiKeyNullAndNotSetOnJFrogBintray_throwsIllegalStateException() {
         //arrange
         Project project = setUp()
-        getJfrogBintrayExtension(project).key = null
+        getBintrayExtension(project).key = null
         //act & assert
         assertThrowsProjectConfigWithCauseIllegalStateNotDefined("System.env variable with name BINTRAY_API_KEY", project)
     }
@@ -311,7 +312,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         def extension = getPluginExtension(project)
         extension.envNameBintrayApiKey.set('TEST')
-        getJfrogBintrayExtension(project).key = null
+        getBintrayExtension(project).key = null
         //act & assert
         assertThrowsProjectConfigWithCauseIllegalStateNotDefined("System.env variable with name TEST", project)
     }
@@ -320,7 +321,7 @@ class PublishPluginValidationTest {
     void evaluate_envApiKeyNotSetButSetOnJFrogBintray_noError() {
         //arrange
         Project project = setUp()
-        getJfrogBintrayExtension(project).key = 'test'
+        getBintrayExtension(project).key = 'test'
         //act && assert no exception
     }
 
@@ -330,7 +331,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         try {
             System.setProperty('BINTRAY_API_KEY', 'test')
-            getJfrogBintrayExtension(project).key = null
+            getBintrayExtension(project).key = null
             //act && assert no exception
         } finally {
             System.setProperty('BINTRAY_API_KEY', "")
@@ -345,7 +346,7 @@ class PublishPluginValidationTest {
         try {
             getPluginExtension(project).envNameBintrayApiKey.set(envName)
             System.setProperty(envName, 'test')
-            getJfrogBintrayExtension(project).key = null
+            getBintrayExtension(project).key = null
             //act && assert no exception
         } finally {
             System.setProperty(envName, "")
@@ -357,7 +358,7 @@ class PublishPluginValidationTest {
         //arrange
         Project project = setUp()
         getPluginExtension(project).signWithGpg.set(false)
-        getJfrogBintrayExtension(project).pkg.version.gpg.sign = false
+        getBintrayExtension(project).pkg.version.gpg.sign = false
         //act && assert no exception
     }
 
@@ -365,7 +366,7 @@ class PublishPluginValidationTest {
     void evaluate_envGpgPassphraseNotSetButNoSignDefinedOnJFrog_noError() {
         //arrange
         Project project = setUp()
-        getJfrogBintrayExtension(project).pkg.version.gpg.sign = false
+        getBintrayExtension(project).pkg.version.gpg.sign = false
         //act && assert no exception
     }
 
@@ -373,7 +374,7 @@ class PublishPluginValidationTest {
     void evaluate_envGpgPassphraseNotSetAndNotSetOnJFrogBintray_noError() {
         //arrange
         Project project = setUp()
-        def jfrogExtension = getJfrogBintrayExtension(project)
+        def jfrogExtension = getBintrayExtension(project)
         jfrogExtension.pkg.version.gpg.sign = true
         jfrogExtension.pkg.version.gpg.passphrase = null
         //act & assert
@@ -386,7 +387,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         def extension = getPluginExtension(project)
         extension.envNameBintrayGpgPassphrase.set('TEST')
-        def jfrogExtension = getJfrogBintrayExtension(project)
+        def jfrogExtension = getBintrayExtension(project)
         jfrogExtension.pkg.version.gpg.sign = true
         jfrogExtension.pkg.version.gpg.passphrase = null
         //act & assert
@@ -397,7 +398,7 @@ class PublishPluginValidationTest {
     void evaluate_envGpgPassphraseNotSetButSetOnJFrogBintray_noError() {
         //arrange
         Project project = setUp()
-        def jfroExtension = getJfrogBintrayExtension(project)
+        def jfroExtension = getBintrayExtension(project)
         jfroExtension.pkg.version.gpg.sign = true
         jfroExtension.pkg.version.gpg.passphrase = "test"
         //act && assert no exception
@@ -409,7 +410,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         try {
             System.setProperty('BINTRAY_GPG_PASSPHRASE', 'test')
-            def jfrogExtension = getJfrogBintrayExtension(project)
+            def jfrogExtension = getBintrayExtension(project)
             jfrogExtension.pkg.version.gpg.sign = true
             jfrogExtension.pkg.version.gpg.passphrase = null
             //act && assert no exception
@@ -426,7 +427,7 @@ class PublishPluginValidationTest {
         try {
             getPluginExtension(project).envNameBintrayGpgPassphrase.set(envName)
             System.setProperty(envName, 'test')
-            def jfrogExtension = getJfrogBintrayExtension(project)
+            def jfrogExtension = getBintrayExtension(project)
             jfrogExtension.pkg.version.gpg.sign = true
             jfrogExtension.pkg.version.gpg.passphrase = null
             //act && assert no exception

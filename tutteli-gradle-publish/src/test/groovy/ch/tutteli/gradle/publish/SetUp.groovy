@@ -26,7 +26,7 @@ class SetUp {
         extension.githubUser.set(GITHUB_USER)
         extension.bintrayRepo.set('tutteli-jars')
         extension.bintrayPkg.set('atrium')
-        def jfrogBintray = getJfrogBintrayExtension(project)
+        def jfrogBintray = getBintrayExtension(project)
         jfrogBintray.user = 'user'
         jfrogBintray.key = 'key'
         jfrogBintray.pkg.version.gpg.sign = false
@@ -37,7 +37,7 @@ class SetUp {
         return project.extensions.getByName(PublishPlugin.EXTENSION_NAME) as PublishPluginExtension
     }
 
-    protected static BintrayExtension getJfrogBintrayExtension(Project project) {
+    protected static BintrayExtension getBintrayExtension(Project project) {
         project.extensions.getByType(BintrayExtension)
     }
 }
