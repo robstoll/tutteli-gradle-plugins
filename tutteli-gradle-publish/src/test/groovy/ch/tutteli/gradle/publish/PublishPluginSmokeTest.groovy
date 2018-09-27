@@ -1,6 +1,5 @@
 package ch.tutteli.gradle.publish
 
-
 import ch.tutteli.gradle.test.Asserts
 import org.apache.maven.model.Model
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer

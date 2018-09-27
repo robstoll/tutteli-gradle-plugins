@@ -1,7 +1,5 @@
 package ch.tutteli.gradle.publish
 
-import ch.tutteli.gradle.publish.StandardLicenses
-import ch.tutteli.gradle.test.Asserts
 import ch.tutteli.gradle.test.SettingsExtension
 import ch.tutteli.gradle.test.SettingsExtensionObject
 import org.gradle.testkit.runner.GradleRunner
@@ -124,48 +122,48 @@ class PublishPluginIntTest {
             .withArguments("projects", "--stacktrace")
             .build()
         //assert
-        assertContainsRegex(result.output, "licenses", "<licenses>$Asserts.NL_INDENT" +
-            "<license>$Asserts.NL_INDENT" +
-            "<name>${StandardLicenses.APACHE_2_0.longName}</name>$Asserts.NL_INDENT" +
-            "<url>${StandardLicenses.APACHE_2_0.url}</url>$Asserts.NL_INDENT" +
-            "<distribution>manually</distribution>$Asserts.NL_INDENT" +
-            "</license>$Asserts.NL_INDENT" +
-            "<license>$Asserts.NL_INDENT" +
-            "<name>${StandardLicenses.APACHE_2_0.longName}</name>$Asserts.NL_INDENT" +
-            "<url>${StandardLicenses.APACHE_2_0.url}</url>$Asserts.NL_INDENT" +
-            "<distribution>repo</distribution>$Asserts.NL_INDENT" +
-            "</license>$Asserts.NL_INDENT" +
-            "<license>$Asserts.NL_INDENT" +
-            "<name>${StandardLicenses.APACHE_2_0.longName}</name>$Asserts.NL_INDENT" +
-            "<url>${StandardLicenses.APACHE_2_0.url}</url>$Asserts.NL_INDENT" +
-            "<distribution>somethingElse</distribution>$Asserts.NL_INDENT" +
-            "</license>$Asserts.NL_INDENT" +
-            "<license>$Asserts.NL_INDENT" +
-            "<name>License 1.2</name>$Asserts.NL_INDENT" +
-            "<url>https://license.com</url>$Asserts.NL_INDENT" +
-            "<distribution>repo</distribution>$Asserts.NL_INDENT" +
-            "</license>$Asserts.NL_INDENT" +
+        assertContainsRegex(result.output, "licenses", "<licenses>$NL_INDENT" +
+            "<license>$NL_INDENT" +
+            "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
+            "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
+            "<distribution>manually</distribution>$NL_INDENT" +
+            "</license>$NL_INDENT" +
+            "<license>$NL_INDENT" +
+            "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
+            "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
+            "<distribution>repo</distribution>$NL_INDENT" +
+            "</license>$NL_INDENT" +
+            "<license>$NL_INDENT" +
+            "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
+            "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
+            "<distribution>somethingElse</distribution>$NL_INDENT" +
+            "</license>$NL_INDENT" +
+            "<license>$NL_INDENT" +
+            "<name>License 1.2</name>$NL_INDENT" +
+            "<url>https://license.com</url>$NL_INDENT" +
+            "<distribution>repo</distribution>$NL_INDENT" +
+            "</license>$NL_INDENT" +
             "</licenses>")
 
-        assertContainsRegex(result.output, "developers", "<developers>$Asserts.NL_INDENT" +
-            "<developer>$Asserts.NL_INDENT" +
-            "<id>robstoll</id>$Asserts.NL_INDENT" +
-            "<name>Robert Stoll</name>$Asserts.NL_INDENT" +
-            "<email>rstoll@tutteli.ch</email>$Asserts.NL_INDENT" +
-            "<url>tuteli.ch</url>$Asserts.NL_INDENT" +
-            "</developer>$Asserts.NL_INDENT" +
-            "<developer>$Asserts.NL_INDENT" +
-            "<id>robstoll_tutteli</id>$Asserts.NL_INDENT" +
-            "<name>Robert Stoll</name>$Asserts.NL_INDENT"+
-            "<email>rstoll@tutteli.ch</email>$Asserts.NL_INDENT"+
-            "<organization>tutteli</organization>$Asserts.NL_INDENT" +
-            "<organizationUrl>tutteli.ch</organizationUrl>$Asserts.NL_INDENT" +
-            "</developer>$Asserts.NL_INDENT" +
+        assertContainsRegex(result.output, "developers", "<developers>$NL_INDENT" +
+            "<developer>$NL_INDENT" +
+            "<id>robstoll</id>$NL_INDENT" +
+            "<name>Robert Stoll</name>$NL_INDENT" +
+            "<email>rstoll@tutteli.ch</email>$NL_INDENT" +
+            "<url>tuteli.ch</url>$NL_INDENT" +
+            "</developer>$NL_INDENT" +
+            "<developer>$NL_INDENT" +
+            "<id>robstoll_tutteli</id>$NL_INDENT" +
+            "<name>Robert Stoll</name>$NL_INDENT"+
+            "<email>rstoll@tutteli.ch</email>$NL_INDENT"+
+            "<organization>tutteli</organization>$NL_INDENT" +
+            "<organizationUrl>tutteli.ch</organizationUrl>$NL_INDENT" +
+            "</developer>$NL_INDENT" +
             "</developers>"
         )
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
-        assertContainsRegex(result.output, "scm url", "<scm>$Asserts.NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
+        assertContainsRegex(result.output, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
 
         assertTrue(result.output.contains("bintrayExtension.user: myUser"), "bintrayExtension.user\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.key: test"), "bintrayExtension.key\n$result.output")

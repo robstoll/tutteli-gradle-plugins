@@ -1,6 +1,6 @@
 package ch.tutteli.gradle.publish
 
-import com.jfrog.bintray.gradle.BintrayExtension as JFrogBintrayPluginExtension
+import com.jfrog.bintray.gradle.BintrayExtension
 import org.apache.maven.model.Developer
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -14,7 +14,7 @@ import static Validation.requireNotNullNorBlank
 class PublishPluginExtension {
     private static final String DEFAULT_DISTRIBUTION = 'repo'
     private Project project
-    private JFrogBintrayPluginExtension jfrogBintrayExtension
+    private BintrayExtension bintrayExtension
 
     final Property<String> githubUser
     final Property<SoftwareComponent> component
@@ -31,7 +31,7 @@ class PublishPluginExtension {
 
     PublishPluginExtension(Project project) {
         this.project = project
-        jfrogBintrayExtension = project.extensions.getByType(JFrogBintrayPluginExtension)
+        bintrayExtension = project.extensions.getByType(BintrayExtension)
 
         githubUser = project.objects.property(String)
         component = project.objects.property(SoftwareComponent)
@@ -145,7 +145,7 @@ class PublishPluginExtension {
         developers.add(newDeveloper)
     }
 
-    void bintray(Action<JFrogBintrayPluginExtension> bintray) {
-        bintray.execute(jfrogBintrayExtension)
+    void bintray(Action<BintrayExtension> bintray) {
+        bintray.execute(bintrayExtension)
     }
 }
