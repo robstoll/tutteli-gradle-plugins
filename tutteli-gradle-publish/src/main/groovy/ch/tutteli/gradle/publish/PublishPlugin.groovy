@@ -15,7 +15,7 @@ import static Validation.*
 
 class PublishPlugin implements Plugin<Project> {
     private static final Logger LOGGER = Logging.getLogger(PublishPlugin.class)
-    static final String EXTENSION_NAME = 'tutteliBintray'
+    static final String EXTENSION_NAME = 'publish'
 
     @Override
     void apply(Project project) {
@@ -138,7 +138,7 @@ class PublishPlugin implements Plugin<Project> {
     private static void configureBintray(
         Project project,
         PublishPluginExtension extension,
-        JFrogBintrayPluginExtension bintrayExtension,
+        BintrayExtension bintrayExtension,
         String repoUrl,
         List<License> uniqueLicenses
     ) {

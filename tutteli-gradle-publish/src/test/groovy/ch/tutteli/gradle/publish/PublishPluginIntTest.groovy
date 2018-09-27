@@ -30,7 +30,7 @@ class PublishPluginIntTest {
         }
         // has to be before ch.tutteli.bintray if we want to have components automatically set up
         apply plugin: 'java' 
-        apply plugin: 'ch.tutteli.bintray'
+        apply plugin: 'ch.tutteli.publish'
         
         project.with {
             group = 'ch.tutteli'
@@ -38,14 +38,14 @@ class PublishPluginIntTest {
             description = 'test project'
         }
         
-        tutteliBintray {
+        publish {
             githubUser = '$githubUser'
 
             //different ways to override the default license
             overrideDefaultLicense 'EUPL-1.2'             // default distribution is 'repo'
             overrideDefaultLicense 'EUPL-1.2', 'manually' 
-            overrideDefaultLicense ch.tutteli.gradle.bintray.StandardLicenses.EUPL_1_2
-            overrideDefaultLicense ch.tutteli.gradle.bintray.StandardLicenses.EUPL_1_2, 'manually'
+            overrideDefaultLicense ch.tutteli.gradle.publish.StandardLicenses.EUPL_1_2
+            overrideDefaultLicense ch.tutteli.gradle.publish.StandardLicenses.EUPL_1_2, 'manually'
             overrideDefaultLicense {
                 shortName = 'Lic-1.2'
                 longName = 'License 1.2'
@@ -62,8 +62,8 @@ class PublishPluginIntTest {
             // different ways to add additional licenses
             license 'Apache-2.0'
             license 'Apache-2.0', 'manually'
-            license ch.tutteli.gradle.bintray.StandardLicenses.APACHE_2_0
-            license ch.tutteli.gradle.bintray.StandardLicenses.APACHE_2_0, 'somethingElse'
+            license ch.tutteli.gradle.publish.StandardLicenses.APACHE_2_0
+            license ch.tutteli.gradle.publish.StandardLicenses.APACHE_2_0, 'somethingElse'
             license {
                 shortName = 'Lic-1.2'
                 longName = 'License 1.2'

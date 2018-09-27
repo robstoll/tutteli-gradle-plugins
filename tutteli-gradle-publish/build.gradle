@@ -1,10 +1,10 @@
 buildscript {
     ext {
-        plugin_id = 'ch.tutteli.bintray'
-        plugin_class = 'ch.tutteli.gradle.bintray.BintrayPlugin'
-        plugin_name = 'Tutteli Bintray Plugin'
-        plugin_description = 'Applies JFrog\'s bintray plugin and configures according to tutteli\'s publish conventions.'
-        plugin_tags = ['dokka', 'kotlin']
+        plugin_id = 'ch.tutteli.publish'
+        plugin_class = 'ch.tutteli.gradle.publish.PublishPlugin'
+        plugin_name = 'Tutteli Publish Plugin'
+        plugin_description = 'Applies maven-publish as well as JFrog\'s bintray plugin and configures them according to tutteli\'s publish conventions.'
+        plugin_tags = ['publish', 'bintray', 'kotlin']
     }
 }
 
