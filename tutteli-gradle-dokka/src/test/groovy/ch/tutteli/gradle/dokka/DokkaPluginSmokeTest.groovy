@@ -37,10 +37,10 @@ class DokkaPluginSmokeTest {
         assertEquals('#L', linkMapping.suffix)
         assertEquals('0.9.17', DokkaVersion.version)
 
-        Jar javadocTask = project.tasks.getByName(DokkaPlugin.JAVADOC_JAR_TASK_NAME) as Jar
-        assertNotNull(javadocTask, DokkaPlugin.JAVADOC_JAR_TASK_NAME)
+        Jar javadocTask = project.tasks.getByName(DokkaPlugin.TASK_NAME_JAVADOC) as Jar
+        assertNotNull(javadocTask, DokkaPlugin.TASK_NAME_JAVADOC)
         assertEquals('javadoc', javadocTask.classifier)
-        assertTrue(javadocTask.dependsOn.contains(dokkaTask), "$DokkaPlugin.JAVADOC_JAR_TASK_NAME should depend on Dokka task")
+        assertTrue(javadocTask.dependsOn.contains(dokkaTask), "$DokkaPlugin.TASK_NAME_JAVADOC should depend on Dokka task")
 
         project.evaluate()
 

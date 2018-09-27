@@ -10,7 +10,7 @@ import org.jetbrains.dokka.gradle.LinkMapping
 
 class DokkaPlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = 'tutteliDokka'
-    static final String JAVADOC_JAR_TASK_NAME = 'javadocJar'
+    static final String TASK_NAME_JAVADOC = 'javadocJar'
     protected static final String ERR_REPO_URL_OR_GITHUB_USER = "${EXTENSION_NAME}.repoUrl or ${EXTENSION_NAME}.githubUser has to be defined"
     protected static final String ERR_GH_PAGES_WITHOUT_USER =
         "You need to define ${EXTENSION_NAME}.githubUser if you want to use ${EXTENSION_NAME}.ghPages"
@@ -20,7 +20,7 @@ class DokkaPlugin implements Plugin<Project> {
         project.pluginManager.apply(JetbrainsDokkaPlugin)
 
         DokkaTask dokkaTask = project.tasks.getByName('dokka') as DokkaTask
-        project.tasks.create(name: JAVADOC_JAR_TASK_NAME, type: Jar, dependsOn: dokkaTask) {
+        project.tasks.create(name: TASK_NAME_JAVADOC, type: Jar, dependsOn: dokkaTask) {
             from dokkaTask.outputDirectory
             classifier = 'javadoc'
         }

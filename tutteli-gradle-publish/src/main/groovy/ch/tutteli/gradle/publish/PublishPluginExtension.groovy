@@ -57,7 +57,7 @@ class PublishPluginExtension {
     }
 
     private void useSourcesJarAsArtifact(){
-        artifacts.add(project.tasks.getByName(PublishPlugin.SOURCES_JAR))
+        artifacts.add(project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR))
     }
 
     private void useJavaComponentIfJavaPluginAvailable() {

@@ -10,14 +10,16 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
-import org.gradle.jvm.tasks.Jar
+import org.gradle.api.tasks.bundling.Jar
 
 import static ch.tutteli.gradle.publish.Validation.*
 
 class PublishPlugin implements Plugin<Project> {
     private static final Logger LOGGER = Logging.getLogger(PublishPlugin.class)
     static final String EXTENSION_NAME = 'publish'
-    static final String SOURCES_JAR = 'sourcesJar'
+    static final String TASK_NAME_INCLUDE_TIME = 'includeBuildTimeInManifest'
+    static final String TASK_NAME_PUBLISH_TO_BINTRAY = 'publishToBintray'
+    static final String TASK_NAME_SOURCES_JAR = 'sourcesJar'
 
     @Override
     void apply(Project project) {
@@ -30,9 +32,26 @@ class PublishPlugin implements Plugin<Project> {
                 "\nPlease open an issue if you would like to publish projects without sources: https://github.com/robstoll/tutteli-gradle-plugins/issues/new"
         )
 
-        project.tasks.create(name: SOURCES_JAR, type: Jar) {
+        project.tasks.create(name: TASK_NAME_SOURCES_JAR, type: Jar) {
             from project.sourceSets.main.allSource
             classifier = 'sources'
+        }
+
+        def includeBuildTime = project.tasks.create(name: TASK_NAME_INCLUDE_TIME) {
+            doLast {
+                project.tasks.withType(Jar) { jarTask ->
+                    jarTask.manifest {
+                        attributes('Build-Time': new Date().format('yyyy-MM-dd\'T\'HH:mm:ssZ'))
+                    }
+                }
+            }
+        }
+
+        project.tasks.create(name: TASK_NAME_PUBLISH_TO_BINTRAY){
+            dependsOn includeBuildTime
+            def bintrayUpload = project.tasks.getByName('bintrayUpload')
+            dependsOn bintrayUpload
+            bintrayUpload.mustRunAfter(includeBuildTime)
         }
 
         def extension = project.extensions.create(EXTENSION_NAME, PublishPluginExtension, project)

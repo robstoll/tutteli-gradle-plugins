@@ -81,7 +81,9 @@ In case you use the `ch.tutteli.dokka` plugin (which provides the `javadocJar`) 
 The plugin also creates a manifest file for all jars mentioning the kotlin version if the kotlin plugin is available.
 See the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L310)
 for more information.
-Last but not least it adds the `License.txt` or `LICENSE` file to the jar if such a file exists in the root of the rootProject.
+Furthermore it adds the `License.txt` or `LICENSE` file to the jar if such a file exists in the root of the rootProject.
+
+Last but not least it provides a `publishToBintray` task which adds the build-time to the manifest file in addition.
 
 # ch.tutteli.spek [🔗](https://plugins.gradle.org/plugin/ch.tutteli.spek/0.10.1)
 Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 

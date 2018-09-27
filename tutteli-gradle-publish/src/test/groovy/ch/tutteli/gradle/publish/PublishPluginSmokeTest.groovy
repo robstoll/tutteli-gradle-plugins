@@ -19,6 +19,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals
 class PublishPluginSmokeTest {
 
     @Test
+    void smokeTest_TasksAndExtensionPresent(){
+        //arrange & act
+        Project project = setUp()
+        //assert
+        project.extensions.getByName(PublishPlugin.EXTENSION_NAME)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_INCLUDE_TIME)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_PUBLISH_TO_BINTRAY)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
+    }
+
+    @Test
     void overrideDefaultLicenseToEupl_LicenseEtcSetButNoDevelopers() {
         //arrange
         def distribution = 'someDistro'
@@ -43,6 +54,7 @@ class PublishPluginSmokeTest {
             assertContainsRegex(pom, "developers", "<developers/>")
             assertContainsRegex(pom, "scm url", "<scm>$Asserts.NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
         }
+
     }
 
     @Test

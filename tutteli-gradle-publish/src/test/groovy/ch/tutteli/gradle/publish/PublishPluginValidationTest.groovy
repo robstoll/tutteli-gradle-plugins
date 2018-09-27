@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 class PublishPluginValidationTest {
 
     @Test
-    void evaluate_noSourceSets_throwsIllegalStateException() {
+    void apply_noSourceSets_throwsIllegalStateException() {
         //arrange
         Project project = ProjectBuilder.builder()
             .withName(ARTIFACT_ID)
