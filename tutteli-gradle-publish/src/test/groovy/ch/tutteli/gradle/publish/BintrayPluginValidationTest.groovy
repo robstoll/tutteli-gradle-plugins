@@ -1,11 +1,12 @@
-package ch.tutteli.gradle.bintray
+package ch.tutteli.gradle.publish
+
 
 import com.jfrog.bintray.gradle.BintrayExtension as JFrogBintrayPluginExtension
 import org.gradle.api.Project
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 
-import static ch.tutteli.gradle.bintray.SetUp.*
+import static SetUp.*
 import static ch.tutteli.gradle.test.Asserts.assertThrowsProjectConfigExceptionWithCause
 import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.junit.jupiter.api.Assertions.assertThrows

@@ -1,4 +1,4 @@
-package ch.tutteli.gradle.bintray
+package ch.tutteli.gradle.publish
 
 import groovy.transform.Sortable
 import groovy.transform.ToString

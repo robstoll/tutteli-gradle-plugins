@@ -1,4 +1,4 @@
-package ch.tutteli.gradle.bintray
+package ch.tutteli.gradle.publish
 
 import com.jfrog.bintray.gradle.BintrayExtension as JFrogBintrayPluginExtension
 import org.apache.maven.model.Developer
@@ -9,8 +9,7 @@ import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 
-import static ch.tutteli.gradle.bintray.BintrayPlugin.EXTENSION_NAME
-import static ch.tutteli.gradle.bintray.Validation.requireNotNullNorBlank
+import static Validation.requireNotNullNorBlank
 
 class BintrayPluginExtension {
     private static final String DEFAULT_DISTRIBUTION = 'repo'
@@ -77,7 +76,7 @@ class BintrayPluginExtension {
 
     /**
      * Resets all previously set licenses and add the given, should only be used to override the default.
-     * Use {@link #license(ch.tutteli.gradle.bintray.StandardLicenses)} to specify additional licenses
+     * Use {@link #license(StandardLicenses)} to specify additional licenses
      */
     void overrideDefaultLicense(StandardLicenses standardLicense) {
         overrideDefaultLicense(standardLicense, DEFAULT_DISTRIBUTION)
@@ -85,7 +84,7 @@ class BintrayPluginExtension {
 
     /**
      * Resets all previously set licenses and add the given, should only be used to override the default.
-     * Use {@link #license(ch.tutteli.gradle.bintray.StandardLicenses, java.lang.String)} to specify additional licenses
+     * Use {@link #license(StandardLicenses, java.lang.String)} to specify additional licenses
      */
     void overrideDefaultLicense(StandardLicenses standardLicense, String distribution) {
         setNewLicense(new LicenseImpl(standardLicense, distribution))
@@ -133,10 +132,10 @@ class BintrayPluginExtension {
         def newLicense = project.objects.newInstance(LicenseImpl as Class<License>)
         newLicense.distribution = 'repo'
         license.execute(newLicense)
-        requireNotNullNorBlank(newLicense.shortName, "${EXTENSION_NAME}.license.shortName")
-        requireNotNullNorBlank(newLicense.longName, "${EXTENSION_NAME}.license.longName")
-        requireNotNullNorBlank(newLicense.url, "${EXTENSION_NAME}.license.url")
-        requireNotNullNorBlank(newLicense.distribution, "${EXTENSION_NAME}.license.distribution")
+        requireNotNullNorBlank(newLicense.shortName, "${BintrayPlugin.EXTENSION_NAME}.license.shortName")
+        requireNotNullNorBlank(newLicense.longName, "${BintrayPlugin.EXTENSION_NAME}.license.longName")
+        requireNotNullNorBlank(newLicense.url, "${BintrayPlugin.EXTENSION_NAME}.license.url")
+        requireNotNullNorBlank(newLicense.distribution, "${BintrayPlugin.EXTENSION_NAME}.license.distribution")
         newLicense
     }
 

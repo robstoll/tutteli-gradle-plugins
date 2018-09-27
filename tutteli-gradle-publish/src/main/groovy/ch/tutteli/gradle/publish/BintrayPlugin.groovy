@@ -1,4 +1,4 @@
-package ch.tutteli.gradle.bintray
+package ch.tutteli.gradle.publish
 
 import com.jfrog.bintray.gradle.BintrayExtension as JFrogBintrayPluginExtension
 import com.jfrog.bintray.gradle.BintrayPlugin as JFrogBintrayPlugin
@@ -11,7 +11,7 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 
-import static ch.tutteli.gradle.bintray.Validation.*
+import static Validation.*
 
 class BintrayPlugin implements Plugin<Project> {
     private static final Logger LOGGER = Logging.getLogger(BintrayPlugin.class)

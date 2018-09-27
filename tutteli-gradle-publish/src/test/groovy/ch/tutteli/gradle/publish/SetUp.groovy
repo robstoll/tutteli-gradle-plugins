@@ -1,5 +1,7 @@
-package ch.tutteli.gradle.bintray
+package ch.tutteli.gradle.publish
 
+import ch.tutteli.gradle.publish.BintrayPlugin
+import ch.tutteli.gradle.publish.BintrayPluginExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder

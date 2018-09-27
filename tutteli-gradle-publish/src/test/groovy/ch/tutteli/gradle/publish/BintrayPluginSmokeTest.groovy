@@ -1,5 +1,7 @@
-package ch.tutteli.gradle.bintray
+package ch.tutteli.gradle.publish
 
+
+import ch.tutteli.gradle.test.Asserts
 import org.apache.maven.model.Model
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer
 import org.gradle.api.Action
@@ -11,10 +13,8 @@ import org.gradle.api.publish.maven.internal.tasks.MavenPomFileGenerator
 import org.gradle.internal.xml.XmlTransformer
 import org.junit.jupiter.api.Test
 
-import static ch.tutteli.gradle.bintray.BintrayPlugin.EXTENSION_NAME
-import static ch.tutteli.gradle.bintray.SetUp.*
+import static SetUp.*
 import static ch.tutteli.gradle.test.Asserts.assertContainsRegex
-import static ch.tutteli.gradle.test.Asserts.getNL_INDENT
 import static org.junit.jupiter.api.Assertions.assertEquals
 
 class BintrayPluginSmokeTest {
@@ -35,14 +35,14 @@ class BintrayPluginSmokeTest {
             assertContainsRegex(pom, "description", "<description>$DESCRIPTION</description>")
             def repoUrl = "https://github.com/$GITHUB_USER/$ARTIFACT_ID"
             assertContainsRegex(pom, "url", "\n    <url>$repoUrl</url>")
-            assertContainsRegex(pom, "license", "<licenses>$NL_INDENT<license>$NL_INDENT" +
-                "<name>${StandardLicenses.EUPL_1_2.longName}</name>$NL_INDENT" +
-                "<url>${StandardLicenses.EUPL_1_2.url}</url>$NL_INDENT" +
-                "<distribution>$distribution</distribution>$NL_INDENT" +
-                "</license>$NL_INDENT</licenses>"
+            assertContainsRegex(pom, "license", "<licenses>$Asserts.NL_INDENT<license>$Asserts.NL_INDENT" +
+                "<name>${StandardLicenses.EUPL_1_2.longName}</name>$Asserts.NL_INDENT" +
+                "<url>${StandardLicenses.EUPL_1_2.url}</url>$Asserts.NL_INDENT" +
+                "<distribution>$distribution</distribution>$Asserts.NL_INDENT" +
+                "</license>$Asserts.NL_INDENT</licenses>"
             )
             assertContainsRegex(pom, "developers", "<developers/>")
-            assertContainsRegex(pom, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
+            assertContainsRegex(pom, "scm url", "<scm>$Asserts.NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
         }
     }
 
@@ -63,22 +63,22 @@ class BintrayPluginSmokeTest {
             assertContainsRegex(pom, "description", "<description>$DESCRIPTION</description>")
             def repoUrl = "https://github.com/$GITHUB_USER/$ARTIFACT_ID"
             assertContainsRegex(pom, "url", "\n    <url>$repoUrl</url>")
-            assertContainsRegex(pom, "license", "<licenses>$NL_INDENT<license>$NL_INDENT" +
-                "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
-                "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
-                "<distribution>repo</distribution>$NL_INDENT" +
-                "</license>$NL_INDENT</licenses>"
+            assertContainsRegex(pom, "license", "<licenses>$Asserts.NL_INDENT<license>$Asserts.NL_INDENT" +
+                "<name>${StandardLicenses.APACHE_2_0.longName}</name>$Asserts.NL_INDENT" +
+                "<url>${StandardLicenses.APACHE_2_0.url}</url>$Asserts.NL_INDENT" +
+                "<distribution>repo</distribution>$Asserts.NL_INDENT" +
+                "</license>$Asserts.NL_INDENT</licenses>"
             )
-            assertContainsRegex(pom, "developers", "<developers>$NL_INDENT<developer>$NL_INDENT" +
-                "<id>$GITHUB_USER</id>$NL_INDENT" +
-                "</developer>$NL_INDENT</developers>")
-            assertContainsRegex(pom, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
+            assertContainsRegex(pom, "developers", "<developers>$Asserts.NL_INDENT<developer>$Asserts.NL_INDENT" +
+                "<id>$GITHUB_USER</id>$Asserts.NL_INDENT" +
+                "</developer>$Asserts.NL_INDENT</developers>")
+            assertContainsRegex(pom, "scm url", "<scm>$Asserts.NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
         }
     }
 
 
     private static BintrayPluginExtension getPluginExtension(Project project) {
-        return project.extensions.getByName(EXTENSION_NAME) as BintrayPluginExtension
+        return project.extensions.getByName(BintrayPlugin.EXTENSION_NAME) as BintrayPluginExtension
     }
 
     private static String getPomAsString(MavenPublication pub) {

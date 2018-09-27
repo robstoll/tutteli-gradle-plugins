@@ -1,4 +1,4 @@
-package ch.tutteli.gradle.bintray
+package ch.tutteli.gradle.publish
 
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
