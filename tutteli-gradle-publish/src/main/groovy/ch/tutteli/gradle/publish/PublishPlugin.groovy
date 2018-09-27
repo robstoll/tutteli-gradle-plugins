@@ -49,7 +49,7 @@ class PublishPlugin implements Plugin<Project> {
             doLast {
                 project.tasks.withType(Jar) { jarTask ->
                     jarTask.manifest {
-                        attributes('Build-Time': new Date().format('yyyy-MM-dd\'T\'HH:mm:ssZ'))
+                        attributes('Build-Time': new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ'))
                     }
                 }
             }
@@ -199,7 +199,7 @@ class PublishPlugin implements Plugin<Project> {
                 version.with {
                     name = name ?: project.name
                     desc = desc ?: "$pkgName $project.version"
-                    released = released ?: new Date().format('yyyy-MM-dd\'T\'HH:mm:ssZ')
+                    released = released ?: new Date().toString()
                     vcsTag = vcsTag ?: "v$project.version"
                     gpg.with {
                         boolean signIt = sign ?: extension.signWithGpg.getOrElse(true)
