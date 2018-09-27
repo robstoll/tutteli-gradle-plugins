@@ -85,6 +85,17 @@ Furthermore it adds the `License.txt` or `LICENSE` file to the jar if such a fil
 
 Last but not least it provides a `publishToBintray` task which adds the build-time to the manifest file in addition.
 
+The conventions:
+- Apache 2.0 is used as default license
+- project.group, project.description and project.version is used in publishing
+- bintray user, api key and gpg passphrase can either be provided by a property (we recommend gradle.properties) or by System.env with the following names:
+
+    |       prop           |         env            |
+    |----------------------|------------------------|
+    | bintrayUser          | BINTRAY_USER           |
+    | bintrayApiKey        | BINTRAY_API_KEY        |
+    | bintrayGpgPassphrase | BINTRAY_GPG_PASSPHRASE | 
+
 # ch.tutteli.spek [🔗](https://plugins.gradle.org/plugin/ch.tutteli.spek/0.11.1)
 Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 
 and sets up [Spek](http://spekframework.org/) as junit engine.

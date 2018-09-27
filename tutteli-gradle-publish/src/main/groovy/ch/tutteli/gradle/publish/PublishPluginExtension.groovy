@@ -22,6 +22,9 @@ class PublishPluginExtension {
     final ListProperty<Task> artifacts
     final ListProperty<License> licenses
     final ListProperty<Developer> developers
+    final Property<String> propNameBintrayUser
+    final Property<String> propNameBintrayApiKey
+    final Property<String> propNameBintrayGpgPassphrase
     final Property<String> envNameBintrayUser
     final Property<String> envNameBintrayApiKey
     final Property<String> envNameBintrayGpgPassphrase
@@ -40,6 +43,12 @@ class PublishPluginExtension {
         licenses = project.objects.listProperty(License)
         overrideDefaultLicense(StandardLicenses.APACHE_2_0, 'repo')
         developers = project.objects.listProperty(Developer)
+        propNameBintrayUser = project.objects.property(String)
+        propNameBintrayUser.set('bintrayUser')
+        propNameBintrayApiKey = project.objects.property(String)
+        propNameBintrayApiKey.set('bintrayApiKey')
+        propNameBintrayGpgPassphrase = project.objects.property(String)
+        propNameBintrayGpgPassphrase.set('bintrayGpgPassphrase')
         envNameBintrayUser = project.objects.property(String)
         envNameBintrayUser.set('BINTRAY_USER')
         envNameBintrayApiKey = project.objects.property(String)

@@ -8,6 +8,7 @@ import org.gradle.api.Project
 import org.gradle.api.XmlProvider
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
+import org.gradle.api.provider.Property
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.bundling.Jar
@@ -47,7 +48,7 @@ class PublishPlugin implements Plugin<Project> {
             }
         }
 
-        project.tasks.create(name: TASK_NAME_PUBLISH_TO_BINTRAY){
+        project.tasks.create(name: TASK_NAME_PUBLISH_TO_BINTRAY) {
             dependsOn includeBuildTime
             def bintrayUpload = project.tasks.getByName('bintrayUpload')
             dependsOn bintrayUpload
@@ -176,8 +177,8 @@ class PublishPlugin implements Plugin<Project> {
         List<License> uniqueLicenses
     ) {
         bintrayExtension.with {
-            user = user ?: getSystemEnvAndErrorIfBlank(extension.envNameBintrayUser.get())
-            key = key ?: getSystemEnvAndErrorIfBlank(extension.envNameBintrayApiKey.get())
+            user = user ?: getPropertyOrSystemEnvAndErrorIfBlank(project, extension.propNameBintrayUser, extension.envNameBintrayUser)
+            key = key ?: getPropertyOrSystemEnvAndErrorIfBlank(project, extension.propNameBintrayApiKey, extension.envNameBintrayApiKey)
             publications = ['tutteli'] as String[]
 
             pkg.with {
@@ -195,7 +196,7 @@ class PublishPlugin implements Plugin<Project> {
                         boolean signIt = sign ?: extension.signWithGpg.getOrElse(true)
                         sign = signIt
                         if (signIt) {
-                            passphrase = passphrase ?: getSystemEnvAndErrorIfBlank(extension.envNameBintrayGpgPassphrase.get())
+                            passphrase = passphrase ?: getPropertyOrSystemEnvAndErrorIfBlank(project, extension.propNameBintrayGpgPassphrase, extension.envNameBintrayGpgPassphrase)
                         }
                     }
                 }
@@ -203,9 +204,12 @@ class PublishPlugin implements Plugin<Project> {
         }
     }
 
-    private static String getSystemEnvAndErrorIfBlank(String envName) {
-        def value = System.getenv(envName)
-        if (!value?.trim()) throw newIllegalState("System.env variable with name $envName")
+    private static String getPropertyOrSystemEnvAndErrorIfBlank(Project project, Property<String> propName, Property<String> envName) {
+        def value = project.findProperty(propName.get())
+        if (!value?.trim()) {
+            value = System.getenv(envName.get())
+        }
+        if (!value?.trim()) throw newIllegalState("property with name ${propName.get()} or System.env variable with name ${envName.get()}")
         return value
     }
 
