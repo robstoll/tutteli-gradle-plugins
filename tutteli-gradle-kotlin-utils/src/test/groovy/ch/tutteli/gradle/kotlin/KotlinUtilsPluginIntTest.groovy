@@ -34,7 +34,9 @@ class KotlinUtilsPluginIntTest {
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
         buildGradle << """
         buildscript {
+            repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
@@ -150,6 +152,8 @@ class KotlinUtilsPluginIntTest {
         def headerBuildFile = """
         buildscript {
             dependencies {
+                repositories { maven { url "https://plugins.gradle.org/m2/" } }
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
                 classpath files($settingsSetup.pluginClasspath)
             }
         }

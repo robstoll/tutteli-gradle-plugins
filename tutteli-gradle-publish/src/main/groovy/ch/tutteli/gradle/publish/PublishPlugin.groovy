@@ -207,8 +207,9 @@ class PublishPlugin implements Plugin<Project> {
     }
 
     private static Map<String, String> getImplementationKotlinVersionIfAvailable(Project project) {
-        def kotlin_version = getKotlinVersion(project)
-        if (kotlin_version != null) return ['Implementation-Kotlin-Version': kotlin_version]
+        def kotlinVersion = getKotlinVersion(project)
+        //we use if instead of ternary operator because type inference fails otherwise
+        if (kotlinVersion != null) return ['Implementation-Kotlin-Version': kotlinVersion]
         else return Collections.emptyMap()
     }
 
