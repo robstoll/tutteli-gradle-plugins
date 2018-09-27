@@ -1,7 +1,6 @@
 package ch.tutteli.gradle.publish
 
-import ch.tutteli.gradle.publish.BintrayPlugin
-import ch.tutteli.gradle.publish.BintrayPluginExtension
+
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -21,9 +20,9 @@ class SetUp {
         project.version = VERSION
         project.group = GROUP_ID
         project.description = DESCRIPTION
-        project.plugins.apply(BintrayPlugin)
+        project.plugins.apply(PublishPlugin)
         project.plugins.apply('java')
-        BintrayPluginExtension extension = getPluginExtension(project)
+        PublishPluginExtension extension = getPluginExtension(project)
         extension.githubUser.set(GITHUB_USER)
         extension.artifacts.add(project.tasks.getByName('jar'))
         extension.bintrayRepo.set('tutteli-jars')
@@ -35,8 +34,8 @@ class SetUp {
         return project
     }
 
-    protected static BintrayPluginExtension getPluginExtension(Project project) {
-        return project.extensions.getByName(BintrayPlugin.EXTENSION_NAME) as BintrayPluginExtension
+    protected static PublishPluginExtension getPluginExtension(Project project) {
+        return project.extensions.getByName(PublishPlugin.EXTENSION_NAME) as PublishPluginExtension
     }
 
     protected static BintrayExtension getJfrogBintrayExtension(Project project) {

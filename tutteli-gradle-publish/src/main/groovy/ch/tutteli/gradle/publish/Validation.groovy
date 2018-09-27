@@ -21,7 +21,7 @@ class Validation {
     }
 
     protected static IllegalStateException newIllegalStateForProperty(String propertyName) {
-        return newIllegalState("${BintrayPlugin.EXTENSION_NAME}.$propertyName")
+        return newIllegalState("${PublishPlugin.EXTENSION_NAME}.$propertyName")
     }
 
     protected static IllegalStateException newIllegalState(String description) {

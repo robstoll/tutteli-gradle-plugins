@@ -17,7 +17,7 @@ import static SetUp.*
 import static ch.tutteli.gradle.test.Asserts.assertContainsRegex
 import static org.junit.jupiter.api.Assertions.assertEquals
 
-class BintrayPluginSmokeTest {
+class PublishPluginSmokeTest {
 
     @Test
     void overrideDefaultLicenseToEupl_LicenseEtcSetButNoDevelopers() {
@@ -77,8 +77,8 @@ class BintrayPluginSmokeTest {
     }
 
 
-    private static BintrayPluginExtension getPluginExtension(Project project) {
-        return project.extensions.getByName(BintrayPlugin.EXTENSION_NAME) as BintrayPluginExtension
+    private static PublishPluginExtension getPluginExtension(Project project) {
+        return project.extensions.getByName(PublishPlugin.EXTENSION_NAME) as PublishPluginExtension
     }
 
     private static String getPomAsString(MavenPublication pub) {

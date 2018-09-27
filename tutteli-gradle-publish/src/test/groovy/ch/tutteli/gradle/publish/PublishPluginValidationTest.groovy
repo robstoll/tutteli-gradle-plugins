@@ -11,7 +11,7 @@ import static ch.tutteli.gradle.test.Asserts.assertThrowsProjectConfigExceptionW
 import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.junit.jupiter.api.Assertions.assertThrows
 
-class BintrayPluginValidationTest {
+class PublishPluginValidationTest {
 
     @Test
     void evaluate_versionUnspecified_throwsIllegalStateException() {
@@ -56,7 +56,7 @@ class BintrayPluginValidationTest {
         Project project = setUp()
         getPluginExtension(project).artifacts.set(null)
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("either ${BintrayPlugin.EXTENSION_NAME}.component or ${BintrayPlugin.EXTENSION_NAME}.artifacts", project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("either ${PublishPlugin.EXTENSION_NAME}.component or ${PublishPlugin.EXTENSION_NAME}.artifacts", project)
     }
 
     @Test
@@ -65,7 +65,7 @@ class BintrayPluginValidationTest {
         Project project = setUp()
         getPluginExtension(project).artifacts.set(new ArrayList<>())
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("either ${BintrayPlugin.EXTENSION_NAME}.component or ${BintrayPlugin.EXTENSION_NAME}.artifacts", project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("either ${PublishPlugin.EXTENSION_NAME}.component or ${PublishPlugin.EXTENSION_NAME}.artifacts", project)
     }
 
     @Test
@@ -92,7 +92,7 @@ class BintrayPluginValidationTest {
         Project project = setUp()
         getPluginExtension(project).githubUser.set(null)
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${BintrayPlugin.EXTENSION_NAME}.githubUser", project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.githubUser", project)
     }
 
     @Test
@@ -100,7 +100,7 @@ class BintrayPluginValidationTest {
         //arrange
         Project project = setUp()
         //act && assert
-        assertThrowsIllegalState("${BintrayPlugin.EXTENSION_NAME}.license.shortName") {
+        assertThrowsIllegalState("${PublishPlugin.EXTENSION_NAME}.license.shortName") {
             getPluginExtension(project).license {
                 longName = "test"
                 url = "http"
@@ -113,7 +113,7 @@ class BintrayPluginValidationTest {
         //arrange
         Project project = setUp()
         //act && assert
-        assertThrowsIllegalState("${BintrayPlugin.EXTENSION_NAME}.license.longName") {
+        assertThrowsIllegalState("${PublishPlugin.EXTENSION_NAME}.license.longName") {
             getPluginExtension(project).license {
                 shortName = "test"
                 longName = ""
@@ -127,7 +127,7 @@ class BintrayPluginValidationTest {
         //arrange
         Project project = setUp()
         //act && assert
-        assertThrowsIllegalState("${BintrayPlugin.EXTENSION_NAME}.license.url") {
+        assertThrowsIllegalState("${PublishPlugin.EXTENSION_NAME}.license.url") {
             getPluginExtension(project).license {
                 shortName = "test"
                 longName = "Test License"
@@ -140,7 +140,7 @@ class BintrayPluginValidationTest {
         //arrange
         Project project = setUp()
         //act && assert
-        assertThrowsIllegalState("${BintrayPlugin.EXTENSION_NAME}.license.distribution") {
+        assertThrowsIllegalState("${PublishPlugin.EXTENSION_NAME}.license.distribution") {
             getPluginExtension(project).license {
                 shortName = "test"
                 longName = "Test License"
@@ -156,7 +156,7 @@ class BintrayPluginValidationTest {
         Project project = setUp()
         getPluginExtension(project).envNameBintrayUser.set(null)
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${BintrayPlugin.EXTENSION_NAME}.envNameBintrayUser", project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameBintrayUser", project)
     }
 
     @Test
@@ -165,7 +165,7 @@ class BintrayPluginValidationTest {
         Project project = setUp()
         getPluginExtension(project).envNameBintrayApiKey.set(null)
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${BintrayPlugin.EXTENSION_NAME}.envNameBintrayApiKey", project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameBintrayApiKey", project)
     }
 
     @Test
@@ -174,7 +174,7 @@ class BintrayPluginValidationTest {
         Project project = setUp()
         getPluginExtension(project).envNameBintrayGpgPassphrase.set(null)
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${BintrayPlugin.EXTENSION_NAME}.envNameBintrayGpgPassphrase", project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameBintrayGpgPassphrase", project)
     }
 
     @Test
@@ -183,7 +183,7 @@ class BintrayPluginValidationTest {
         Project project = setUp()
         getPluginExtension(project).bintrayRepo.set(null)
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${BintrayPlugin.EXTENSION_NAME}.bintrayRepo", project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.bintrayRepo", project)
     }
 
     @Test
@@ -201,7 +201,7 @@ class BintrayPluginValidationTest {
         Project project = setUp()
         getPluginExtension(project).bintrayPkg.set(null)
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${BintrayPlugin.EXTENSION_NAME}.bintrayPkg", project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.bintrayPkg", project)
     }
 
     @Test

@@ -11,7 +11,7 @@ import org.gradle.api.provider.Property
 
 import static Validation.requireNotNullNorBlank
 
-class BintrayPluginExtension {
+class PublishPluginExtension {
     private static final String DEFAULT_DISTRIBUTION = 'repo'
     private Project project
     private JFrogBintrayPluginExtension jfrogBintrayExtension
@@ -29,7 +29,7 @@ class BintrayPluginExtension {
     final Property<String> bintrayPkg
     final Property<Boolean> signWithGpg
 
-    BintrayPluginExtension(Project project) {
+    PublishPluginExtension(Project project) {
         this.project = project
         jfrogBintrayExtension = project.extensions.getByType(JFrogBintrayPluginExtension)
 
@@ -132,10 +132,10 @@ class BintrayPluginExtension {
         def newLicense = project.objects.newInstance(LicenseImpl as Class<License>)
         newLicense.distribution = 'repo'
         license.execute(newLicense)
-        requireNotNullNorBlank(newLicense.shortName, "${BintrayPlugin.EXTENSION_NAME}.license.shortName")
-        requireNotNullNorBlank(newLicense.longName, "${BintrayPlugin.EXTENSION_NAME}.license.longName")
-        requireNotNullNorBlank(newLicense.url, "${BintrayPlugin.EXTENSION_NAME}.license.url")
-        requireNotNullNorBlank(newLicense.distribution, "${BintrayPlugin.EXTENSION_NAME}.license.distribution")
+        requireNotNullNorBlank(newLicense.shortName, "${PublishPlugin.EXTENSION_NAME}.license.shortName")
+        requireNotNullNorBlank(newLicense.longName, "${PublishPlugin.EXTENSION_NAME}.license.longName")
+        requireNotNullNorBlank(newLicense.url, "${PublishPlugin.EXTENSION_NAME}.license.url")
+        requireNotNullNorBlank(newLicense.distribution, "${PublishPlugin.EXTENSION_NAME}.license.distribution")
         newLicense
     }
 

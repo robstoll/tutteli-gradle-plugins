@@ -13,7 +13,7 @@ import static ch.tutteli.gradle.test.Asserts.getNL_INDENT
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
-class BintrayPluginIntTest {
+class PublishPluginIntTest {
 
     @Test
     void smokeTest_publishing(SettingsExtensionObject settingsSetup) throws IOException {

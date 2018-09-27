@@ -1,7 +1,7 @@
 package ch.tutteli.gradle.publish
 
-import com.jfrog.bintray.gradle.BintrayExtension as JFrogBintrayPluginExtension
-import com.jfrog.bintray.gradle.BintrayPlugin as JFrogBintrayPlugin
+import com.jfrog.bintray.gradle.BintrayExtension
+import com.jfrog.bintray.gradle.BintrayPlugin
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -13,15 +13,15 @@ import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 
 import static Validation.*
 
-class BintrayPlugin implements Plugin<Project> {
-    private static final Logger LOGGER = Logging.getLogger(BintrayPlugin.class)
+class PublishPlugin implements Plugin<Project> {
+    private static final Logger LOGGER = Logging.getLogger(PublishPlugin.class)
     static final String EXTENSION_NAME = 'tutteliBintray'
 
     @Override
     void apply(Project project) {
         project.plugins.apply(MavenPublishPlugin)
-        project.plugins.apply(JFrogBintrayPlugin)
-        def extension = project.extensions.create(EXTENSION_NAME, BintrayPluginExtension, project)
+        project.plugins.apply(BintrayPlugin)
+        def extension = project.extensions.create(EXTENSION_NAME, PublishPluginExtension, project)
 
         project.afterEvaluate {
             requireNotNullNorBlank(project.name, "project.name")
@@ -32,7 +32,7 @@ class BintrayPlugin implements Plugin<Project> {
             requireExtensionPropertyPresentAndNotBlank(extension.githubUser, "githubUser")
             requireExtensionPropertyPresentNotEmpty(extension.licenses, "licenses")
 
-            def bintrayExtension = project.extensions.getByType(JFrogBintrayPluginExtension)
+            def bintrayExtension = project.extensions.getByType(BintrayExtension)
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayUser, "envNameBintrayUser")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayApiKey, "envNameBintrayApiKey")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayGpgPassphrase, "envNameBintrayGpgPassphrase")
@@ -51,7 +51,7 @@ class BintrayPlugin implements Plugin<Project> {
         }
     }
 
-    private static void requireComponentOrArtifactsPresent(BintrayPluginExtension extension) {
+    private static void requireComponentOrArtifactsPresent(PublishPluginExtension extension) {
         if (!extension.component.isPresent() && extension.artifacts.map { it.isEmpty() }.getOrElse(true)) {
             throw newIllegalState("either ${EXTENSION_NAME}.component or ${EXTENSION_NAME}.artifacts")
         }
@@ -59,7 +59,7 @@ class BintrayPlugin implements Plugin<Project> {
 
     private static void configurePublishing(
         Project project,
-        BintrayPluginExtension extension,
+        PublishPluginExtension extension,
         String repoUrl,
         List<License> uniqueLicenses
     ) {
@@ -88,7 +88,7 @@ class BintrayPlugin implements Plugin<Project> {
 
     private static Action<? extends XmlProvider> pomConfig(
         Project project,
-        BintrayPluginExtension extension,
+        PublishPluginExtension extension,
         String repoUrl,
         List<License> uniqueLicenses
     ) {
@@ -137,7 +137,7 @@ class BintrayPlugin implements Plugin<Project> {
 
     private static void configureBintray(
         Project project,
-        BintrayPluginExtension extension,
+        PublishPluginExtension extension,
         JFrogBintrayPluginExtension bintrayExtension,
         String repoUrl,
         List<License> uniqueLicenses
