@@ -10,17 +10,25 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
+import org.gradle.jvm.tasks.Jar
 
 import static Validation.*
 
 class PublishPlugin implements Plugin<Project> {
     private static final Logger LOGGER = Logging.getLogger(PublishPlugin.class)
     static final String EXTENSION_NAME = 'publish'
+    static final String SOURCES_JAR = 'sourcesJar'
 
     @Override
     void apply(Project project) {
         project.plugins.apply(MavenPublishPlugin)
         project.plugins.apply(BintrayPlugin)
+
+        project.tasks.create(name: SOURCES_JAR, type: Jar) {
+            from project.sourceSets.main.allSource
+            classifier = 'sources'
+        }
+
         def extension = project.extensions.create(EXTENSION_NAME, PublishPluginExtension, project)
 
         project.afterEvaluate {

@@ -49,7 +49,13 @@ class PublishPluginExtension {
         bintrayPkg = project.objects.property(String)
         signWithGpg = project.objects.property(Boolean)
 
+        useSourcesJarAsArtifact()
         useJavaComponentIfJavaPluginAvailable()
+        useJavadocJarAsArtifactIfAvailable()
+    }
+
+    private void useSourcesJarAsArtifact(){
+        artifacts.add(project.tasks.getByName(PublishPlugin.SOURCES_JAR))
     }
 
     private void useJavaComponentIfJavaPluginAvailable() {
@@ -58,10 +64,18 @@ class PublishPluginExtension {
             component.set(name)
         }
     }
-/**
- * Resets all previously set licenses and adds the given, should only be used to override the default.
- * Use {@link #license(java.lang.String)} to specify additional licenses
- */
+
+    private void useJavadocJarAsArtifactIfAvailable() {
+        def jar = project.tasks.findByName('javadocJar')
+        if (jar != null) {
+            artifacts.add(jar)
+        }
+    }
+
+    /**
+     * Resets all previously set licenses and adds the given, should only be used to override the default.
+     * Use {@link #license(java.lang.String)} to specify additional licenses
+     */
     void overrideDefaultLicense(String license) {
         overrideDefaultLicense(license, DEFAULT_DISTRIBUTION)
     }

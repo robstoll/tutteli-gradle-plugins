@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 class PublishPluginIntTest {
 
     @Test
-    void smokeTest_publishing(SettingsExtensionObject settingsSetup) throws IOException {
+    void smokeTest(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def projectName = 'test-project'
         settingsSetup.settings << "rootProject.name='$projectName'"
@@ -154,8 +154,8 @@ class PublishPluginIntTest {
             "</developer>$NL_INDENT" +
             "<developer>$NL_INDENT" +
             "<id>robstoll_tutteli</id>$NL_INDENT" +
-            "<name>Robert Stoll</name>$NL_INDENT"+
-            "<email>rstoll@tutteli.ch</email>$NL_INDENT"+
+            "<name>Robert Stoll</name>$NL_INDENT" +
+            "<email>rstoll@tutteli.ch</email>$NL_INDENT" +
             "<organization>tutteli</organization>$NL_INDENT" +
             "<organizationUrl>tutteli.ch</organizationUrl>$NL_INDENT" +
             "</developer>$NL_INDENT" +
@@ -230,4 +230,74 @@ class PublishPluginIntTest {
         }
         """
     }
+
+
+    @Test
+    void combinePlugins(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        def projectName = 'test-project'
+        settingsSetup.settings << "rootProject.name='$projectName'"
+        def version = '1.0.0-SNAPSHOT'
+        def githubUser = 'robstoll'
+
+        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
+        buildGradle << """
+        buildscript {
+            repositories { maven { url "https://plugins.gradle.org/m2/" } }
+            dependencies {
+                classpath "ch.tutteli:tutteli-gradle-dokka:0.10.1"
+                classpath files($settingsSetup.pluginClasspath)
+            }
+        }
+        apply plugin: 'java'
+        apply plugin: 'ch.tutteli.dokka' 
+        tutteliDokka.githubUser = '$githubUser'
+
+        apply plugin: 'ch.tutteli.publish'
+                
+        project.with {
+            group = 'ch.tutteli'
+            version = '$version'
+            description = 'test project'
+        }
+        
+        publish {
+            githubUser = '$githubUser'
+            // Apache License 2.0 is the default
+            // developers are optional
+
+            //minimal setup required for bintray extension
+            bintrayRepo = 'tutteli-jars'
+            bintrayPkg = 'atrium'  
+            
+            //required since we don't set the System.env variables
+            bintray {
+                user = 'test'
+                key = 'api-key'
+                pkg.version.gpg.sign = false
+            }
+        }        
+        
+        project.afterEvaluate {
+            project.publishing.publications.withType(MavenPublication) {
+                it.artifacts.each {
+                    println("artifact: \$it.extension - \$it.classifier")
+                }
+            }
+        }
+        """
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("projects", "--stacktrace")
+            .build()
+        //assert
+
+        assertTrue(result.output.contains("artifact: jar - null"), "java jar\n$result.output")
+        assertTrue(result.output.contains("artifact: jar - sources"), "sources jar\n$result.output")
+        assertTrue(result.output.contains("artifact: jar - javadoc"), "javadoc jar\n$result.output")
+
+    }
+
+
 }
