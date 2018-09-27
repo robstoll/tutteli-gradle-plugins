@@ -1,5 +1,6 @@
 package ch.tutteli.gradle.bintray
 
+import com.jfrog.bintray.gradle.BintrayExtension as JFrogBintrayPluginExtension
 import org.apache.maven.model.Developer
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -9,10 +10,12 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 
 import static ch.tutteli.gradle.bintray.BintrayPlugin.EXTENSION_NAME
-import static ch.tutteli.gradle.bintray.Validation.requireNotNullNorEmpty
+import static ch.tutteli.gradle.bintray.Validation.requireNotNullNorBlank
 
 class BintrayPluginExtension {
     private static final String DEFAULT_DISTRIBUTION = 'repo'
+    private Project project
+    private JFrogBintrayPluginExtension jfrogBintrayExtension
 
     final Property<String> githubUser
     final Property<SoftwareComponent> component
@@ -20,24 +23,46 @@ class BintrayPluginExtension {
     final ListProperty<Task> artifacts
     final ListProperty<License> licenses
     final ListProperty<Developer> developers
-    private Project project
-
+    final Property<String> envNameBintrayUser
+    final Property<String> envNameBintrayApiKey
+    final Property<String> envNameBintrayGpgPassphrase
+    final Property<String> bintrayRepo
+    final Property<String> bintrayPkg
+    final Property<Boolean> signWithGpg
 
     BintrayPluginExtension(Project project) {
         this.project = project
+        jfrogBintrayExtension = project.extensions.getByType(JFrogBintrayPluginExtension)
+
         githubUser = project.objects.property(String)
         component = project.objects.property(SoftwareComponent)
         artifacts = project.objects.listProperty(Task)
         licenses = project.objects.listProperty(License)
         overrideDefaultLicense(StandardLicenses.APACHE_2_0, 'repo')
         developers = project.objects.listProperty(Developer)
+        envNameBintrayUser = project.objects.property(String)
+        envNameBintrayUser.set('BINTRAY_USER')
+        envNameBintrayApiKey = project.objects.property(String)
+        envNameBintrayApiKey.set('BINTRAY_API_KEY')
+        envNameBintrayGpgPassphrase = project.objects.property(String)
+        envNameBintrayGpgPassphrase.set('BINTRAY_GPG_PASSPHRASE')
+        bintrayRepo = project.objects.property(String)
+        bintrayPkg = project.objects.property(String)
+        signWithGpg = project.objects.property(Boolean)
 
+        useJavaComponentIfJavaPluginAvailable()
     }
 
-    /**
-     * Resets all previously set licenses and adds the given, should only be used to override the default.
-     * Use {@link #license(java.lang.String)} to specify additional licenses
-     */
+    private void useJavaComponentIfJavaPluginAvailable() {
+        def name = project.components.findByName('java')
+        if (name != null) {
+            component.set(name)
+        }
+    }
+/**
+ * Resets all previously set licenses and adds the given, should only be used to override the default.
+ * Use {@link #license(java.lang.String)} to specify additional licenses
+ */
     void overrideDefaultLicense(String license) {
         overrideDefaultLicense(license, DEFAULT_DISTRIBUTION)
     }
@@ -108,10 +133,10 @@ class BintrayPluginExtension {
         def newLicense = project.objects.newInstance(LicenseImpl as Class<License>)
         newLicense.distribution = 'repo'
         license.execute(newLicense)
-        requireNotNullNorEmpty(newLicense.shortName, "${EXTENSION_NAME}.license.shortName")
-        requireNotNullNorEmpty(newLicense.longName, "${EXTENSION_NAME}.license.longName")
-        requireNotNullNorEmpty(newLicense.url, "${EXTENSION_NAME}.license.url")
-        requireNotNullNorEmpty(newLicense.distribution, "${EXTENSION_NAME}.license.distribution")
+        requireNotNullNorBlank(newLicense.shortName, "${EXTENSION_NAME}.license.shortName")
+        requireNotNullNorBlank(newLicense.longName, "${EXTENSION_NAME}.license.longName")
+        requireNotNullNorBlank(newLicense.url, "${EXTENSION_NAME}.license.url")
+        requireNotNullNorBlank(newLicense.distribution, "${EXTENSION_NAME}.license.distribution")
         newLicense
     }
 
@@ -121,4 +146,7 @@ class BintrayPluginExtension {
         developers.add(newDeveloper)
     }
 
+    void bintray(Action<JFrogBintrayPluginExtension> bintray) {
+        bintray.execute(jfrogBintrayExtension)
+    }
 }

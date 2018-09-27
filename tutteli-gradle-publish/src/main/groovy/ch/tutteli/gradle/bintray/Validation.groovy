@@ -1,13 +1,32 @@
 package ch.tutteli.gradle.bintray
 
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 
 class Validation {
-    protected static void requireNotNullNorEmpty(value, String valueDescription) {
-        if (!value?.trim()) throw new IllegalStateException("You need to define $valueDescription for publishing (empty or blank is considered to be undefined)")
+    protected static void requireNotNullNorBlank(Object value, String valueDescription) {
+        if (!value?.trim()) throw newIllegalState(valueDescription)
     }
 
-    protected static void requirePresentAndNotEmpty(Property<String> property, String valueDescription) {
-        if (!property.getOrNull()?.trim()) throw new IllegalStateException("You need to define $valueDescription for publishing (empty or blank is considered to be undefined)")
+    protected static void requireExtensionPropertyPresentAndNotBlank(Property<String> property, String propertyName) {
+        if (!property.getOrNull()?.trim()) throw newIllegalStateForProperty(propertyName)
+    }
+
+    protected static void requireExtensionPropertyPresentNotEmpty(ListProperty<?> property, String propertyName) {
+        if (!property.map { !it.isEmpty() }) throw newIllegalStateForProperty(propertyName)
+    }
+
+    protected static void requireSetOnBintrayExtensionOrProperty(String bintray, Property<String> property, String propertyName) {
+        if (!bintray?.trim() && !property.getOrNull()?.trim()) throw newIllegalStateForProperty(propertyName)
+    }
+
+    protected static IllegalStateException newIllegalStateForProperty(String propertyName) {
+        return newIllegalState("${BintrayPlugin.EXTENSION_NAME}.$propertyName")
+    }
+
+    protected static IllegalStateException newIllegalState(String description) {
+        return new IllegalStateException(
+            "You need to define $description for publishing (empty or blank is considered to be undefined)"
+        )
     }
 }

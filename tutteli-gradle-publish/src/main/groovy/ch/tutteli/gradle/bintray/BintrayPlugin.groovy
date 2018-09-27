@@ -1,5 +1,7 @@
 package ch.tutteli.gradle.bintray
 
+import com.jfrog.bintray.gradle.BintrayExtension as JFrogBintrayPluginExtension
+import com.jfrog.bintray.gradle.BintrayPlugin as JFrogBintrayPlugin
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -9,8 +11,7 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 
-import static ch.tutteli.gradle.bintray.Validation.requireNotNullNorEmpty
-import static ch.tutteli.gradle.bintray.Validation.requirePresentAndNotEmpty
+import static ch.tutteli.gradle.bintray.Validation.*
 
 class BintrayPlugin implements Plugin<Project> {
     private static final Logger LOGGER = Logging.getLogger(BintrayPlugin.class)
@@ -19,20 +20,50 @@ class BintrayPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         project.plugins.apply(MavenPublishPlugin)
+        project.plugins.apply(JFrogBintrayPlugin)
         def extension = project.extensions.create(EXTENSION_NAME, BintrayPluginExtension, project)
 
         project.afterEvaluate {
-            requireNotNullNorEmpty(project.name, "project.name")
-            requireNotNullNorEmpty(project.version == "unspecified" ? null : project.version, "project.version")
-            requireNotNullNorEmpty(project.group, "project.group")
-            requireNotNullNorEmpty(project.description, "project.description")
-            requirePresentAndNotEmpty(extension.githubUser, "${EXTENSION_NAME}.githubUser")
+            requireNotNullNorBlank(project.name, "project.name")
+            requireNotNullNorBlank(project.version == "unspecified" ? null : project.version, "project.version")
+            requireNotNullNorBlank(project.group, "project.group")
+            requireNotNullNorBlank(project.description, "project.description")
+            requireComponentOrArtifactsPresent(extension)
+            requireExtensionPropertyPresentAndNotBlank(extension.githubUser, "githubUser")
+            requireExtensionPropertyPresentNotEmpty(extension.licenses, "licenses")
 
-            configurePublishing(project, extension)
+            def bintrayExtension = project.extensions.getByType(JFrogBintrayPluginExtension)
+            requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayUser, "envNameBintrayUser")
+            requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayApiKey, "envNameBintrayApiKey")
+            requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayGpgPassphrase, "envNameBintrayGpgPassphrase")
+            requireSetOnBintrayExtensionOrProperty(bintrayExtension.pkg.repo, extension.bintrayRepo, "bintrayRepo")
+            requireSetOnBintrayExtensionOrProperty(bintrayExtension.pkg.name, extension.bintrayPkg, "bintrayPkg")
+
+            def repoUrl = "https://github.com/${extension.githubUser.get()}/$project.name"
+            def licenses = extension.licenses.get()
+            def uniqueLicenses = licenses.toSet().toSorted()
+            if (licenses.size() != uniqueLicenses.size()) {
+                LOGGER.warn("Some licenses were duplicated. Please check if you made a mistake.")
+            }
+
+            configurePublishing(project, extension, repoUrl, uniqueLicenses)
+            configureBintray(project, extension, bintrayExtension, repoUrl, uniqueLicenses)
         }
     }
 
-    private static void configurePublishing(Project project, BintrayPluginExtension extension) {
+    private static void requireComponentOrArtifactsPresent(BintrayPluginExtension extension) {
+        if (!extension.component.isPresent() && extension.artifacts.map { it.isEmpty() }.getOrElse(true)) {
+            throw newIllegalState("either ${EXTENSION_NAME}.component or ${EXTENSION_NAME}.artifacts")
+        }
+    }
+
+    private static void configurePublishing(
+        Project project,
+        BintrayPluginExtension extension,
+        String repoUrl,
+        List<License> uniqueLicenses
+    ) {
+
         project.publishing {
             publications {
                 tutteli(MavenPublication) {
@@ -49,25 +80,24 @@ class BintrayPlugin implements Plugin<Project> {
                     artifactId project.name
                     version project.version
 
-                    pom.withXml(pomConfig(project, extension))
+                    pom.withXml(pomConfig(project, extension, repoUrl, uniqueLicenses))
                 }
             }
         }
     }
 
-    private static Action<? extends XmlProvider> pomConfig(Project project, BintrayPluginExtension extension) {
-        def repoUrl = "https://github.com/${extension.githubUser.get()}/$project.name"
+    private static Action<? extends XmlProvider> pomConfig(
+        Project project,
+        BintrayPluginExtension extension,
+        String repoUrl,
+        List<License> uniqueLicenses
+    ) {
         def pomConfig = {
             url repoUrl
             licenses {
                 if (extension.licenses.isPresent()) {
-                    def licenses = extension.licenses.get()
-                    def uniqueLicenses = licenses.toSet().toSorted()
-                    if (licenses.size() != uniqueLicenses.size()) {
-                        LOGGER.warn("Some licenses were duplicated. Please check if you made a mistake.")
-                    }
                     uniqueLicenses.each { chosenLicense ->
-                        requireNotNullNorEmpty(chosenLicense.longName, "license.longName")
+                        requireNotNullNorBlank(chosenLicense.longName, "license.longName")
                         license {
                             name chosenLicense.longName
                             if (chosenLicense.url) url chosenLicense.url
@@ -81,11 +111,11 @@ class BintrayPlugin implements Plugin<Project> {
                     extension.developers.get().each { dev ->
                         developer {
                             id dev.id
-                            if(dev.name) name dev.name
-                            if(dev.email) email dev.email
-                            if(dev.url) url dev.url
-                            if(dev.organization) organization dev.organization
-                            if(dev.organizationUrl) organizationUrl dev.organizationUrl
+                            if (dev.name) name dev.name
+                            if (dev.email) email dev.email
+                            if (dev.url) url dev.url
+                            if (dev.organization) organization dev.organization
+                            if (dev.organizationUrl) organizationUrl dev.organizationUrl
                             //never used roles, timezone so far, skip it for now
                         }
                     }
@@ -103,6 +133,47 @@ class BintrayPlugin implements Plugin<Project> {
                 root.children().last() + pomConfig
             }
         }
+    }
+
+    private static void configureBintray(
+        Project project,
+        BintrayPluginExtension extension,
+        JFrogBintrayPluginExtension bintrayExtension,
+        String repoUrl,
+        List<License> uniqueLicenses
+    ) {
+        bintrayExtension.with {
+            user = user ?: getSystemEnvAndErrorIfBlank(extension.envNameBintrayUser.get())
+            key = key ?: getSystemEnvAndErrorIfBlank(extension.envNameBintrayApiKey.get())
+            publications = ['tutteli'] as String[]
+
+            pkg.with {
+                repo = repo ?: extension.bintrayRepo.get()
+                def pkgName = name ?: extension.bintrayPkg.getOrElse(project.name)
+                name = pkgName
+                licenses = licenses ?: uniqueLicenses.collect { it.shortName } as String[]
+                vcsUrl = vcsUrl ?: repoUrl
+                version.with {
+                    name = name ?: project.name
+                    desc = desc ?: "$pkgName $project.version"
+                    released = released ?: new Date().toTimestamp().toString()
+                    vcsTag = vcsTag ?: "v$project.version"
+                    gpg.with {
+                        def signIt = sign ?: extension.signWithGpg.getOrElse(true)
+                        sign = signIt
+                        if (signIt) {
+                            passphrase = passphrase ?: getSystemEnvAndErrorIfBlank(extension.envNameBintrayGpgPassphrase.get())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static String getSystemEnvAndErrorIfBlank(String envName) {
+        def value = System.getenv(envName)
+        if (!value?.trim()) throw newIllegalState("System.env variable with name $envName")
+        return value
     }
 }
 
