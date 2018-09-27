@@ -197,7 +197,7 @@ class PublishPlugin implements Plugin<Project> {
                 licenses = licenses ?: uniqueLicenses.collect { it.shortName } as String[]
                 vcsUrl = vcsUrl ?: repoUrl
                 version.with {
-                    name = name ?: project.name
+                    name = name ?: project.version
                     desc = desc ?: "$pkgName $project.version"
                     released = released ?: new Date().toString()
                     vcsTag = vcsTag ?: "v$project.version"

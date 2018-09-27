@@ -175,7 +175,7 @@ class PublishPluginIntTest {
         assertTrue(result.output.contains("bintrayExtension.pkg.name: $pkgName"), "bintrayExtension.pkg.name\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.licenses: Apache-2.0,Apache-2.0,Apache-2.0,Lic-1.2"), "bintrayExtension.pkg.licenses\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.vcsUrl: $repoUrl"), "bintrayExtension.pkg.vcsUrl\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.name: $projectName"), "bintrayExtension.pkg.version.name\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.name: $version"), "bintrayExtension.pkg.version.name\n$result.output")
 
         assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + pkgName + " $version"), "bintrayExtension.pkg.version.desc\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.released: ${new Date().toTimestamp().toString().substring(0, 10)}"), "bintrayExtension.pkg.version.released\n$result.output")
