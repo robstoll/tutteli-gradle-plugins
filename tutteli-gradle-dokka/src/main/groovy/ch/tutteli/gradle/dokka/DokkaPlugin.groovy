@@ -22,7 +22,7 @@ class DokkaPlugin implements Plugin<Project> {
         DokkaTask dokkaTask = project.tasks.getByName('dokka') as DokkaTask
         project.tasks.create(name: TASK_NAME_JAVADOC, type: Jar, dependsOn: dokkaTask) {
             classifier = 'javadoc'
-            doLast {
+            doFirst {
                 from dokkaTask.outputDirectory
             }
         }
