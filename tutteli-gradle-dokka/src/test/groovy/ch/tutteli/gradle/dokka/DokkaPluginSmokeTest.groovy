@@ -23,8 +23,8 @@ class DokkaPluginSmokeTest {
             .build()
         //act
         project.plugins.apply(DokkaPlugin)
-        def extension = project.extensions.getByName(EXTENSION_NAME)
-        extension.repoUrl = repoUrl
+        def extension = getExtension(project)
+        extension.repoUrl.set(repoUrl)
         //assert
         DokkaTask dokkaTask = getDokkaTask(project)
         assertEquals('html', dokkaTask.outputFormat)
@@ -45,6 +45,29 @@ class DokkaPluginSmokeTest {
         project.evaluate()
 
         assertEquals(repoUrl + "/tree/vunspecified", linkMapping.url)
+    }
+
+    @Test
+    void ghPages() {
+        //arrange
+        def githubUser = 'robstoll'
+        def projectName = 'atrium'
+        def version = '0.6.0'
+        Project project = ProjectBuilder.builder()
+            .withName(projectName)
+            .build()
+        //act
+        project.version = version
+        project.plugins.apply(DokkaPlugin)
+        def extension = getExtension(project)
+        extension.githubUser.set(githubUser)
+        extension.ghPages.set(true)
+        project.evaluate()
+
+        //assert
+        DokkaTask dokkaTask = getDokkaTask(project)
+        assertEquals(1, dokkaTask.externalDocumentationLinks.size(), "there is not 1 externalDocumentationLink")
+        assertEquals("https://${githubUser}.github.io/$projectName/$version/doc/".toString(), dokkaTask.externalDocumentationLinks.get(0).url.toString())
     }
 
     @Test
@@ -85,5 +108,9 @@ class DokkaPluginSmokeTest {
 
     private static DokkaTask getDokkaTask(Project project) {
         project.tasks.getByName('dokka') as DokkaTask
+    }
+
+    private static DokkaPluginExtension getExtension(Project project) {
+        project.extensions.getByName(EXTENSION_NAME) as DokkaPluginExtension
     }
 }
