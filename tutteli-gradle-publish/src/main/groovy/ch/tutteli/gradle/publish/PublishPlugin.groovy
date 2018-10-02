@@ -259,4 +259,3 @@ class PublishPlugin implements Plugin<Project> {
         return kotlinPlugin?.getKotlinPluginVersion()
     }
 }
-
