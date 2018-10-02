@@ -255,7 +255,7 @@ class PublishPlugin implements Plugin<Project> {
             ?: plugins.findPlugin('kotlin2js')
             ?: plugins.findPlugin('kotlin-platform-jvm')
             ?: plugins.findPlugin('kotlin-platform-js')
-            ?: plugins.findPlugin('kotlin-platform-common')
+            ?: plugins.findPlugin('kotlin-common')
         return kotlinPlugin?.getKotlinPluginVersion()
     }
 }

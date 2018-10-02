@@ -12,23 +12,74 @@ import org.gradle.api.publish.maven.internal.tasks.MavenPomFileGenerator
 import org.gradle.internal.xml.XmlTransformer
 import org.junit.jupiter.api.Test
 
-import static SetUp.*
+import static ch.tutteli.gradle.publish.SetUp.*
 import static ch.tutteli.gradle.test.Asserts.assertContainsRegex
 import static org.junit.jupiter.api.Assertions.assertEquals
 
 class PublishPluginSmokeTest {
 
     @Test
-    void smokeTest_TasksAndExtensionPresent(){
+    void smokeTest_TasksAndExtensionPresent() {
         //arrange & act
         Project project = setUp()
         //assert
-        project.extensions.getByName(PublishPlugin.EXTENSION_NAME)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_INCLUDE_TIME)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_PUBLISH_TO_BINTRAY)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_VALIDATE)
+        assertExtensionAndTaskDefined(project)
+    }
+
+    @Test
+    void kotlin_TasksAndExtensionPresent() {
+
+        //arrange & act
+        Project project = setUp { project ->
+            project.plugins.apply('kotlin')
+        }
+        project.evaluate()
+        //assert
+        assertExtensionAndTaskDefined(project)
+    }
+
+    @Test
+    void kotlinJs_TasksAndExtensionPresent() {
+        //arrange & act
+        Project project = setUp { project ->
+            project.plugins.apply('kotlin2js')
+        }
+        project.evaluate()
+        //assert
+        assertExtensionAndTaskDefined(project)
+    }
+
+    @Test
+    void kotlinPlatformJvm_TasksAndExtensionPresent() {
+        //arrange & act
+        Project project = setUp { project ->
+            project.plugins.apply('kotlin-platform-jvm')
+        }
+        project.evaluate()
+        //assert
+        assertExtensionAndTaskDefined(project)
+    }
+
+    @Test
+    void kotlinPlatformJs_TasksAndExtensionPresent() {
+        //arrange & act
+        Project project = setUp { project ->
+            project.plugins.apply('kotlin-platform-js')
+        }
+        project.evaluate()
+        //assert
+        assertExtensionAndTaskDefined(project)
+    }
+
+    @Test
+    void kotlinPlatformCommon_TasksAndExtensionPresent() {
+        //arrange & act
+        Project project = setUp { project ->
+            project.plugins.apply('kotlin-platform-common')
+        }
+        project.evaluate()
+        //assert
+        assertExtensionAndTaskDefined(project)
     }
 
     @Test
@@ -56,7 +107,6 @@ class PublishPluginSmokeTest {
             assertContainsRegex(pom, "developers", "<developers/>")
             assertContainsRegex(pom, "scm url", "<scm>$Asserts.NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
         }
-
     }
 
     @Test
@@ -89,6 +139,14 @@ class PublishPluginSmokeTest {
         }
     }
 
+    private static void assertExtensionAndTaskDefined(Project project) {
+        project.extensions.getByName(PublishPlugin.EXTENSION_NAME)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_INCLUDE_TIME)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_PUBLISH_TO_BINTRAY)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_VALIDATE)
+    }
 
     private static PublishPluginExtension getPluginExtension(Project project) {
         return project.extensions.getByName(PublishPlugin.EXTENSION_NAME) as PublishPluginExtension
