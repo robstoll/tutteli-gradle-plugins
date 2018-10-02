@@ -6,6 +6,10 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import java.nio.file.Paths
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+
 import static ch.tutteli.gradle.test.Asserts.assertContainsRegex
 import static ch.tutteli.gradle.test.Asserts.getNL_INDENT
 import static org.junit.jupiter.api.Assertions.assertTrue
@@ -178,7 +182,7 @@ class PublishPluginIntTest {
         assertTrue(result.output.contains("bintrayExtension.pkg.version.name: $version"), "bintrayExtension.pkg.version.name\n$result.output")
 
         assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + pkgName + " $version"), "bintrayExtension.pkg.version.desc\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.released: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').toString().substring(0, 10)}"), "bintrayExtension.pkg.version.released\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.released: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "bintrayExtension.pkg.version.released\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.vcsTag: v$version"), "bintrayExtension.pkg.version.vcsTag\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.sign: true"), "bintrayExtension.pkg.version.gpg.sign\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.passphrase: pass"), "bintrayExtension.pkg.version.gpg.passphrase\n$result.output")
@@ -256,6 +260,7 @@ class PublishPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
+        repositories {  mavenCentral(); }
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.dokka' 
         tutteliDokka.githubUser = '$githubUser'
@@ -294,26 +299,44 @@ class PublishPluginIntTest {
                 }
             }
             project.tasks.withType(Jar) {
+                println(it)
                 it.manifest.attributes.each{
                     println(it)
                 }
+                println("----")
             }
         }
         """
+        File license = new File(settingsSetup.tmp, 'LICENSE.txt')
+        license << "Copyright..."
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("projects", "--stacktrace")
+            .withArguments("includeBuildTimeInManifest", "jar", "--stacktrace")
             .build()
         //assert
         def repoUrl = "https://github.com/$githubUser/$projectName"
-        assertTrue(result.output.contains("artifact: jar - null"), "java jar\n$result.output")
-        assertTrue(result.output.contains("artifact: jar - sources"), "sources jar\n$result.output")
-        assertTrue(result.output.contains("artifact: jar - javadoc"), "javadoc jar\n$result.output")
-        assertTrue(result.output.contains("Implementation-Title=$projectName"), "manifest title was not $projectName\n$result.output")
-        assertTrue(result.output.contains("Implementation-Version=$version"), "manifest version was not $version\n$result.output")
-        assertTrue(result.output.contains("Implementation-URL=$repoUrl"), "manifest url was not $repoUrl\n$result.output")
-        assertTrue(result.output.contains("Implementation-Vendor=$vendor"), "manifest vendor was not $vendor\n$result.output")
-        assertTrue(result.output.contains("Implementation-Kotlin-Version=$kotlinVersion"), "manifest kotlin version was not $kotlinVersion\n$result.output")
+        def output = result.output
+        assertTrue(output.contains("artifact: jar - null"), "java jar\n${output}")
+        assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
+        assertTrue(output.contains("artifact: jar - javadoc"), "javadoc jar\n${output}")
+        assertTrue(output.contains("task ':jar'"), "task jar\n${output}")
+        assertTrue(output.contains("task ':sourcesJar'"), "task sourcesJar\n${output}")
+        assertManifest(output, '=', projectName, version, repoUrl, vendor, kotlinVersion)
+        def zipFile = new ZipFile(Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs', "$projectName-${version}.jar").toFile())
+        zipFile.withCloseable {
+            assertTrue(zipFile.entries().any { it.getName() == 'LICENSE.txt' }, "did not find LICENSE.txt in jar")
+            def manifest = zipFile.getInputStream(zipFile.entries().find { it.getName() == 'META-INF/MANIFEST.MF' } as ZipEntry).text
+            assertManifest(manifest, ': ', projectName, version, repoUrl, vendor, kotlinVersion)
+            assertTrue(manifest.contains("Build-Time: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "manifest build time was not ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}\n${manifest}")
+        }
+    }
+
+    private static void assertManifest(String output, String separator, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
+        assertTrue(output.contains("Implementation-Title$separator$projectName"), "Implementation-Title$separator$projectName\n${output}")
+        assertTrue(output.contains("Implementation-Version$separator$version"), "Implementation-Version$separator$version\n${output}")
+        assertTrue(output.contains("Implementation-URL$separator$repoUrl"), "Implementatison-URL$separator$repoUrl\n${output}")
+        assertTrue(output.contains("Implementation-Vendor$separator$vendor"), "Implementation-Vendor$separator$vendor\n${output}")
+        assertTrue(output.contains("Implementation-Kotlin-Version$separator$kotlinVersion"), "Implementation-Kotlin-Version$separator$kotlinVersion\n${output}")
     }
 }

@@ -224,11 +224,10 @@ class PublishPlugin implements Plugin<Project> {
     private static void addManifestToJars(Project project, PublishPluginExtension extension, String repoUrl) {
         project.tasks.withType(Jar) { task ->
             task.manifest {
-                attributes = [
-                    'Implementation-Title'  : project.name,
+                attributes(['Implementation-Title'  : project.name,
                     'Implementation-Version': project.version,
-                    'Implementation-URL'    : repoUrl,
-                ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project)
+                    'Implementation-URL'    : repoUrl
+                ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project))
                 def licenseTxt = project.file("$project.rootProject.projectDir/LICENSE.txt")
                 if (licenseTxt.exists()) task.from(licenseTxt)
                 def license = project.file("$project.rootProject.projectDir/LICENSE")
