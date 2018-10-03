@@ -298,7 +298,7 @@ class PublishPluginIntTest {
                     println("artifact: \$it.extension - \$it.classifier")
                 }
             }
-            project.tasks.withType(Jar) {
+            project.tasks.withType(org.gradle.jvm.tasks.Jar) {
                 println(it)
                 it.manifest.attributes.each{
                     println(it)
@@ -312,7 +312,7 @@ class PublishPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("includeBuildTimeInManifest", "jar", "--stacktrace")
+            .withArguments("includeBuildTimeInManifest", "jar", "javadocJar", "sourcesJar", "--stacktrace")
             .build()
         //assert
         def repoUrl = "https://github.com/$githubUser/$projectName"
@@ -320,13 +320,22 @@ class PublishPluginIntTest {
         assertTrue(output.contains("artifact: jar - null"), "java jar\n${output}")
         assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
         assertTrue(output.contains("artifact: jar - javadoc"), "javadoc jar\n${output}")
-        assertTrue(output.contains("task ':jar'"), "task jar\n${output}")
-        assertTrue(output.contains("task ':sourcesJar'"), "task sourcesJar\n${output}")
+        assertContainsRegex(output, "task jar", "task ':jar'\r?\nManifest-Version=1.0\r?\nImplementation")
+        assertContainsRegex(output, "task sourcesJar", "task ':sourcesJar'\r?\nManifest-Version=1.0\r?\nImplementation")
+        assertContainsRegex(output, "task javadocJar", "task ':javadocJar'\r?\nManifest-Version=1.0\r?\nImplementation")
         assertManifest(output, '=', projectName, version, repoUrl, vendor, kotlinVersion)
-        def zipFile = new ZipFile(Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs', "$projectName-${version}.jar").toFile())
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, vendor, kotlinVersion)
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, vendor, kotlinVersion)
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-javadoc.jar", projectName, version, repoUrl, vendor, kotlinVersion)
+    }
+
+    private static void assertJarWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
+        def zipFile = new ZipFile(Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs', jarName).toFile())
         zipFile.withCloseable {
             assertTrue(zipFile.entries().any { it.getName() == 'LICENSE.txt' }, "did not find LICENSE.txt in jar")
-            def manifest = zipFile.getInputStream(zipFile.entries().find { it.getName() == 'META-INF/MANIFEST.MF' } as ZipEntry).text
+            def manifest = zipFile.getInputStream(zipFile.entries().find {
+                it.getName() == 'META-INF/MANIFEST.MF'
+            } as ZipEntry).text
             assertManifest(manifest, ': ', projectName, version, repoUrl, vendor, kotlinVersion)
             assertTrue(manifest.contains("Build-Time: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "manifest build time was not ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}\n${manifest}")
         }

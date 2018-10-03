@@ -3,7 +3,7 @@ package ch.tutteli.gradle.dokka
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.jvm.tasks.Jar
+import org.gradle.api.tasks.bundling.Jar
 import org.jetbrains.dokka.gradle.DokkaPlugin as JetbrainsDokkaPlugin
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.dokka.gradle.LinkMapping
