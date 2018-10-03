@@ -47,7 +47,7 @@ class PublishPlugin implements Plugin<Project> {
 
         def includeBuildTime = project.tasks.create(name: TASK_NAME_INCLUDE_TIME) {
             doLast {
-                project.tasks.withType(Jar) { jarTask ->
+                project.tasks.withType(org.gradle.jvm.tasks.Jar) { jarTask ->
                     jarTask.manifest {
                         attributes('Build-Time': new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ'))
                     }
@@ -222,7 +222,7 @@ class PublishPlugin implements Plugin<Project> {
     }
 
     private static void addManifestToJars(Project project, PublishPluginExtension extension, String repoUrl) {
-        project.tasks.withType(Jar) { task ->
+        project.tasks.withType(org.gradle.jvm.tasks.Jar) { task ->
             task.manifest {
                 attributes(['Implementation-Title'  : project.name,
                     'Implementation-Version': project.version,
