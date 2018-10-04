@@ -83,12 +83,12 @@ class PublishPluginSmokeTest {
     }
 
     @Test
-    void overrideDefaultLicenseToEupl_LicenseEtcSetButNoDevelopers() {
+    void resetLicensesToEupl_LicenseEtcSetButNoDevelopers() {
         //arrange
         def distribution = 'someDistro'
         Project project = setUp()
         //act
-        getPluginExtension(project).overrideDefaultLicense(StandardLicenses.EUPL_1_2, distribution)
+        getPluginExtension(project).resetLicenses(StandardLicenses.EUPL_1_2, distribution)
         project.evaluate()
         //assert
         project.publishing.publications.withType(MavenPublication) {

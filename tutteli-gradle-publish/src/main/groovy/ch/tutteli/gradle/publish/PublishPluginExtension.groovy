@@ -41,7 +41,7 @@ class PublishPluginExtension {
         component = project.objects.property(SoftwareComponent)
         artifacts = project.objects.listProperty(Task)
         licenses = project.objects.listProperty(License)
-        overrideDefaultLicense(StandardLicenses.APACHE_2_0, 'repo')
+        resetLicenses(StandardLicenses.APACHE_2_0, 'repo')
         developers = project.objects.listProperty(Developer)
         propNameBintrayUser = project.objects.property(String)
         propNameBintrayUser.set('bintrayUser')
@@ -85,42 +85,42 @@ class PublishPluginExtension {
     }
 
     /**
-     * Resets all previously set licenses and adds the given, should only be used to override the default.
-     * Use {@link #license(java.lang.String)} to specify additional licenses
+     * Resets all previously set licenses and adds the given - can be used to override the default license.
+     * Use {@link #license(java.lang.String)} to specify additional licenses.
      */
-    void overrideDefaultLicense(String license) {
-        overrideDefaultLicense(license, DEFAULT_DISTRIBUTION)
+    void resetLicenses(String license) {
+        resetLicenses(license, DEFAULT_DISTRIBUTION)
     }
 
     /**
-     * Resets all previously set licenses and add the given, should only be used to override the default.
-     * Use {@link #license(java.lang.String, java.lang.String)} to specify additional licenses
+     * Resets all previously set licenses and adds the given - can be used to override the default license.
+     * Use {@link #license(java.lang.String, java.lang.String)} to specify additional licenses.
      */
-    void overrideDefaultLicense(String license, String distribution) {
-        overrideDefaultLicense(StandardLicenses.fromShortName(license), distribution)
+    void resetLicenses(String license, String distribution) {
+        resetLicenses(StandardLicenses.fromShortName(license), distribution)
     }
 
     /**
-     * Resets all previously set licenses and add the given, should only be used to override the default.
-     * Use {@link #license(StandardLicenses)} to specify additional licenses
+     * Resets all previously set licenses and adds the given - can be used to override the default license.
+     * Use {@link #license(StandardLicenses)} to specify additional licenses.
      */
-    void overrideDefaultLicense(StandardLicenses standardLicense) {
-        overrideDefaultLicense(standardLicense, DEFAULT_DISTRIBUTION)
+    void resetLicenses(StandardLicenses standardLicense) {
+        resetLicenses(standardLicense, DEFAULT_DISTRIBUTION)
     }
 
     /**
-     * Resets all previously set licenses and add the given, should only be used to override the default.
-     * Use {@link #license(StandardLicenses, java.lang.String)} to specify additional licenses
+     * Resets all previously set licenses and adds the given - can be used to override the default license.
+     * Use {@link #license(StandardLicenses, java.lang.String)} to specify additional licenses.
      */
-    void overrideDefaultLicense(StandardLicenses standardLicense, String distribution) {
+    void resetLicenses(StandardLicenses standardLicense, String distribution) {
         setNewLicense(new LicenseImpl(standardLicense, distribution))
     }
 
     /**
-     * Resets all previously set licenses and add the given, should only be used to override the default.
-     * Use {@link #license(org.gradle.api.Action)} to specify additional licenses
+     * Resets all previously set licenses and adds the given - can be used to override the default license.
+     * Use {@link #license(org.gradle.api.Action)} to specify additional licenses.
      */
-    void overrideDefaultLicense(Action<License> license) {
+    void resetLicenses(Action<License> license) {
         setNewLicense(applyClosureToNewLicense(license))
     }
 

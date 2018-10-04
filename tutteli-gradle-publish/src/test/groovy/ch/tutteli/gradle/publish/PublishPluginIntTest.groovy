@@ -51,17 +51,17 @@ class PublishPluginIntTest {
             githubUser = '$githubUser'
 
             //different ways to override the default license
-            overrideDefaultLicense 'EUPL-1.2'             // default distribution is 'repo'
-            overrideDefaultLicense 'EUPL-1.2', 'manually' 
-            overrideDefaultLicense ch.tutteli.gradle.publish.StandardLicenses.EUPL_1_2
-            overrideDefaultLicense ch.tutteli.gradle.publish.StandardLicenses.EUPL_1_2, 'manually'
-            overrideDefaultLicense {
+            resetLicenses 'EUPL-1.2'             // default distribution is 'repo'
+            resetLicenses 'EUPL-1.2', 'manually' 
+            resetLicenses ch.tutteli.gradle.publish.StandardLicenses.EUPL_1_2
+            resetLicenses ch.tutteli.gradle.publish.StandardLicenses.EUPL_1_2, 'manually'
+            resetLicenses {
                 shortName = 'Lic-1.2'
                 longName = 'License 1.2'
                 url = 'https://license.com'
                 distribution = 'manually'
             }
-            overrideDefaultLicense {
+            resetLicenses {
                 shortName = 'Lic-1.2'
                 longName = 'License 1.2'
                 url = 'https://license.com'
@@ -301,7 +301,7 @@ class PublishPluginIntTest {
             apply plugin: 'ch.tutteli.publish'
          
             publish {
-                overrideDefaultLicense 'EUPL-1.2'
+                resetLicenses 'EUPL-1.2'
                 //minimal setup required for bintray extension
                 githubUser = '$githubUser'
                 bintrayRepo = 'tutteli-jars'
