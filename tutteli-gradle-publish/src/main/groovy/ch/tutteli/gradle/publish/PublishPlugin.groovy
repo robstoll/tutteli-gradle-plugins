@@ -202,9 +202,8 @@ class PublishPlugin implements Plugin<Project> {
                     released = released ?: new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ')
                     vcsTag = vcsTag ?: "v$project.version"
                     gpg.with {
-                        boolean signIt = sign ?: extension.signWithGpg.getOrElse(true)
-                        sign = signIt
-                        if (signIt) {
+                        sign = extension.signWithGpg.get()
+                        if (sign) {
                             passphrase = passphrase ?: getPropertyOrSystemEnv(project, extension.propNameBintrayGpgPassphrase, extension.envNameBintrayGpgPassphrase)
                         }
                     }

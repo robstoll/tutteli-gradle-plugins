@@ -35,7 +35,7 @@ class SetUp {
         def bintray = getBintrayExtension(project)
         bintray.user = 'user'
         bintray.key = 'key'
-        bintray.pkg.version.gpg.sign = false
+        bintray.pkg.version.gpg.passphrase = 'test'
         return project
     }
 

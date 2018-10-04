@@ -18,6 +18,7 @@ class DokkaPluginExtension {
         repoUrl = project.objects.property(String)
         githubUser = project.objects.property(String)
         ghPages = project.objects.property(Boolean)
+        ghPages.set(false)
 
         dokka {
             outputFormat = 'html'
