@@ -14,6 +14,7 @@ import java.util.zip.ZipFile
 
 import static ch.tutteli.gradle.test.Asserts.assertContainsRegex
 import static ch.tutteli.gradle.test.Asserts.getNL_INDENT
+import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
@@ -48,6 +49,7 @@ class PublishPluginIntTest {
         }
         
         publish {
+            //minimal setup required for publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
 
             //different ways to override the default license
@@ -95,7 +97,10 @@ class PublishPluginIntTest {
                 organizationUrl = 'tutteli.ch'
             }            
             
-            //minimal setup required for bintray extension
+            //that's the default vendor, please adopt to your needs or set to null if not required
+            manifestVendor = 'tutteli.ch'
+            
+            //that's the default bintray repo, please change to yours
             bintrayRepo = 'tutteli-jars'
             
             // you can change the pkg name if it does not correspond to `project.name`
@@ -274,7 +279,7 @@ class PublishPluginIntTest {
         """
         def version = '1.0.0-SNAPSHOT'
         def githubUser = 'robstoll'
-        def vendor = 'tutteli'
+        def vendor = null
         def kotlinVersion = '1.2.71'
 
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
@@ -304,9 +309,9 @@ class PublishPluginIntTest {
                 resetLicenses 'EUPL-1.2'
                 //minimal setup required for bintray extension
                 githubUser = '$githubUser'
-                bintrayRepo = 'tutteli-jars'
-                
-                manifestVendor = '$vendor'
+
+                //bintrayRepo = 'tutteli-jars' is default no need to set it                
+                manifestVendor = $vendor // we don't have a manifestVendor, thus we reset it to null
                  
                 /* would be required if we used task publishToBintray, we don't so we don't have to define it
                 bintray {
@@ -399,7 +404,7 @@ class PublishPluginIntTest {
         """
     }
 
-    private static String printArtifactsAndManifest(){
+    private static String printArtifactsAndManifest() {
         return """project.publishing.publications.withType(MavenPublication) {
             it.artifacts.each {
                 println("artifact: \$it.extension - \$it.classifier")
@@ -455,7 +460,11 @@ class PublishPluginIntTest {
         assertTrue(output.contains("Implementation-Title$separator$projectName"), "Implementation-Title$separator$projectName\n${output}")
         assertTrue(output.contains("Implementation-Version$separator$version"), "Implementation-Version$separator$version\n${output}")
         assertTrue(output.contains("Implementation-URL$separator$repoUrl"), "Implementatison-URL$separator$repoUrl\n${output}")
-        assertTrue(output.contains("Implementation-Vendor$separator$vendor"), "Implementation-Vendor$separator$vendor\n${output}")
+        if (vendor != null) {
+            assertTrue(output.contains("Implementation-Vendor$separator$vendor"), "Implementation-Vendor$separator$vendor\n${output}")
+        } else {
+            assertFalse(output.contains("Implementation-Vendor"), "should not contain Implementation-Vendor")
+        }
         assertTrue(output.contains("Implementation-Kotlin-Version$separator$kotlinVersion"), "Implementation-Kotlin-Version$separator$kotlinVersion\n${output}")
     }
 }

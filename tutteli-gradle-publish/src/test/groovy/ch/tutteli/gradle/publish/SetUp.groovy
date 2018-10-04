@@ -30,7 +30,6 @@ class SetUp {
         project.plugins.apply(PublishPlugin)
         PublishPluginExtension extension = getPluginExtension(project)
         extension.githubUser.set(GITHUB_USER)
-        extension.bintrayRepo.set('tutteli-jars')
         extension.bintrayPkg.set('atrium')
         def bintray = getBintrayExtension(project)
         bintray.user = 'user'

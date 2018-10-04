@@ -72,8 +72,9 @@ configures them based on given license(s), a github user and a few other informa
 It exposes the `publish` extension which lets you specify those information and refine default conventions.
 Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.14.1/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
 for more information.
+Notice that `bintrayRepo` and `manifestVendor` are set to tutteli specific defaults. Do not forget to overwrite them.
 
-If not set, it automatically sets `version` and `group` from `rootProject` to subprojects.
+If not set, it automatically propagates `version` and `group` from `rootProject` to subprojects.
 
 It provides a `sourcesJar` task which includes all sources and adds them to the artifacts which shall be published.
 It automatically uses `project.components.java` if available -- apply the `java` or `kotlin` plugin (or similar) first.   

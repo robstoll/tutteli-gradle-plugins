@@ -56,10 +56,12 @@ class PublishPluginExtension {
         envNameBintrayGpgPassphrase = project.objects.property(String)
         envNameBintrayGpgPassphrase.set('BINTRAY_GPG_PASSPHRASE')
         bintrayRepo = project.objects.property(String)
+        bintrayRepo.set('tutteli-jars')
         bintrayPkg = project.objects.property(String)
         signWithGpg = project.objects.property(Boolean)
         signWithGpg.set(true)
         manifestVendor = project.objects.property(String)
+        manifestVendor.set('tutteli.ch')
 
         useSourcesJarAsArtifact()
         useJavaComponentIfJavaPluginAvailable()
