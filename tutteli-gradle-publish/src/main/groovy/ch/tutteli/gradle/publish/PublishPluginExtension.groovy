@@ -8,6 +8,7 @@ import org.gradle.api.Task
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.jvm.tasks.Jar
 
 import static Validation.requireNotNullNorBlank
 
@@ -66,30 +67,17 @@ class PublishPluginExtension {
             manifestVendor.set('tutteli.ch')
         }
 
-        useSourcesJarAsArtifact()
-        useJavaComponentIfJavaPluginAvailable()
-        useJavadocJarAsArtifactIfAvailable()
+        addAllJarsToArtifacts()
+
     }
 
     private static boolean isTutteliProject(Project project) {
         return project.group?.startsWith("ch.tutteli")
     }
 
-    private void useSourcesJarAsArtifact() {
-        artifacts.add(project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR))
-    }
-
-    private void useJavaComponentIfJavaPluginAvailable() {
-        def name = project.components.findByName('java')
-        if (name != null) {
-            component.set(name)
-        }
-    }
-
-    private void useJavadocJarAsArtifactIfAvailable() {
-        def jar = project.tasks.findByName('javadocJar')
-        if (jar != null) {
-            artifacts.add(jar)
+    private void addAllJarsToArtifacts() {
+        project.tasks.withType(Jar).each {
+            artifacts.add(it)
         }
     }
 

@@ -43,7 +43,7 @@ class PublishPluginIntTest {
         apply plugin: 'ch.tutteli.publish'
         
         project.with {
-            group = 'ch.tutteli'
+            group = 'com.example'
             version = '$version'
             description = 'test project'
         }
@@ -215,7 +215,7 @@ class PublishPluginIntTest {
         apply plugin: 'ch.tutteli.publish'
                 
         project.with {
-            group = 'ch.tutteli'
+            group = 'com.example'
             version = '$version'
             description = 'test project'
         }
@@ -277,7 +277,7 @@ class PublishPluginIntTest {
         """
         def version = '1.0.0-SNAPSHOT'
         def githubUser = 'robstoll'
-        def vendor = null
+        def vendor = 'tutteli.ch'
         def kotlinVersion = '1.2.71'
 
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
@@ -301,15 +301,26 @@ class PublishPluginIntTest {
             
             repositories {  mavenCentral(); }
             apply plugin: 'kotlin'
+            
+            def testJar = task('testJar', type: Jar) {
+                from sourceSets.test.output
+                classifier = 'tests'
+            } 
+            
             apply plugin: 'ch.tutteli.publish'
+         
+            def testSourcesJar = task('testSourcesJar', type: Jar) {
+                from sourceSets.test.allSource
+                classifier = 'testsources'
+            }
          
             publish {
                 resetLicenses 'EUPL-1.2'
-                //minimal setup required for bintray extension
-                githubUser = '$githubUser'
 
+                //already defined because it is a ch.tutteli project
+                //githubUser = '$githubUser'
                 //bintrayRepo = 'tutteli-jars' is default no need to set it                
-                manifestVendor = $vendor // we don't have a manifestVendor, thus we reset it to null
+                //manifestVendor = $vendor // we don't have a manifestVendor, thus we reset it to null
                  
                 /* would be required if we used task publishToBintray, we don't so we don't have to define it
                 bintray {
@@ -338,8 +349,13 @@ class PublishPluginIntTest {
         def output = result.output
         assertTrue(output.contains("artifact: jar - null"), "java jar\n${output}")
         assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
+        assertTrue(output.contains("artifact: jar - tests"), "test jar jar\n${output}")
+        assertFalse(output.contains("artifact: jar - testsources"), "testsources jar should not be added to artifacts because it is defined after plugin apply\n${output}")
         assertContainsRegex(output, "task jar", "task ':test-sub:jar'\r?\nManifest-Version=1.0\r?\nImplementation")
         assertContainsRegex(output, "task sourcesJar", "task ':test-sub:sourcesJar'\r?\nManifest-Version=1.0\r?\nImplementation")
+        assertContainsRegex(output, "task testJar", "task ':test-sub:testJar'\r?\nManifest-Version=1.0\r?\nImplementation")
+        def matcher = output =~ "task ':test-sub:testSourcesJar'\r?\nManifest-Version=1.0\r?\nImplementation"
+        assertFalse(matcher.find(), "task testSourcesJar should not be augmented\n$output")
         assertManifest(output, '=', subprojectName, version, repoUrl, vendor, kotlinVersion)
         assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, "$subprojectName-${version}.jar", subprojectName, version, repoUrl, vendor, kotlinVersion)
         assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, "$subprojectName-${version}-sources.jar", subprojectName, version, repoUrl, vendor, kotlinVersion)

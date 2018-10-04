@@ -48,8 +48,10 @@ class PublishPlugin implements Plugin<Project> {
         def includeBuildTime = project.tasks.create(name: TASK_NAME_INCLUDE_TIME) {
             doLast {
                 project.tasks.withType(org.gradle.jvm.tasks.Jar) { jarTask ->
-                    jarTask.manifest {
-                        attributes('Build-Time': new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ'))
+                    if(extension.artifacts.isPresent() && extension.artifacts.get().contains(jarTask)) {
+                        jarTask.manifest {
+                            attributes('Build-Time': new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ'))
+                        }
                     }
                 }
             }
@@ -232,15 +234,17 @@ class PublishPlugin implements Plugin<Project> {
         String repoUrl
     ) {
         project.tasks.withType(org.gradle.jvm.tasks.Jar) { task ->
-            task.manifest {
-                attributes(['Implementation-Title'  : project.name,
-                            'Implementation-Version': project.version,
-                            'Implementation-URL'    : repoUrl
-                ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project))
-                def licenseTxt = project.file("$project.rootProject.projectDir/LICENSE.txt")
-                if (licenseTxt.exists()) task.from(licenseTxt)
-                def license = project.file("$project.rootProject.projectDir/LICENSE")
-                if (license.exists()) task.from(license)
+            if(extension.artifacts.isPresent() && extension.artifacts.get().contains(task)) {
+                task.manifest {
+                    attributes(['Implementation-Title'  : project.name,
+                                'Implementation-Version': project.version,
+                                'Implementation-URL'    : repoUrl
+                    ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project))
+                    def licenseTxt = project.file("$project.rootProject.projectDir/LICENSE.txt")
+                    if (licenseTxt.exists()) task.from(licenseTxt)
+                    def license = project.file("$project.rootProject.projectDir/LICENSE")
+                    if (license.exists()) task.from(license)
+                }
             }
         }
     }
