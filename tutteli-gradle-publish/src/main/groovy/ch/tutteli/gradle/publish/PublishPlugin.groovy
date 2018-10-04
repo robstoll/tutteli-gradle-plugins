@@ -80,7 +80,7 @@ class PublishPlugin implements Plugin<Project> {
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayGpgPassphrase, "envNameBintrayGpgPassphrase")
             requireSetOnBintrayExtensionOrProperty(bintrayExtension.pkg.repo, extension.bintrayRepo, "bintrayRepo")
 
-            def repoUrl = "https://github.com/${extension.githubUser.get()}/$project.name"
+            def repoUrl = "https://github.com/${extension.githubUser.get()}/$project.rootProject.name"
             def licenses = extension.licenses.get()
             def uniqueLicenses = licenses.toSet().toSorted()
             if (licenses.size() != uniqueLicenses.size()) {

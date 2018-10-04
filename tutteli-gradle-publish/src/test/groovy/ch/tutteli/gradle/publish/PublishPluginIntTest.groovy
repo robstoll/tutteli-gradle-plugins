@@ -6,6 +6,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
@@ -33,7 +34,7 @@ class PublishPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        // has to be before ch.tutteli.bintray if we want to have components automatically set up
+        // has to be before ch.tutteli.publish
         apply plugin: 'java' 
         apply plugin: 'ch.tutteli.publish'
         
@@ -329,8 +330,104 @@ class PublishPluginIntTest {
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-javadoc.jar", projectName, version, repoUrl, vendor, kotlinVersion)
     }
 
+    @Test
+    void subproject(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        def projectName = 'test-project'
+        def subprojectName = 'test-sub'
+        settingsSetup.settings << """rootProject.name='$projectName'
+        include '$subprojectName'
+        """
+        def version = '1.0.0-SNAPSHOT'
+        def githubUser = 'robstoll'
+        def vendor = 'tutteli'
+        def kotlinVersion = '1.2.71'
+
+        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
+        buildGradle << """
+        buildscript {
+            repositories { maven { url "https://plugins.gradle.org/m2/" } }
+            dependencies {
+                classpath 'ch.tutteli:tutteli-gradle-dokka:0.10.1'
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
+                classpath files($settingsSetup.pluginClasspath)
+            }
+        }
+                
+        project.with {
+            group = 'ch.tutteli'
+            version = '$version'
+        }     
+   
+        subprojects {
+            it.group = rootProject.group
+            it.version = rootProject.version
+            it.description = 'sub description' 
+            
+            repositories {  mavenCentral(); }
+            apply plugin: 'kotlin'
+            apply plugin: 'ch.tutteli.publish'
+         
+            publish {
+                githubUser = '$githubUser'
+                
+                //minimal setup required for bintray extension
+                bintrayRepo = 'tutteli-jars'
+                
+                manifestVendor = '$vendor'
+                
+                //required since we don't set the System.env variables
+                bintray {
+                    user = 'test'
+                    key = 'api-key'
+                }
+            }            
+         
+            afterEvaluate {
+                project.publishing.publications.withType(MavenPublication) {
+                    it.artifacts.each {
+                        println("artifact: \$it.extension - \$it.classifier")
+                    }
+                }
+                project.tasks.withType(org.gradle.jvm.tasks.Jar) {
+                    println(it)
+                    it.manifest.attributes.each{
+                        println(it)
+                    }
+                    println("----")
+                }
+            }
+        }
+        """
+        File license = new File(settingsSetup.tmp, 'LICENSE.txt')
+        license << "Copyright..."
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("includeBuildTimeInManifest", "jar", "sourcesJar", "--stacktrace")
+            .build()
+        //assert
+        def repoUrl = "https://github.com/$githubUser/$projectName"
+        def output = result.output
+        assertTrue(output.contains("artifact: jar - null"), "java jar\n${output}")
+        assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
+        assertContainsRegex(output, "task jar", "task ':test-sub:jar'\r?\nManifest-Version=1.0\r?\nImplementation")
+        assertContainsRegex(output, "task sourcesJar", "task ':test-sub:sourcesJar'\r?\nManifest-Version=1.0\r?\nImplementation")
+        assertManifest(output, '=', subprojectName, version, repoUrl, vendor, kotlinVersion)
+        assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, "$subprojectName-${version}.jar", subprojectName, version, repoUrl, vendor, kotlinVersion)
+        assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, "$subprojectName-${version}-sources.jar", subprojectName, version, repoUrl, vendor, kotlinVersion)
+    }
+
     private static void assertJarWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
-        def zipFile = new ZipFile(Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs', jarName).toFile())
+        assertJarWithLicenseAndManifest(Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs'), jarName, projectName, version, repoUrl, vendor, kotlinVersion)
+    }
+
+    private static void assertJarOfSubprojectWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String jarName, String subprojectName, String version, String repoUrl, String vendor, String kotlinVersion) {
+        assertJarWithLicenseAndManifest(Paths.get(settingsSetup.tmp.absolutePath, subprojectName, 'build', 'libs'), jarName, subprojectName, version, repoUrl, vendor, kotlinVersion)
+    }
+
+    private static void assertJarWithLicenseAndManifest(Path jarPath, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
+        def zipFile = new ZipFile(jarPath.resolve(jarName).toFile())
         zipFile.withCloseable {
             assertTrue(zipFile.entries().any { it.getName() == 'LICENSE.txt' }, "did not find LICENSE.txt in jar")
             def manifest = zipFile.getInputStream(zipFile.entries().find {
