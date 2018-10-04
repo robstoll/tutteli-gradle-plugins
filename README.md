@@ -73,6 +73,8 @@ It exposes the `publish` extension which lets you specify those information and 
 Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.14.1/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
 for more information.
 
+If not set, it automatically sets `version` and `group` from `rootProject` to subprojects.
+
 It provides a `sourcesJar` task which includes all sources and adds them to the artifacts which shall be published.
 It automatically uses `project.components.java` if available -- apply the `java` or `kotlin` plugin (or similar) first.   
 Likewise it uses the `javadocJar` as additional artifact if available. 

@@ -34,7 +34,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         project.version = "unspecified"
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined('project.version', project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined('project.version or rootProject.version', project)
     }
 
     @Test
@@ -43,7 +43,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         project.version = ""
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined('project.version', project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined('project.version or rootProject.version', project)
     }
 
     @Test
@@ -52,7 +52,7 @@ class PublishPluginValidationTest {
         Project project = setUp()
         project.group = "  "
         //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined('project.group', project)
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined('project.group or rootProject.group', project)
     }
 
     @Test

@@ -66,9 +66,11 @@ class PublishPlugin implements Plugin<Project> {
         }
 
         project.afterEvaluate {
+            project.version = determineVersion(project) ?: determineVersion(project.rootProject) ?: ""
+            project.group = project.group ?: project.rootProject.group
             requireNotNullNorBlank(project.name, "project.name")
-            requireNotNullNorBlank(project.version == "unspecified" ? null : project.version, "project.version")
-            requireNotNullNorBlank(project.group, "project.group")
+            requireNotNullNorBlank(project.version, "project.version or rootProject.version")
+            requireNotNullNorBlank(project.group, "project.group or rootProject.group")
             requireNotNullNorBlank(project.description, "project.description")
             requireComponentOrArtifactsPresent(extension)
             requireExtensionPropertyPresentAndNotBlank(extension.githubUser, "githubUser")
@@ -81,16 +83,15 @@ class PublishPlugin implements Plugin<Project> {
             requireSetOnBintrayExtensionOrProperty(bintrayExtension.pkg.repo, extension.bintrayRepo, "bintrayRepo")
 
             def repoUrl = "https://github.com/${extension.githubUser.get()}/$project.rootProject.name"
-            def licenses = extension.licenses.get()
-            def uniqueLicenses = licenses.toSet().toSorted()
-            if (licenses.size() != uniqueLicenses.size()) {
-                LOGGER.warn("Some licenses were duplicated. Please check if you made a mistake.")
-            }
 
-            configurePublishing(project, extension, repoUrl, uniqueLicenses)
-            configureBintray(project, extension, bintrayExtension, repoUrl, uniqueLicenses)
+            configurePublishing(project, extension, repoUrl)
+            configureBintray(project, extension, repoUrl, bintrayExtension)
             addManifestToJars(project, extension, repoUrl)
         }
+    }
+
+    private static String determineVersion(Project project) {
+        return project.version == "unspecified" ? null : project.version
     }
 
 
@@ -103,9 +104,13 @@ class PublishPlugin implements Plugin<Project> {
     private static void configurePublishing(
         Project project,
         PublishPluginExtension extension,
-        String repoUrl,
-        List<License> uniqueLicenses
+        String repoUrl
     ) {
+        def licenses = extension.licenses.get()
+        def uniqueLicenses = licenses.toSet().toSorted()
+        if (licenses.size() != uniqueLicenses.size()) {
+            LOGGER.warn("Some licenses were duplicated. Please check if you made a mistake.")
+        }
 
         project.publishing {
             publications {
@@ -181,10 +186,11 @@ class PublishPlugin implements Plugin<Project> {
     private static void configureBintray(
         Project project,
         PublishPluginExtension extension,
-        BintrayExtension bintrayExtension,
         String repoUrl,
-        List<License> uniqueLicenses
+        BintrayExtension bintrayExtension
     ) {
+        def uniqueShortNames = extension.licenses.get().collect{it.shortName}.toSet().toSorted() as String[]
+
         bintrayExtension.with {
             user = user ?: getPropertyOrSystemEnv(project, extension.propNameBintrayUser, extension.envNameBintrayUser)
             key = key ?: getPropertyOrSystemEnv(project, extension.propNameBintrayApiKey, extension.envNameBintrayApiKey)
@@ -192,12 +198,12 @@ class PublishPlugin implements Plugin<Project> {
 
             pkg.with {
                 repo = repo ?: extension.bintrayRepo.get()
-                def pkgName = name ?: extension.bintrayPkg.getOrElse(project.name)
+                def pkgName = name ?: extension.bintrayPkg.getOrElse(project.rootProject.name)
                 name = pkgName
-                licenses = licenses ?: uniqueLicenses.collect { it.shortName } as String[]
+                licenses = licenses ?: uniqueShortNames
                 vcsUrl = vcsUrl ?: repoUrl
                 version.with {
-                    name = name ?: project.version
+                    name = name ?: project.version as String
                     desc = desc ?: "$pkgName $project.version"
                     released = released ?: new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ')
                     vcsTag = vcsTag ?: "v$project.version"
@@ -220,12 +226,16 @@ class PublishPlugin implements Plugin<Project> {
         return value
     }
 
-    private static void addManifestToJars(Project project, PublishPluginExtension extension, String repoUrl) {
+    private static void addManifestToJars(
+        Project project,
+        PublishPluginExtension extension,
+        String repoUrl
+    ) {
         project.tasks.withType(org.gradle.jvm.tasks.Jar) { task ->
             task.manifest {
                 attributes(['Implementation-Title'  : project.name,
-                    'Implementation-Version': project.version,
-                    'Implementation-URL'    : repoUrl
+                            'Implementation-Version': project.version,
+                            'Implementation-URL'    : repoUrl
                 ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project))
                 def licenseTxt = project.file("$project.rootProject.projectDir/LICENSE.txt")
                 if (licenseTxt.exists()) task.from(licenseTxt)

@@ -2,6 +2,7 @@ package ch.tutteli.gradle.publish
 
 import ch.tutteli.gradle.test.SettingsExtension
 import ch.tutteli.gradle.test.SettingsExtensionObject
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -25,6 +26,8 @@ class PublishPluginIntTest {
         settingsSetup.settings << "rootProject.name='$projectName'"
         def version = '1.0.0-SNAPSHOT'
         def githubUser = 'robstoll'
+        def user = 'myUser'
+        def apiKey = 'test'
         def pkgName = "tutteli-gradle"
 
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
@@ -98,6 +101,9 @@ class PublishPluginIntTest {
             // you can change the pkg name if it does not correspond to `project.name`
             bintrayPkg = '$pkgName'
             // you can customise the env variable names if they differ from the convention
+            propNameBintrayUser = 'myBintrayUser'                       // default is bintrayUser
+            propNameBintrayApiKey = 'myBintrayApiKey'                   // default is bintrayApiKey
+            propNameBintrayGpgPassphrase = 'myBintrayGpgPassphrase'     // default is bintrayGpgPassphrase
             envNameBintrayUser = 'MY_BINTRAY_USER'                      // default is BINTRAY_USER
             envNameBintrayApiKey = 'MY_BINTRAY_API_KEY'                 // default is BINTRAY_API_KEY
             envNameBintrayGpgPassphrase = 'MY_BINTRAY_GPG_PASSPHRASE'   // default is BINTRAY_GPG_PASSPHRASE
@@ -109,15 +115,16 @@ class PublishPluginIntTest {
             
             // you could configure JFrog's bintray extension here if you like.
             // There is no need for it though, everything can be configured via the above
+            // do not try to disable sign, will be overwritten by signWithGpg
             bintray {
-                user = 'myUser'
+                user = '$user'
             }     
         }        
         
-         // you could also configure JFrog's bintray extension outside of tutteliBintray
-         // but again, there is no need for it
+         // you could also configure JFrog's bintray extension outside of publish
+         // but again, there is no need for it.
         bintray {
-            key = 'test'
+            key = '$apiKey'
             pkg.version.gpg.passphrase = 'pass'
         }  
         
@@ -172,74 +179,8 @@ class PublishPluginIntTest {
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
         assertContainsRegex(result.output, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
-
-        assertTrue(result.output.contains("bintrayExtension.user: myUser"), "bintrayExtension.user\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.key: test"), "bintrayExtension.key\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.publications: [tutteli]"), "bintrayExtension.publications\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.repo: tutteli-jars"), "bintrayExtension.pkg.repo\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.name: $pkgName"), "bintrayExtension.pkg.name\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.licenses: Apache-2.0,Apache-2.0,Apache-2.0,Lic-1.2"), "bintrayExtension.pkg.licenses\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.vcsUrl: $repoUrl"), "bintrayExtension.pkg.vcsUrl\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.name: $version"), "bintrayExtension.pkg.version.name\n$result.output")
-
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + pkgName + " $version"), "bintrayExtension.pkg.version.desc\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.released: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "bintrayExtension.pkg.version.released\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.vcsTag: v$version"), "bintrayExtension.pkg.version.vcsTag\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.sign: true"), "bintrayExtension.pkg.version.gpg.sign\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.passphrase: pass"), "bintrayExtension.pkg.version.gpg.passphrase\n$result.output")
+        assertBintray(result, user, apiKey, pkgName, repoUrl, version, "Apache-2.0,Lic-1.2", "pass")
     }
-
-    private static String printInfos() {
-        """
-        project.afterEvaluate {
-            project.publishing.publications.withType(MavenPublication) {
-                println(getPomAsString(it))
-            }
-            
-            def bintrayExtension = project.extensions.getByName('bintray')
-            println("bintrayExtension.user: \$bintrayExtension.user")
-            println("bintrayExtension.key: \$bintrayExtension.key")
-            println("bintrayExtension.publications: \$bintrayExtension.publications")
-            println("bintrayExtension.pkg.repo: \$bintrayExtension.pkg.repo")
-            println("bintrayExtension.pkg.name: \$bintrayExtension.pkg.name")
-            println("bintrayExtension.pkg.licenses: \${bintrayExtension.pkg.licenses.join(',')}")
-            println("bintrayExtension.pkg.vcsUrl: \$bintrayExtension.pkg.vcsUrl")
-            println("bintrayExtension.pkg.version.name: \$bintrayExtension.pkg.version.name")
-            println("bintrayExtension.pkg.version.desc: \$bintrayExtension.pkg.version.desc")
-            println("bintrayExtension.pkg.version.released: \$bintrayExtension.pkg.version.released")
-            println("bintrayExtension.pkg.version.vcsTag: \$bintrayExtension.pkg.version.vcsTag")
-            println("bintrayExtension.pkg.version.gpg.sign: \$bintrayExtension.pkg.version.gpg.sign")
-            println("bintrayExtension.pkg.version.gpg.passphrase: \$bintrayExtension.pkg.version.gpg.passphrase")
-        }
-        
-        import org.apache.maven.model.Model
-        import org.apache.maven.model.io.xpp3.MavenXpp3Writer
-        import org.gradle.api.Action
-        import org.gradle.api.UncheckedIOException
-        import org.gradle.api.publish.maven.MavenPublication
-        import org.gradle.api.publish.maven.internal.publication.MavenPomInternal
-        import org.gradle.api.publish.maven.internal.tasks.MavenPomFileGenerator
-        import org.gradle.internal.xml.XmlTransformer
-        
-        String getPomAsString(MavenPublication pub) {
-            XmlTransformer transformer = new XmlTransformer()
-            transformer.addAction((pub.pom as MavenPomInternal).xmlAction)
-            StringWriter stringWriter = new StringWriter()
-            transformer.transform(stringWriter, MavenPomFileGenerator.POM_FILE_ENCODING, new Action<Writer>() {
-                void execute(Writer writer) {
-                    try {
-                        Model model = new Model()
-                        new MavenXpp3Writer().write(writer, model)
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e)
-                    }
-                }
-            })
-            return stringWriter.toString()
-        }
-        """
-    }
-
 
     @Test
     void combinePlugins(SettingsExtensionObject settingsSetup) throws IOException {
@@ -250,6 +191,8 @@ class PublishPluginIntTest {
         def githubUser = 'robstoll'
         def vendor = 'tutteli'
         def kotlinVersion = '1.2.71'
+        def user = 'test-user'
+        def apiKey = 'test-key'
 
         File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
         buildGradle << """
@@ -287,25 +230,15 @@ class PublishPluginIntTest {
             
             //required since we don't set the System.env variables
             bintray {
-                user = 'test'
-                key = 'api-key'
-                pkg.version.gpg.sign = false
+                user = '$user'
+                key = '$apiKey'
+                pkg.version.gpg.passphrase = 'pass'
             }
         }        
         
         project.afterEvaluate {
-            project.publishing.publications.withType(MavenPublication) {
-                it.artifacts.each {
-                    println("artifact: \$it.extension - \$it.classifier")
-                }
-            }
-            project.tasks.withType(org.gradle.jvm.tasks.Jar) {
-                println(it)
-                it.manifest.attributes.each{
-                    println(it)
-                }
-                println("----")
-            }
+            ${printArtifactsAndManifest()}
+            ${printBintray()}
         }
         """
         File license = new File(settingsSetup.tmp, 'LICENSE.txt')
@@ -328,6 +261,7 @@ class PublishPluginIntTest {
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, vendor, kotlinVersion)
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, vendor, kotlinVersion)
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-javadoc.jar", projectName, version, repoUrl, vendor, kotlinVersion)
+        assertBintray(result, user, apiKey, projectName, repoUrl, version, "Apache-2.0", "pass")
     }
 
     @Test
@@ -360,8 +294,6 @@ class PublishPluginIntTest {
         }     
    
         subprojects {
-            it.group = rootProject.group
-            it.version = rootProject.version
             it.description = 'sub description' 
             
             repositories {  mavenCentral(); }
@@ -369,33 +301,25 @@ class PublishPluginIntTest {
             apply plugin: 'ch.tutteli.publish'
          
             publish {
-                githubUser = '$githubUser'
-                
+                overrideDefaultLicense 'EUPL-1.2'
                 //minimal setup required for bintray extension
+                githubUser = '$githubUser'
                 bintrayRepo = 'tutteli-jars'
                 
                 manifestVendor = '$vendor'
-                
-                //required since we don't set the System.env variables
+                 
+                /* would be required if we used task publishToBintray, we don't so we don't have to define it
                 bintray {
                     user = 'test'
                     key = 'api-key'
+                    passphrase = 'pass'
                 }
+                */
             }            
          
             afterEvaluate {
-                project.publishing.publications.withType(MavenPublication) {
-                    it.artifacts.each {
-                        println("artifact: \$it.extension - \$it.classifier")
-                    }
-                }
-                project.tasks.withType(org.gradle.jvm.tasks.Jar) {
-                    println(it)
-                    it.manifest.attributes.each{
-                        println(it)
-                    }
-                    println("----")
-                }
+                ${printArtifactsAndManifest()}
+                ${printBintray()}
             }
         }
         """
@@ -416,6 +340,95 @@ class PublishPluginIntTest {
         assertManifest(output, '=', subprojectName, version, repoUrl, vendor, kotlinVersion)
         assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, "$subprojectName-${version}.jar", subprojectName, version, repoUrl, vendor, kotlinVersion)
         assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, "$subprojectName-${version}-sources.jar", subprojectName, version, repoUrl, vendor, kotlinVersion)
+        assertBintray(result, "null", "null", projectName, repoUrl, version, "EUPL-1.2", "null")
+    }
+
+    private static String printInfos() {
+        """
+        project.afterEvaluate {
+            project.publishing.publications.withType(MavenPublication) {
+                println(getPomAsString(it))
+            }
+            
+            ${printBintray()}
+        }
+        
+        import org.apache.maven.model.Model
+        import org.apache.maven.model.io.xpp3.MavenXpp3Writer
+        import org.gradle.api.Action
+        import org.gradle.api.UncheckedIOException
+        import org.gradle.api.publish.maven.MavenPublication
+        import org.gradle.api.publish.maven.internal.publication.MavenPomInternal
+        import org.gradle.api.publish.maven.internal.tasks.MavenPomFileGenerator
+        import org.gradle.internal.xml.XmlTransformer
+        
+        String getPomAsString(MavenPublication pub) {
+            XmlTransformer transformer = new XmlTransformer()
+            transformer.addAction((pub.pom as MavenPomInternal).xmlAction)
+            StringWriter stringWriter = new StringWriter()
+            transformer.transform(stringWriter, MavenPomFileGenerator.POM_FILE_ENCODING, new Action<Writer>() {
+                void execute(Writer writer) {
+                    try {
+                        Model model = new Model()
+                        new MavenXpp3Writer().write(writer, model)
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e)
+                    }
+                }
+            })
+            return stringWriter.toString()
+        }
+        """
+    }
+
+    private static String printBintray() {
+        return """def bintrayExtension = project.extensions.getByName('bintray')
+            println("bintrayExtension.user: \$bintrayExtension.user")
+            println("bintrayExtension.key: \$bintrayExtension.key")
+            println("bintrayExtension.publications: \$bintrayExtension.publications")
+            println("bintrayExtension.pkg.repo: \$bintrayExtension.pkg.repo")
+            println("bintrayExtension.pkg.name: \$bintrayExtension.pkg.name")
+            println("bintrayExtension.pkg.licenses: \${bintrayExtension.pkg.licenses.join(',')}")
+            println("bintrayExtension.pkg.vcsUrl: \$bintrayExtension.pkg.vcsUrl")
+            println("bintrayExtension.pkg.version.name: \$bintrayExtension.pkg.version.name")
+            println("bintrayExtension.pkg.version.desc: \$bintrayExtension.pkg.version.desc")
+            println("bintrayExtension.pkg.version.released: \$bintrayExtension.pkg.version.released")
+            println("bintrayExtension.pkg.version.vcsTag: \$bintrayExtension.pkg.version.vcsTag")
+            println("bintrayExtension.pkg.version.gpg.sign: \$bintrayExtension.pkg.version.gpg.sign")
+            println("bintrayExtension.pkg.version.gpg.passphrase: \$bintrayExtension.pkg.version.gpg.passphrase")
+        """
+    }
+
+    private static String printArtifactsAndManifest(){
+        return """project.publishing.publications.withType(MavenPublication) {
+            it.artifacts.each {
+                println("artifact: \$it.extension - \$it.classifier")
+            }
+        }
+        project.tasks.withType(org.gradle.jvm.tasks.Jar) {
+            println(it)
+            it.manifest.attributes.each{
+                println(it)
+            }
+            println("----")
+        }"""
+    }
+
+    private static void assertBintray(BuildResult result, String user, String key, String pkgName, String repoUrl, String version, String licenses, String passphrase) {
+        assertTrue(result.output.contains("bintrayExtension.user: $user"), "bintrayExtension.user $user\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.key: $key"), "bintrayExtension.key $key\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.publications: [tutteli]"), "bintrayExtension.publications [tutteli]\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.repo: tutteli-jars"), "bintrayExtension.pkg.repo tutteli-jars\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.name: $pkgName"), "bintrayExtension.pkg.name $pkgName\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.licenses: $licenses"), "bintrayExtension.pkg.licenses $licenses\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.vcsUrl: $repoUrl"), "bintrayExtension.pkg.vcsUrl $repoUrl\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.name: $version"), "bintrayExtension.pkg.version.name $version\n$result.output")
+
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + pkgName + " $version"), "bintrayExtension.pkg.version.desc " + pkgName + " $version\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.released: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "bintrayExtension.pkg.version.released\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.vcsTag: v$version"), "bintrayExtension.pkg.version.vcsTag v$version\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.sign: true"), "bintrayExtension.pkg.version.gpg.sign true\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.passphrase: $passphrase"), "bintrayExtension.pkg.version.gpg.passphrase pass\n$result.output")
     }
 
     private static void assertJarWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
