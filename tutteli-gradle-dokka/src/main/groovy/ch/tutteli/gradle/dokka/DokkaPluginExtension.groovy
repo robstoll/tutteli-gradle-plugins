@@ -17,6 +17,9 @@ class DokkaPluginExtension {
         dokkaTask = project.tasks.getByName('dokka') as DokkaTask
         repoUrl = project.objects.property(String)
         githubUser = project.objects.property(String)
+        if (isTutteliProject(project) || isTutteliProject(project.rootProject)) {
+            githubUser.set('robstoll')
+        }
         ghPages = project.objects.property(Boolean)
         ghPages.set(false)
 
@@ -29,6 +32,10 @@ class DokkaPluginExtension {
                 suffix = '#L'
             }
         }
+    }
+
+    private static boolean isTutteliProject(Project project) {
+        return project.group?.startsWith("ch.tutteli")
     }
 
     void dokka(Action<DokkaTask> configure) {

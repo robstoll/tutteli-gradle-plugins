@@ -36,7 +36,6 @@ class PublishPluginExtension {
     PublishPluginExtension(Project project) {
         this.project = project
         bintrayExtension = project.extensions.getByType(BintrayExtension)
-
         githubUser = project.objects.property(String)
         component = project.objects.property(SoftwareComponent)
         artifacts = project.objects.listProperty(Task)
@@ -56,19 +55,27 @@ class PublishPluginExtension {
         envNameBintrayGpgPassphrase = project.objects.property(String)
         envNameBintrayGpgPassphrase.set('BINTRAY_GPG_PASSPHRASE')
         bintrayRepo = project.objects.property(String)
-        bintrayRepo.set('tutteli-jars')
         bintrayPkg = project.objects.property(String)
         signWithGpg = project.objects.property(Boolean)
         signWithGpg.set(true)
         manifestVendor = project.objects.property(String)
-        manifestVendor.set('tutteli.ch')
+
+        if (isTutteliProject(project) || isTutteliProject(project.rootProject)) {
+            githubUser.set('robstoll')
+            bintrayRepo.set('tutteli-jars')
+            manifestVendor.set('tutteli.ch')
+        }
 
         useSourcesJarAsArtifact()
         useJavaComponentIfJavaPluginAvailable()
         useJavadocJarAsArtifactIfAvailable()
     }
 
-    private void useSourcesJarAsArtifact(){
+    private static boolean isTutteliProject(Project project) {
+        return project.group?.startsWith("ch.tutteli")
+    }
+
+    private void useSourcesJarAsArtifact() {
         artifacts.add(project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR))
     }
 

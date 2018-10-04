@@ -51,6 +51,7 @@ class PublishPluginIntTest {
         publish {
             //minimal setup required for publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
+            bintrayRepo = 'tutteli-jars'
 
             //different ways to override the default license
             resetLicenses 'EUPL-1.2'             // default distribution is 'repo'
@@ -97,11 +98,8 @@ class PublishPluginIntTest {
                 organizationUrl = 'tutteli.ch'
             }            
             
-            //that's the default vendor, please adopt to your needs or set to null if not required
+            // will add Implementation-Vendor to all manifest files.
             manifestVendor = 'tutteli.ch'
-            
-            //that's the default bintray repo, please change to yours
-            bintrayRepo = 'tutteli-jars'
             
             // you can change the pkg name if it does not correspond to `project.name`
             bintrayPkg = '$pkgName'
