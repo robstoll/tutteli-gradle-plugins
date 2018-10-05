@@ -61,10 +61,10 @@ Requires that `kotlinutils.kotlinVersion` (property on the extension) is configu
 
 Following a list of functions it supports:
 - declare dependencies on libs: `kotlinStdlib()`, `kotlinStdlibJs()`, `kotlinStdlibCommon()`, `kotlinReflect()`  
-- exclude dependencies: `withoutKotlin`, `withoutKbox`
+- exclude dependencies: `excludeKotlin`, `excludeKbox`, `excludeAtriumVerbs`, `excluding {...}` (see example)
 - configure projects: `configureCommonProjects`, `configureJsProjects`   
 
-You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.15.0/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L31).
+You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.15.0/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
 
 # ch.tutteli.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.publish/0.15.0)
 Applies the `maven-publish` plugin as well as JFrog's `bintray` plugin and 

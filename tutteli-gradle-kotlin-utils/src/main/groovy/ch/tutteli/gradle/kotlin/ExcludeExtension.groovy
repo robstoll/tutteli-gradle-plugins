@@ -1,6 +1,7 @@
 package ch.tutteli.gradle.kotlin
 
 import org.gradle.api.artifacts.ExternalModuleDependency
+import org.gradle.api.artifacts.ModuleDependency
 
 class ExcludeExtension {
     private ExternalModuleDependency externalModuleDependency
@@ -19,6 +20,10 @@ class ExcludeExtension {
 
     void atriumVerbs() {
         excludeAtriumVerbs(externalModuleDependency)
+    }
+
+    ModuleDependency exclude(Map<String, String> excludeProperties){
+        externalModuleDependency.exclude(excludeProperties)
     }
 
     static void excludeKotlin(ExternalModuleDependency externalModuleDependency) {

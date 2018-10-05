@@ -67,6 +67,7 @@ class KotlinUtilsPluginIntTest {
             }
             testRuntime "org.jetbrains.spek:spek-junit-platform-engine:1.1.5", excluding {
                 kotlin()
+                exclude group: 'org.jetbrains.spek', module: 'spek-api'
             }
         }
         """
@@ -86,6 +87,7 @@ class KotlinUtilsPluginIntTest {
         assertContainsNotRegex(result.output, "stdlib", /(compile|default|runtime)[\S\s]+?\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION\r?\n\s*\\--- org.jetbrains.kotlin:kotlin-stdlib:/)
         assertContainsNotRegex(result.output, "atrium-verbs", /ch.tutteli.atrium:atrium-verbs/)
         assertContainsNotRegex(result.output, "kbox", /ch.tutteli.kbox/)
+        assertContainsNotRegex(result.output, "kbox", /org.jetbrains.spek:spek-api/)
     }
 
     @Test
