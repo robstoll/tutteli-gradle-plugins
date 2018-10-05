@@ -2,6 +2,7 @@ package ch.tutteli.gradle.kotlin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.provider.Property
 
 class KotlinUtilsPluginExtension {
@@ -26,8 +27,17 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.kotlinStdlibCommon = { getKotlinDependency(extension, 'stdlib-common') }
         project.ext.kotlinReflect = { getKotlinDependency(extension, 'reflect') }
 
-        project.ext.withoutKbox = { exclude group: 'ch.tutteli.kbox' }
-        project.ext.withoutKotlin = { exclude group: 'org.jetbrains.kotlin' }
+        project.ext.excludeKbox = { ExcludeExtension.excludeKbox(owner as ExternalModuleDependency) }
+        project.ext.excludeKotlin = { ExcludeExtension.excludeKotlin(owner as ExternalModuleDependency) }
+        project.ext.excludeAtriumVerbs = { ExcludeExtension.excludeAtriumVerbs(owner as ExternalModuleDependency) }
+        project.ext.excluding  = { Closure<ExcludeExtension> closure ->
+            return {
+                def excludes = closure.clone()
+                excludes.resolveStrategy = Closure.DELEGATE_FIRST
+                excludes.delegate = new ExcludeExtension(owner as ExternalModuleDependency)
+                excludes.call()
+            }
+        }
 
         def getCommonProjects = { getSubprojectsWithSuffix(project, "-common") }
         def getJsProjects = { getSubprojectsWithSuffix(project, "-js") }

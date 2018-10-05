@@ -8,6 +8,7 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import static ch.tutteli.gradle.test.Asserts.assertContainsNotRegex
 import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertTrue
 
@@ -26,7 +27,7 @@ class KotlinUtilsPluginIntTest {
         """
 
     @Test
-    void compileAndWithoutXy(SettingsExtensionObject settingsSetup) throws IOException {
+    void compileAndExcludeXy(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << """
         rootProject.name='test-project'
@@ -47,29 +48,44 @@ class KotlinUtilsPluginIntTest {
         
         repositories{
             mavenCentral()
+            maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
         }
         
         dependencies {
-            compile kotlinStdlib(), withoutKbox
-            compile kotlinStdlibJs(), withoutKbox
-            compile kotlinStdlibCommon(), withoutKbox
-            compile kotlinReflect(), withoutKotlin
+            compile kotlinStdlib(), excludeKbox
+            compile kotlinStdlibJs(), excludeAtriumVerbs
+            compile kotlinStdlibCommon(), excludeKotlin
+            compile kotlinReflect(), excluding {
+                kotlin()
+                kbox()
+                atriumVerbs()
+            }
+            testCompile "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0", excluding {
+                kotlin()
+                atriumVerbs()
+                kbox()
+            }
+            testRuntime "org.jetbrains.spek:spek-junit-platform-engine:1.1.5", excluding {
+                kotlin()
+            }
         }
         """
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("dependencies")
+            .withArguments("dependencies", "--stacktrace")
             .build()
         //assert
+        Asserts.assertStatusOk(result, ":dependencies")
+
         assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"), "should contain stdlib:\n" + result.output)
         assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-js:$KOTLIN_VERSION"), "should contain stdlib-js:\n" + result.output)
         assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + result.output)
         assertTrue(result.output.contains("\n\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"), "should contain reflect:\n" + result.output)
 
-        def matcher = result.output =~ /(compile|default|runtime)[\S\s]+?\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION\r?\n\s*\\--- org.jetbrains.kotlin:kotlin-stdlib:/
-        assertFalse(matcher.find(), "stdlib should have been excluded:\n" + result.output)
-        Asserts.assertStatusOk(result, ":dependencies")
+        assertContainsNotRegex(result.output, "stdlib", /(compile|default|runtime)[\S\s]+?\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION\r?\n\s*\\--- org.jetbrains.kotlin:kotlin-stdlib:/)
+        assertContainsNotRegex(result.output, "atrium-verbs", /ch.tutteli.atrium:atrium-verbs/)
+        assertContainsNotRegex(result.output, "kbox", /ch.tutteli.kbox/)
     }
 
     @Test

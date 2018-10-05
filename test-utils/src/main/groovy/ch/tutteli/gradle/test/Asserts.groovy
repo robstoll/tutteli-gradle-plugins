@@ -37,9 +37,14 @@ class Asserts {
         assertTrue(failed.empty, 'FAILED is empty but was not: ' + failed)
     }
 
-    static void assertContainsRegex(String pom, String what, String regex) {
-        def matcher = pom =~ regex
-        assertTrue(matcher.find(), what + "\n" + pom)
+    static void assertContainsRegex(String content, String what, String regex) {
+        def matcher = content =~ regex
+        assertTrue(matcher.find(), what + " should be in content\n" + content)
+    }
+
+    static void assertContainsNotRegex(String content, String what, String regex) {
+        def matcher = content =~ regex
+        assertFalse(matcher.find(), what + " should not be in content.\n" + content)
     }
 
     static void assertThrowsProjectConfigExceptionWithCause(Class<? extends Throwable> cause, String message, Executable executable) {
