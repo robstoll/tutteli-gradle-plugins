@@ -67,8 +67,12 @@ class PublishPluginExtension {
             manifestVendor.set('tutteli.ch')
         }
 
-        addAllJarsToArtifacts()
+        // reset group of sub-projects
+        if (project.rootProject != project && project.group == project.rootProject.name) {
+            project.group = ""
+        }
 
+        addAllJarsToArtifacts()
     }
 
     private static boolean isTutteliProject(Project project) {

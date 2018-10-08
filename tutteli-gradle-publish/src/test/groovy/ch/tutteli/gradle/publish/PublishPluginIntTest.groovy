@@ -182,7 +182,7 @@ class PublishPluginIntTest {
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
         assertContainsRegex(result.output, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
-        assertBintray(result, user, apiKey, pkgName, repoUrl, version, "Apache-2.0,Lic-1.2", "pass")
+        assertBintray(result, user, apiKey, pkgName, projectName, repoUrl, version, "Apache-2.0,Lic-1.2", "pass")
     }
 
     @Test
@@ -190,6 +190,7 @@ class PublishPluginIntTest {
         //arrange
         def projectName = 'test-project'
         settingsSetup.settings << "rootProject.name='$projectName'"
+        def groupId = 'com.example'
         def version = '1.0.0-SNAPSHOT'
         def githubUser = 'robstoll'
         def vendor = 'tutteli'
@@ -215,7 +216,7 @@ class PublishPluginIntTest {
         apply plugin: 'ch.tutteli.publish'
                 
         project.with {
-            group = 'com.example'
+            group = '$groupId'
             version = '$version'
             description = 'test project'
         }
@@ -249,32 +250,33 @@ class PublishPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("includeBuildTimeInManifest", "jar", "javadocJar", "sourcesJar", "--stacktrace")
+            .withArguments("includeBuildTimeInManifest", "pubToMaLo", "--stacktrace")
             .build()
         //assert
         def repoUrl = "https://github.com/$githubUser/$projectName"
         def output = result.output
+        assertTrue(output.contains("groupId: $groupId"), "groupId $groupId\n${output}")
+        assertTrue(output.contains("artifactId: $projectName"), "artifactId: $projectName\n${output}")
+        assertTrue(output.contains("version: $version"), "version: $version\n${output}")
         assertTrue(output.contains("artifact: jar - null"), "java jar\n${output}")
         assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
         assertTrue(output.contains("artifact: jar - javadoc"), "javadoc jar\n${output}")
-        assertContainsRegex(output, "task jar", "task ':jar'\r?\nManifest-Version=1.0\r?\nImplementation")
-        assertContainsRegex(output, "task sourcesJar", "task ':sourcesJar'\r?\nManifest-Version=1.0\r?\nImplementation")
-        assertContainsRegex(output, "task javadocJar", "task ':javadocJar'\r?\nManifest-Version=1.0\r?\nImplementation")
-        assertManifest(output, '=', projectName, version, repoUrl, vendor, kotlinVersion)
+        assertBintray(result, user, apiKey, projectName, projectName, repoUrl, version, "Apache-2.0", "pass")
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, vendor, kotlinVersion)
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, vendor, kotlinVersion)
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-javadoc.jar", projectName, version, repoUrl, vendor, kotlinVersion)
-        assertBintray(result, user, apiKey, projectName, repoUrl, version, "Apache-2.0", "pass")
     }
 
     @Test
     void subproject(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
-        def projectName = 'test-project'
-        def subprojectName = 'test-sub'
-        settingsSetup.settings << """rootProject.name='$projectName'
+        def rootProjectName = 'test-project'
+        def subprojectNameWithoutJvm = 'test-sub'
+        def subprojectName = "$subprojectNameWithoutJvm-jvm"
+        settingsSetup.settings << """rootProject.name='$rootProjectName'
         include '$subprojectName'
         """
+        def groupId = 'ch.tutteli'
         def version = '1.0.0-SNAPSHOT'
         def githubUser = 'robstoll'
         def vendor = 'tutteli.ch'
@@ -292,7 +294,7 @@ class PublishPluginIntTest {
         }
                 
         project.with {
-            group = 'ch.tutteli'
+            group = '$groupId'
             version = '$version'
         }     
    
@@ -342,24 +344,22 @@ class PublishPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("includeBuildTimeInManifest", "jar", "sourcesJar", "--stacktrace")
+            .withArguments("includeBuildTimeInManifest", "pubToMaLo", "--stacktrace")
             .build()
         //assert
-        def repoUrl = "https://github.com/$githubUser/$projectName"
+        def repoUrl = "https://github.com/$githubUser/$rootProjectName"
         def output = result.output
+        assertTrue(output.contains("groupId: $groupId"), "groupId $groupId\n${output}")
+        assertTrue(output.contains("artifactId: $subprojectNameWithoutJvm"), "artifactId: $subprojectNameWithoutJvm\n${output}")
+        assertTrue(output.contains("version: $version"), "version: $version\n${output}")
         assertTrue(output.contains("artifact: jar - null"), "java jar\n${output}")
         assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
-        assertTrue(output.contains("artifact: jar - tests"), "test jar jar\n${output}")
-        assertFalse(output.contains("artifact: jar - testsources"), "testsources jar should not be added to artifacts because it is defined after plugin apply\n${output}")
-        assertContainsRegex(output, "task jar", "task ':test-sub:jar'\r?\nManifest-Version=1.0\r?\nImplementation")
-        assertContainsRegex(output, "task sourcesJar", "task ':test-sub:sourcesJar'\r?\nManifest-Version=1.0\r?\nImplementation")
-        assertContainsRegex(output, "task testJar", "task ':test-sub:testJar'\r?\nManifest-Version=1.0\r?\nImplementation")
-        def matcher = output =~ "task ':test-sub:testSourcesJar'\r?\nManifest-Version=1.0\r?\nImplementation"
-        assertFalse(matcher.find(), "task testSourcesJar should not be augmented\n$output")
-        assertManifest(output, '=', subprojectName, version, repoUrl, vendor, kotlinVersion)
-        assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, "$subprojectName-${version}.jar", subprojectName, version, repoUrl, vendor, kotlinVersion)
-        assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, "$subprojectName-${version}-sources.jar", subprojectName, version, repoUrl, vendor, kotlinVersion)
-        assertBintray(result, "null", "null", projectName, repoUrl, version, "EUPL-1.2", "null")
+        assertTrue(output.contains("artifact: jar - tests"), "test jar \n${output}")
+        assertFalse(output.contains("artifact: jar - testsources"), "testsources jar should not be in output, was defined after plugin apply\n${output}")
+        assertBintray(result, "null", "null", rootProjectName, subprojectNameWithoutJvm, repoUrl, version, "EUPL-1.2", "null")
+        assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
+        assertJarOfSubprojectWithLicenseAndManifest(settingsSetup,  subprojectName, "$subprojectNameWithoutJvm-${version}-sources.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
+        assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-tests.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
     }
 
     private static String printInfos() {
@@ -419,21 +419,19 @@ class PublishPluginIntTest {
     }
 
     private static String printArtifactsAndManifest() {
-        return """project.publishing.publications.withType(MavenPublication) {
+        return """
+        project.publishing.publications.withType(MavenPublication) {
+            println("groupId: \$it.groupId")
+            println("artifactId: \$it.artifactId")
+            println("version: \$it.version")
             it.artifacts.each {
                 println("artifact: \$it.extension - \$it.classifier")
             }
         }
-        project.tasks.withType(org.gradle.jvm.tasks.Jar) {
-            println(it)
-            it.manifest.attributes.each{
-                println(it)
-            }
-            println("----")
-        }"""
+        """
     }
 
-    private static void assertBintray(BuildResult result, String user, String key, String pkgName, String repoUrl, String version, String licenses, String passphrase) {
+    private static void assertBintray(BuildResult result, String user, String key, String pkgName, String projectName, String repoUrl, String version, String licenses, String passphrase) {
         assertTrue(result.output.contains("bintrayExtension.user: $user"), "bintrayExtension.user $user\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.key: $key"), "bintrayExtension.key $key\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.publications: [tutteli]"), "bintrayExtension.publications [tutteli]\n$result.output")
@@ -443,7 +441,7 @@ class PublishPluginIntTest {
         assertTrue(result.output.contains("bintrayExtension.pkg.vcsUrl: $repoUrl"), "bintrayExtension.pkg.vcsUrl $repoUrl\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.name: $version"), "bintrayExtension.pkg.version.name $version\n$result.output")
 
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + pkgName + " $version"), "bintrayExtension.pkg.version.desc " + pkgName + " $version\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + projectName + " $version"), "bintrayExtension.pkg.version.desc " + pkgName + " $version\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.released: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "bintrayExtension.pkg.version.released\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.vcsTag: v$version"), "bintrayExtension.pkg.version.vcsTag v$version\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.sign: true"), "bintrayExtension.pkg.version.gpg.sign true\n$result.output")
@@ -454,8 +452,8 @@ class PublishPluginIntTest {
         assertJarWithLicenseAndManifest(Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs'), jarName, projectName, version, repoUrl, vendor, kotlinVersion)
     }
 
-    private static void assertJarOfSubprojectWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String jarName, String subprojectName, String version, String repoUrl, String vendor, String kotlinVersion) {
-        assertJarWithLicenseAndManifest(Paths.get(settingsSetup.tmp.absolutePath, subprojectName, 'build', 'libs'), jarName, subprojectName, version, repoUrl, vendor, kotlinVersion)
+    private static void assertJarOfSubprojectWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String dirName, String jarName, String subprojectName, String version, String repoUrl, String vendor, String kotlinVersion) {
+        assertJarWithLicenseAndManifest(Paths.get(settingsSetup.tmp.absolutePath, dirName, 'build', 'libs'), jarName, subprojectName, version, repoUrl, vendor, kotlinVersion)
     }
 
     private static void assertJarWithLicenseAndManifest(Path jarPath, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {

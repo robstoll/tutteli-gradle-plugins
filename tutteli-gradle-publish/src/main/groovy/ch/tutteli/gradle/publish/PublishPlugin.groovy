@@ -47,13 +47,10 @@ class PublishPlugin implements Plugin<Project> {
 
         def includeBuildTime = project.tasks.create(name: TASK_NAME_INCLUDE_TIME) {
             doLast {
-                project.tasks.withType(org.gradle.jvm.tasks.Jar) { jarTask ->
-                    if(extension.artifacts.isPresent() && extension.artifacts.get().contains(jarTask)) {
-                        jarTask.manifest {
-                            attributes('Build-Time': new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ'))
-                        }
-                    }
-                }
+                extension.artifacts.getOrElse(Collections.emptyList())
+                    .findAll { it instanceof org.gradle.jvm.tasks.Jar }
+                    .collect { it as org.gradle.jvm.tasks.Jar }
+                    .each { augmentManifest(it, project, extension) }
             }
         }
 
@@ -84,12 +81,13 @@ class PublishPlugin implements Plugin<Project> {
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayGpgPassphrase, "envNameBintrayGpgPassphrase")
             requireSetOnBintrayExtensionOrProperty(bintrayExtension.pkg.repo, extension.bintrayRepo, "bintrayRepo")
 
-            def repoUrl = "https://github.com/${extension.githubUser.get()}/$project.rootProject.name"
-
-            configurePublishing(project, extension, repoUrl)
-            configureBintray(project, extension, repoUrl, bintrayExtension)
-            addManifestToJars(project, extension, repoUrl)
+            configurePublishing(project, extension)
+            configureBintray(project, extension, bintrayExtension)
         }
+    }
+
+    private static String determineRepoUrl(Project project, PublishPluginExtension extension) {
+        return "https://github.com/${extension.githubUser.get()}/$project.rootProject.name"
     }
 
     private static String determineVersion(Project project) {
@@ -103,45 +101,46 @@ class PublishPlugin implements Plugin<Project> {
         }
     }
 
-    private static void configurePublishing(
-        Project project,
-        PublishPluginExtension extension,
-        String repoUrl
-    ) {
-        def licenses = extension.licenses.get()
-        def uniqueLicenses = licenses.toSet().toSorted()
-        if (licenses.size() != uniqueLicenses.size()) {
-            LOGGER.warn("Some licenses were duplicated. Please check if you made a mistake.")
-        }
-
+    private static void configurePublishing(Project project, PublishPluginExtension extension) {
+        def aId = determineArtifactId(project)
         project.publishing {
             publications {
                 tutteli(MavenPublication) {
+                    groupId project.group
+                    artifactId aId
+                    version project.version
+
                     MavenPublication publication = it
                     if (extension.component.isPresent()) {
                         publication.from(extension.component.get())
                     }
                     def artifacts = extension.artifacts.getOrElse(Collections.emptyList())
                     artifacts.each {
+                        if (it instanceof org.gradle.jvm.tasks.Jar) {
+                            it.baseName = aId
+                        }
                         publication.artifact it
                     }
-
-                    groupId project.group
-                    artifactId project.name
-                    version project.version
-
-                    pom.withXml(pomConfig(project, extension, repoUrl, uniqueLicenses))
+                    pom.withXml(pomConfig(project, extension))
                 }
             }
         }
     }
 
-    private static Action<? extends XmlProvider> pomConfig(
-        Project project,
-        PublishPluginExtension extension,
-        String repoUrl,
-        List<License> uniqueLicenses
-    ) {
+    private static String determineArtifactId(Project project) {
+        def name = project.name
+        return name.endsWith("-jvm") ?
+            name.substring(0, name.lastIndexOf("-jvm")) :
+            name
+    }
+
+    private static Action<? extends XmlProvider> pomConfig(Project project, PublishPluginExtension extension) {
+        String repoUrl = determineRepoUrl(project, extension)
+        def extensionLicenses = extension.licenses.get()
+        def uniqueLicenses = extensionLicenses.toSet().toSorted()
+        if (extensionLicenses.size() != uniqueLicenses.size()) {
+            LOGGER.warn("Some licenses were duplicated. Please check if you made a mistake.")
+        }
         def pomConfig = {
             url repoUrl
             licenses {
@@ -188,10 +187,10 @@ class PublishPlugin implements Plugin<Project> {
     private static void configureBintray(
         Project project,
         PublishPluginExtension extension,
-        String repoUrl,
         BintrayExtension bintrayExtension
     ) {
-        def uniqueShortNames = extension.licenses.get().collect{it.shortName}.toSet().toSorted() as String[]
+        def uniqueShortNames = extension.licenses.get().collect { it.shortName }.toSet().toSorted() as String[]
+        def repoUrl = determineRepoUrl(project, extension)
 
         bintrayExtension.with {
             user = user ?: getPropertyOrSystemEnv(project, extension.propNameBintrayUser, extension.envNameBintrayUser)
@@ -206,7 +205,7 @@ class PublishPlugin implements Plugin<Project> {
                 vcsUrl = vcsUrl ?: repoUrl
                 version.with {
                     name = name ?: project.version as String
-                    desc = desc ?: "$pkgName $project.version"
+                    desc = desc ?: "${determineArtifactId(project)} $project.version"
                     released = released ?: new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ')
                     vcsTag = vcsTag ?: "v$project.version"
                     gpg.with {
@@ -228,24 +227,22 @@ class PublishPlugin implements Plugin<Project> {
         return value
     }
 
-    private static void addManifestToJars(
+    private static void augmentManifest(
+        org.gradle.jvm.tasks.Jar jarTask,
         Project project,
-        PublishPluginExtension extension,
-        String repoUrl
+        PublishPluginExtension extension
     ) {
-        project.tasks.withType(org.gradle.jvm.tasks.Jar) { task ->
-            if(extension.artifacts.isPresent() && extension.artifacts.get().contains(task)) {
-                task.manifest {
-                    attributes(['Implementation-Title'  : project.name,
-                                'Implementation-Version': project.version,
-                                'Implementation-URL'    : repoUrl
-                    ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project))
-                    def licenseTxt = project.file("$project.rootProject.projectDir/LICENSE.txt")
-                    if (licenseTxt.exists()) task.from(licenseTxt)
-                    def license = project.file("$project.rootProject.projectDir/LICENSE")
-                    if (license.exists()) task.from(license)
-                }
-            }
+        String repoUrl = determineRepoUrl(project, extension)
+        jarTask.manifest {
+            attributes(['Implementation-Title'  : determineArtifactId(project),
+                        'Implementation-Version': project.version,
+                        'Implementation-URL'    : repoUrl,
+                        'Build-Time'            : new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ')
+            ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project))
+            def licenseTxt = project.file("$project.rootProject.projectDir/LICENSE.txt")
+            if (licenseTxt.exists()) jarTask.from(licenseTxt)
+            def license = project.file("$project.rootProject.projectDir/LICENSE")
+            if (license.exists()) jarTask.from(license)
         }
     }
 

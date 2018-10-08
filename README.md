@@ -73,7 +73,8 @@ It exposes the `publish` extension which lets you specify those information and 
 Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.15.1/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
 for more information.
 
-If not set, it automatically propagates `version` and `group` from `rootProject` to subprojects.
+If not set, it automatically propagates `version` and `group` from `rootProject` to subprojects 
+(`group` of subprojects are set to "" when plugin is applied, would default to `rootProject.name`).
 
 It provides a `sourcesJar` task which includes all sources and adds them to the artifacts which shall be published.
 It automatically uses `project.components.java` if available -- apply the `java` or `kotlin` plugin (or similar) first.   
@@ -88,6 +89,7 @@ Furthermore it adds the `License.txt` or `LICENSE` file to the jar if such a fil
 Last but not least it provides a `publishToBintray` task which adds the build-time to the manifest file in addition.
 
 The conventions:
+- uses `version` for `artifactId` and removes `-jvm` if the name ends with it
 - Apache 2.0 is used as default license
 - project.group, project.description and project.version is used in publishing
 - bintray user, api key and gpg passphrase can either be provided by a property (we recommend gradle.properties) or by System.env with the following names:
