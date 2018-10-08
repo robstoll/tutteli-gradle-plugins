@@ -72,11 +72,19 @@ class PublishPluginExtension {
             project.group = ""
         }
 
+        useJavaComponentIfJavaPluginAvailable()
         addAllJarsToArtifacts()
     }
 
     private static boolean isTutteliProject(Project project) {
         return project.group?.startsWith("ch.tutteli")
+    }
+
+    private void useJavaComponentIfJavaPluginAvailable() {
+        def component = project.components.findByName('java')
+        if (component != null) {
+            this.component.set(component)
+        }
     }
 
     private void addAllJarsToArtifacts() {

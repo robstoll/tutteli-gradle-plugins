@@ -131,16 +131,20 @@ class PublishPluginIntTest {
             pkg.version.gpg.passphrase = 'pass'
         }  
         
-        ${printInfos()}
+        project.afterEvaluate { 
+            ${printBintray()}
+        }
         """
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("projects", "--stacktrace")
+            .withArguments("projects", "generatePomFileForTutteliPublication", "--stacktrace")
             .build()
         //assert
         assertTrue(result.output.contains("Some licenses were duplicated. Please check if you made a mistake."), "should contain warning about duplicated licenses")
-        assertContainsRegex(result.output, "licenses", "<licenses>$NL_INDENT" +
+        String pom = Paths.get(settingsSetup.tmp.absolutePath, 'build', 'publications', 'tutteli', 'pom-default.xml').toFile().getText('UTF-8')
+
+        assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
             "<license>$NL_INDENT" +
             "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
             "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
@@ -163,7 +167,7 @@ class PublishPluginIntTest {
             "</license>$NL_INDENT" +
             "</licenses>")
 
-        assertContainsRegex(result.output, "developers", "<developers>$NL_INDENT" +
+        assertContainsRegex(pom, "developers", "<developers>$NL_INDENT" +
             "<developer>$NL_INDENT" +
             "<id>robstoll</id>$NL_INDENT" +
             "<name>Robert Stoll</name>$NL_INDENT" +
@@ -181,7 +185,7 @@ class PublishPluginIntTest {
         )
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
-        assertContainsRegex(result.output, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
+        assertContainsRegex(pom, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
         assertBintray(result, user, apiKey, pkgName, projectName, repoUrl, version, "Apache-2.0,Lic-1.2", "pass")
     }
 
@@ -208,7 +212,10 @@ class PublishPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        repositories {  mavenCentral(); }
+        repositories {  
+            mavenCentral();
+            maven { url "http://dl.bintray.com/robstoll/tutteli-jars" } 
+        }
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.dokka' 
         tutteliDokka.githubUser = '$githubUser'
@@ -240,6 +247,10 @@ class PublishPluginIntTest {
             }
         }        
         
+        dependencies { 
+            compile 'ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0'
+        }
+        
         project.afterEvaluate {
             ${printArtifactsAndManifest()}
             ${printBintray()}
@@ -250,9 +261,29 @@ class PublishPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("includeBuildTimeInManifest", "pubToMaLo", "--stacktrace")
+            .withArguments("includeBuildTimeInManifest", "generatePomFileForTutteliPublication", "pubToMaLo", "--stacktrace")
             .build()
         //assert
+        String pom = Paths.get(settingsSetup.tmp.absolutePath, 'build', 'publications', 'tutteli', 'pom-default.xml').toFile().getText('UTF-8')
+        assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
+            "<license>$NL_INDENT" +
+            "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
+            "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
+            "<distribution>repo</distribution>$NL_INDENT" +
+            "</license>$NL_INDENT" +
+            "</licenses"
+        )
+        assertContainsRegex(pom, "developers", "<developers/>")
+        assertContainsRegex(pom, "dependencies", "<dependencies>$NL_INDENT" +
+            "<dependency>$NL_INDENT" +
+            "<groupId>ch.tutteli.atrium</groupId>$NL_INDENT" +
+            "<artifactId>atrium-cc-en_GB-robstoll</artifactId>$NL_INDENT" +
+            "<version>0.7.0</version>$NL_INDENT" +
+            "<scope>compile</scope>$NL_INDENT" +
+            "</dependency>$NL_INDENT" +
+            "</dependencies>"
+        )
+
         def repoUrl = "https://github.com/$githubUser/$projectName"
         def output = result.output
         assertTrue(output.contains("groupId: $groupId"), "groupId $groupId\n${output}")
@@ -273,8 +304,10 @@ class PublishPluginIntTest {
         def rootProjectName = 'test-project'
         def subprojectNameWithoutJvm = 'test-sub'
         def subprojectName = "$subprojectNameWithoutJvm-jvm"
+        def dependentName = 'dependent'
         settingsSetup.settings << """rootProject.name='$rootProjectName'
         include '$subprojectName'
+        include '$dependentName'
         """
         def groupId = 'ch.tutteli'
         def version = '1.0.0-SNAPSHOT'
@@ -338,15 +371,41 @@ class PublishPluginIntTest {
                 ${printBintray()}
             }
         }
+
+        configure(project(':$dependentName')) {
+            dependencies {
+                compile rootProject.project(':$subprojectName')
+            }
+        }
         """
         File license = new File(settingsSetup.tmp, 'LICENSE.txt')
         license << "Copyright..."
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("includeBuildTimeInManifest", "pubToMaLo", "--stacktrace")
+            .withArguments("includeBuildTimeInManifest", "generatePomFileForTutteliPublication", "pubToMaLo", "--stacktrace")
             .build()
         //assert
+        String pom = Paths.get(settingsSetup.tmp.absolutePath, dependentName, 'build', 'publications', 'tutteli', 'pom-default.xml').toFile().getText('UTF-8')
+        assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
+            "<license>$NL_INDENT" +
+            "<name>${StandardLicenses.EUPL_1_2.longName}</name>$NL_INDENT" +
+            "<url>${StandardLicenses.EUPL_1_2.url}</url>$NL_INDENT" +
+            "<distribution>repo</distribution>$NL_INDENT" +
+            "</license>$NL_INDENT" +
+            "</licenses"
+        )
+        assertContainsRegex(pom, "developers", "<developers/>")
+        assertContainsRegex(pom, "dependencies", "<dependencies>$NL_INDENT" +
+            "<dependency>$NL_INDENT" +
+            "<groupId>$groupId</groupId>$NL_INDENT" +
+            "<artifactId>$subprojectNameWithoutJvm</artifactId>$NL_INDENT" +
+            "<version>$version</version>$NL_INDENT" +
+            "<scope>compile</scope>$NL_INDENT" +
+            "</dependency>$NL_INDENT" +
+            "</dependencies>"
+        )
+
         def repoUrl = "https://github.com/$githubUser/$rootProjectName"
         def output = result.output
         assertTrue(output.contains("groupId: $groupId"), "groupId $groupId\n${output}")
@@ -357,47 +416,10 @@ class PublishPluginIntTest {
         assertTrue(output.contains("artifact: jar - tests"), "test jar \n${output}")
         assertFalse(output.contains("artifact: jar - testsources"), "testsources jar should not be in output, was defined after plugin apply\n${output}")
         assertBintray(result, "null", "null", rootProjectName, subprojectNameWithoutJvm, repoUrl, version, "EUPL-1.2", "null")
+        assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + dependentName + " $version"), "bintrayExtension.pkg.version.desc " + dependentName + " $version\n$result.output")
         assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
-        assertJarOfSubprojectWithLicenseAndManifest(settingsSetup,  subprojectName, "$subprojectNameWithoutJvm-${version}-sources.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
+        assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-sources.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
         assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-tests.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
-    }
-
-    private static String printInfos() {
-        """
-        project.afterEvaluate {
-            project.publishing.publications.withType(MavenPublication) {
-                println(getPomAsString(it))
-            }
-            
-            ${printBintray()}
-        }
-        
-        import org.apache.maven.model.Model
-        import org.apache.maven.model.io.xpp3.MavenXpp3Writer
-        import org.gradle.api.Action
-        import org.gradle.api.UncheckedIOException
-        import org.gradle.api.publish.maven.MavenPublication
-        import org.gradle.api.publish.maven.internal.publication.MavenPomInternal
-        import org.gradle.api.publish.maven.internal.tasks.MavenPomFileGenerator
-        import org.gradle.internal.xml.XmlTransformer
-        
-        String getPomAsString(MavenPublication pub) {
-            XmlTransformer transformer = new XmlTransformer()
-            transformer.addAction((pub.pom as MavenPomInternal).xmlAction)
-            StringWriter stringWriter = new StringWriter()
-            transformer.transform(stringWriter, MavenPomFileGenerator.POM_FILE_ENCODING, new Action<Writer>() {
-                void execute(Writer writer) {
-                    try {
-                        Model model = new Model()
-                        new MavenXpp3Writer().write(writer, model)
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e)
-                    }
-                }
-            })
-            return stringWriter.toString()
-        }
-        """
     }
 
     private static String printBintray() {

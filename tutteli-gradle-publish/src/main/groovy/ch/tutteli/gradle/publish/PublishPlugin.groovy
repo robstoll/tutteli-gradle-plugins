@@ -112,7 +112,21 @@ class PublishPlugin implements Plugin<Project> {
 
                     MavenPublication publication = it
                     if (extension.component.isPresent()) {
-                        publication.from(extension.component.get())
+                        def component = extension.component.get()
+                        publication.from(component)
+
+                        // Not the best solution only works for component java
+                        if (component == project.components.findByName('java')) {
+                            def jarPub = publication.artifacts.find {
+                                it.file.name.endsWith(project.name + "-" + project.version + ".jar")
+                            }
+                            publication.artifacts.remove(jarPub)
+                            def jarTask = project.tasks.getByName('jar')
+                            if (!extension.artifacts.get().contains(jarTask)) {
+                                extension.artifacts.add(jarTask)
+                            }
+                        }
+
                     }
                     def artifacts = extension.artifacts.getOrElse(Collections.emptyList())
                     artifacts.each {
@@ -228,21 +242,21 @@ class PublishPlugin implements Plugin<Project> {
     }
 
     private static void augmentManifest(
-        org.gradle.jvm.tasks.Jar jarTask,
+        org.gradle.jvm.tasks.Jar task,
         Project project,
         PublishPluginExtension extension
     ) {
         String repoUrl = determineRepoUrl(project, extension)
-        jarTask.manifest {
+        task.manifest {
             attributes(['Implementation-Title'  : determineArtifactId(project),
                         'Implementation-Version': project.version,
                         'Implementation-URL'    : repoUrl,
                         'Build-Time'            : new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ')
             ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project))
             def licenseTxt = project.file("$project.rootProject.projectDir/LICENSE.txt")
-            if (licenseTxt.exists()) jarTask.from(licenseTxt)
+            if (licenseTxt.exists()) task.from(licenseTxt)
             def license = project.file("$project.rootProject.projectDir/LICENSE")
-            if (license.exists()) jarTask.from(license)
+            if (license.exists()) task.from(license)
         }
     }
 
