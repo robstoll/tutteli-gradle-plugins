@@ -48,7 +48,7 @@ class PublishPluginIntTest {
             description = 'test project'
         }
         
-        publish {
+        tutteliPublish {
             //minimal setup required for publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
             bintrayRepo = 'tutteli-jars'
@@ -221,7 +221,7 @@ class PublishPluginIntTest {
             description = 'test project'
         }
         
-        publish {
+        tutteliPublish {
             githubUser = '$githubUser'
             // Apache License 2.0 is the default
             // developers are optional
@@ -316,7 +316,7 @@ class PublishPluginIntTest {
                 classifier = 'testsources'
             }
          
-            publish {
+            tutteliPublish {
                 resetLicenses 'EUPL-1.2'
 
                 //already defined because it is a ch.tutteli project

@@ -69,7 +69,7 @@ You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tu
 # ch.tutteli.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.publish/0.15.1)
 Applies the `maven-publish` plugin as well as JFrog's `bintray` plugin and 
 configures them based on given license(s), a github user and a few other information.
-It exposes the `publish` extension which lets you specify those information and refine default conventions.
+It exposes the `tutteliPublish` extension which lets you specify those information and refine default conventions.
 Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.15.1/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
 for more information.
 

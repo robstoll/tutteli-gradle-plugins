@@ -17,7 +17,7 @@ import static ch.tutteli.gradle.publish.Validation.*
 
 class PublishPlugin implements Plugin<Project> {
     private static final Logger LOGGER = Logging.getLogger(PublishPlugin.class)
-    static final String EXTENSION_NAME = 'publish'
+    static final String EXTENSION_NAME = 'tutteliPublish'
     static final String TASK_NAME_INCLUDE_TIME = 'includeBuildTimeInManifest'
     static final String TASK_NAME_PUBLISH_TO_BINTRAY = 'publishToBintray'
     static final String TASK_NAME_SOURCES_JAR = 'sourcesJar'
