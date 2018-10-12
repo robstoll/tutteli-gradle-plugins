@@ -19,8 +19,7 @@ class DokkaPluginIntTest {
         def url = 'https://github.com/robstoll/tutteli-gradle-plugins'
         def outputFormat = "javadoc"
 
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << """
+        settingsSetup.buildGradle << """
         buildscript {
             project.version = '1.0.0-SNAPSHOT'
             dependencies {
@@ -56,8 +55,7 @@ class DokkaPluginIntTest {
         settingsSetup.settings << "rootProject.name='test-project'"
         def outputFormat = "markdown"
 
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << """
+        settingsSetup.buildGradle << """
         buildscript {
             project.version = '1.0.0-SNAPSHOT'
             dependencies {
@@ -99,8 +97,7 @@ class DokkaPluginIntTest {
         settingsSetup.settings << "rootProject.name='test-project'"
         def outputFormat = "markdown"
 
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << """
+        settingsSetup.buildGradle << """
         buildscript {
             project.version = '1.0.0'
             dependencies {

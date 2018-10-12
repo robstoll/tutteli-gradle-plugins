@@ -12,12 +12,14 @@ class SettingsExtensionObject {
     public final Path tmpPath
     public final File tmp
     public final File settings
+    public final File buildGradle
     public final List<String> pluginClasspath
 
     SettingsExtensionObject(Path tmpPath) {
         this.tmpPath = tmpPath
         tmp = tmpPath.toFile()
         settings = new File(tmp, 'settings.gradle')
+        buildGradle = new File(tmp, 'build.gradle')
 
         URL pluginClasspathResource = getClass().classLoader.getResource('plugin-classpath.txt')
         if (pluginClasspathResource == null) {

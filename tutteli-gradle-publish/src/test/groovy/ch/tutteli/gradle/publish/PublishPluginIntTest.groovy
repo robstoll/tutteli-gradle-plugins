@@ -31,8 +31,7 @@ class PublishPluginIntTest {
         def apiKey = 'test'
         def pkgName = "tutteli-gradle"
 
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << """
+        settingsSetup.buildGradle << """
         buildscript {
             dependencies {
                 classpath files($settingsSetup.pluginClasspath)
@@ -202,8 +201,7 @@ class PublishPluginIntTest {
         def user = 'test-user'
         def apiKey = 'test-key'
 
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << """
+        settingsSetup.buildGradle << """
         buildscript {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
@@ -315,8 +313,7 @@ class PublishPluginIntTest {
         def vendor = 'tutteli.ch'
         def kotlinVersion = '1.2.71'
 
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << """
+        settingsSetup.buildGradle << """
         buildscript {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {

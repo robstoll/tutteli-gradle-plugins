@@ -21,8 +21,7 @@ class UtilsPluginIntTest {
         rootProject.name='test-project'
         include 'test-project-one'
         """
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << """
+        settingsSetup.buildGradle << """
         buildscript {
             dependencies {
                 classpath files($settingsSetup.pluginClasspath)

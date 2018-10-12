@@ -18,8 +18,7 @@ class SpekPluginIntTest {
         settingsSetup.settings << """
         rootProject.name='test-project'
         """
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << """
+        settingsSetup.buildGradle << """
         buildscript {
             dependencies {
                 classpath files($settingsSetup.pluginClasspath)

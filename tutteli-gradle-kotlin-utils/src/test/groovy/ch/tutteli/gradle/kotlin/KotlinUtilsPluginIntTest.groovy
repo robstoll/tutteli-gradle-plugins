@@ -32,8 +32,7 @@ class KotlinUtilsPluginIntTest {
         settingsSetup.settings << """
         rootProject.name='test-project'
         """
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << """
+        settingsSetup.buildGradle << """
         buildscript {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
@@ -94,8 +93,7 @@ class KotlinUtilsPluginIntTest {
     void configureCommonProjectsOnly(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()"
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()"
         //act
         def gradleRunner = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
@@ -113,8 +111,7 @@ class KotlinUtilsPluginIntTest {
     void configureCommonAndJsProjects(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects()"
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects()"
         //act
         def gradleRunner = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
@@ -132,8 +129,7 @@ class KotlinUtilsPluginIntTest {
     void configureCommonAndJvmProjects(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJvmProjects()"
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJvmProjects()"
         //act
         def gradleRunner = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
@@ -151,8 +147,7 @@ class KotlinUtilsPluginIntTest {
     void configureCommonJsAndJvmProjects(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
-        File buildGradle = new File(settingsSetup.tmp, 'build.gradle')
-        buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects() \n configureJvmProjects()"
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects() \n configureJvmProjects()"
         //act
         def gradleRunner = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
