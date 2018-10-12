@@ -33,8 +33,11 @@ It also provides the helper function `kotlinJvmJs` to ease the inclusion of kotl
 This plugin is the complement of the settings plugin and you will typically use it together. 
 Yet, you apply it in your `build.gradle` instead of the `settings.gradle` and accordingly this plugin adds utility functions to `Project`.
 
-Currently, it provides just one function named `prefixedProject(name)` which is a shortcut for `project("${rootProject.name}-$name")`.
-You find an example in the [build.gradle of the spek plugin](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.16.1/tutteli-gradle-spek/build.gradle#L20).
+Currently, it provides the following functions:
+- `prefixedProject(name)` which is a shortcut for `project("${rootProject.name}-$name")`.
+   You find an example in the [build.gradle of the spek plugin](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.16.1/tutteli-gradle-spek/build.gradle#L20).
+- `createTestJarTask` creates a task named `testJar` which creates a jar containing your test binaries
+- `createTestSourcesJarTask` creates a task named `testSourcesJar` which creates a jar containing your test sources
 
 # ch.tutteli.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/0.16.1)
 Applies the [dokka-plugin](https://github.com/Kotlin/dokka) and creates a `javadocJar` task which can be used for publishing.

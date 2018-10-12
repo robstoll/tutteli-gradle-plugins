@@ -3,25 +3,18 @@ package ch.tutteli.gradle.kotlin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.provider.Property
-
-class KotlinUtilsPluginExtension {
-    Property<String> kotlinVersion
-
-    KotlinUtilsPluginExtension(Project project) {
-        kotlinVersion = project.objects.property(String)
-    }
-}
 
 class KotlinUtilsPlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = 'kotlinutils'
     protected static final String ERR_KOTLIN_VERSION = 'kotlinutils.kotlinVersion has to be defined'
 
-
     @Override
     void apply(Project project) {
         def extension = project.extensions.create(EXTENSION_NAME, KotlinUtilsPluginExtension, project)
+        augmentProjectExt(project, extension)
+    }
 
+    private void augmentProjectExt(Project project, KotlinUtilsPluginExtension extension) {
         project.ext.kotlinStdlib = { getKotlinDependency(extension, 'stdlib') }
         project.ext.kotlinStdlibJs = { getKotlinDependency(extension, 'stdlib-js') }
         project.ext.kotlinStdlibCommon = { getKotlinDependency(extension, 'stdlib-common') }
@@ -30,7 +23,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.excludeKbox = { ExcludeExtension.excludeKbox(owner as ExternalModuleDependency) }
         project.ext.excludeKotlin = { ExcludeExtension.excludeKotlin(owner as ExternalModuleDependency) }
         project.ext.excludeAtriumVerbs = { ExcludeExtension.excludeAtriumVerbs(owner as ExternalModuleDependency) }
-        project.ext.excluding  = { Closure<ExcludeExtension> closure ->
+        project.ext.excluding = { Closure<ExcludeExtension> closure ->
             return {
                 def excludes = closure.clone()
                 excludes.resolveStrategy = Closure.DELEGATE_FIRST

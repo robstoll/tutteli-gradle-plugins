@@ -19,8 +19,7 @@ class KotlinUtilsPluginSmokeTest {
         def extension = project.extensions.getByName(EXTENSION_NAME)
         extension.kotlinVersion = '1.2.50'
         //assert
-        assertNotNull(project.extensions.getByName(EXTENSION_NAME), EXTENSION_NAME)
-
+        project.extensions.getByName(EXTENSION_NAME)
         //assert no exception
         project.evaluate()
     }
