@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 import static ch.tutteli.gradle.test.Asserts.assertContainsNotRegex
-import static org.junit.jupiter.api.Assertions.assertFalse
-import static org.junit.jupiter.api.Assertions.assertTrue
+import static org.junit.jupiter.api.Assertions.*
+import static org.junit.jupiter.api.Assumptions.assumeFalse
 
 @ExtendWith(SettingsExtension)
 class KotlinUtilsPluginIntTest {
@@ -27,11 +27,88 @@ class KotlinUtilsPluginIntTest {
         """
 
     @Test
+    void moduleInfoFails(SettingsExtensionObject settingsSetup) {
+        //not for jdk8
+        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
+        //act
+        def exception = assertThrows(UnexpectedBuildFailure) {
+            moduleInfo(settingsSetup, "requires kotlin.stdlib;")
+        }
+        //assert
+        assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':compileKotlin'"), ":compileKotlin did not fail.\n$exception.message")
+        assertTrue(exception.message.contains('Unresolved reference: atrium'), "not atrium was the problem.\n$exception.message")
+    }
+
+    @Test
+    void moduleInfoSucceeds(SettingsExtensionObject settingsSetup) {
+        //not for jdk8
+        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
+        //act
+        def result = moduleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        //assert
+        Asserts.assertStatusOk(result, [':compileKotlin', ':compileModuleKotlin', ':compileModuleJava', ':jar'], [], [':classes'])
+        assertTrue(result.output.contains("source set 'module'"), "should contain source set 'module':\n$result.output")
+    }
+
+    static def moduleInfo(SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
+        //arrange
+        settingsSetup.settings << "rootProject.name='test-project'"
+        def module = new File(settingsSetup.tmp, 'src/module/')
+        module.mkdirs()
+        def moduleInfo = new File(module, 'module-info.java')
+        moduleInfo << """module ch.tutteli.test {
+            $moduleInfoContent
+        }"""
+        def kotlin = new File(settingsSetup.tmp, 'src/main/kotlin')
+        kotlin.mkdirs()
+        def test = new File(kotlin, 'test.kt')
+        test << """
+        import ch.tutteli.atrium.api.cc.en_GB.toBe
+        import ch.tutteli.atrium.verbs.assert
+        
+        fun foo() {
+            assert(1).toBe(1)
+        }
+        """
+        settingsSetup.buildGradle << """
+        buildscript {
+            repositories { maven { url "https://plugins.gradle.org/m2/" } }
+            dependencies {
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
+                classpath files($settingsSetup.pluginClasspath)
+            }
+        }
+        
+        apply plugin: 'kotlin'
+        apply plugin: 'ch.tutteli.kotlin.utils'
+        kotlinutils.kotlinVersion = '$KOTLIN_VERSION'
+        
+        repositories {
+            maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
+            jcenter()
+        }
+        
+        dependencies {
+            compile "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0"
+        }
+        
+        project.afterEvaluate {
+            project.sourceSets.each{
+                println(it)
+            }
+        }
+        """
+        //act
+        return GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("jar", "--stacktrace")
+            .build()
+    }
+
+    @Test
     void compileAndExcludeXy(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
-        settingsSetup.settings << """
-        rootProject.name='test-project'
-        """
+        settingsSetup.settings << "rootProject.name='test-project'"
         settingsSetup.buildGradle << """
         buildscript {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
@@ -68,7 +145,7 @@ class KotlinUtilsPluginIntTest {
                 kotlin()
                 exclude group: 'org.jetbrains.spek', module: 'spek-api'
             }
-        }
+        }        
         """
         //act
         def result = GradleRunner.create()

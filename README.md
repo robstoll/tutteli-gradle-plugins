@@ -59,8 +59,12 @@ for an example.
 In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin below.
 
 # ch.tutteli.kotlin.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.utils/0.16.1)
-Provides some utility functions to declare dependencies on kotlin projects, configure projects as well as utility functions to exclude kotlin.
+Provides some utility functions to declare dependencies on kotlin projects, to configure projects as well as utility functions to exclude kotlin.
 Requires that `kotlinutils.kotlinVersion` (property on the extension) is configured.
+
+In case the used jdk for gradle is JDK9 or newer and the user has defined `module-info.java` under `src/module` 
+then it compiles it add adds it to the kotlin target classes.
+This way it gets included in the jar and the kotlin compiler verifies `requires` and the like.
 
 Following a list of functions it supports:
 - declare dependencies on libs: `kotlinStdlib()`, `kotlinStdlibJs()`, `kotlinStdlibCommon()`, `kotlinReflect()`  

@@ -1,8 +1,10 @@
 package ch.tutteli.gradle.kotlin
 
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ExternalModuleDependency
+import org.gradle.api.plugins.JavaPluginConvention
 
 class KotlinUtilsPlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = 'kotlinutils'
@@ -12,6 +14,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create(EXTENSION_NAME, KotlinUtilsPluginExtension, project)
         augmentProjectExt(project, extension)
+        setUpModuleInfo(project)
     }
 
     private void augmentProjectExt(Project project, KotlinUtilsPluginExtension extension) {
@@ -104,5 +107,41 @@ class KotlinUtilsPlugin implements Plugin<Project> {
 
         def commonName = ":${name.substring(0, name.indexOf(suffix))}-common"
         return project.project(commonName)
+    }
+
+    private static void setUpModuleInfo(Project project) {
+        if (project.components.findByName('java') != null && JavaVersion.current() >= JavaVersion.VERSION_1_9) {
+
+            def srcModule = "src/module"
+            def moduleInfo = project.file("${project.projectDir}/$srcModule/module-info.java")
+            if (moduleInfo.exists()) {
+
+                final JavaPluginConvention javaPlugin = project.getConvention().getPlugin(JavaPluginConvention.class)
+                javaPlugin.setSourceCompatibility('9')
+                javaPlugin.setTargetCompatibility('9')
+
+                project.sourceSets {
+                    module {
+                        java {
+                            srcDirs = [srcModule]
+                            compileClasspath = main.compileClasspath
+                        }
+                    }
+                    main {
+                        kotlin { srcDirs += [srcModule] }
+                    }
+                }
+
+                project.compileModuleJava.configure {
+                    dependsOn project.compileKotlin
+                    destinationDir = project.compileKotlin.destinationDir
+                    doFirst {
+                        options.compilerArgs = ['--module-path', classpath.asPath]
+                        classpath = project.files()
+                    }
+                }
+                project.tasks.getByName('jar').dependsOn project.compileModuleJava
+            }
+        }
     }
 }
