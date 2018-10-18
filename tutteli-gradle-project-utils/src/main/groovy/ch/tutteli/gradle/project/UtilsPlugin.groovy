@@ -21,6 +21,7 @@ class UtilsPlugin implements Plugin<Project> {
 
 
         project.ext.createTestJarTask = { Project aProject ->
+            if(aProject == null) throw new IllegalStateException("you need to pass a project to createTestJarTask")
             if(!aProject.hasProperty('sourceSets')) throw illegalStateCannotCreate(TASK_NAME_TEST_JAR)
             aProject.tasks.create(name: TASK_NAME_TEST_JAR, type: Jar) {
                 from aProject.sourceSets.test.output
@@ -28,6 +29,7 @@ class UtilsPlugin implements Plugin<Project> {
             }
         }
         project.ext.createTestSourcesJarTask = { Project aProject ->
+            if(aProject == null) throw new IllegalStateException("you need to pass a project to createTestSourcesJarTask")
             if(!aProject.hasProperty('sourceSets')) throw illegalStateCannotCreate(TASK_NAME_TEST_SOURCES_JAR)
             aProject.tasks.create(name: TASK_NAME_TEST_SOURCES_JAR, type: Jar) {
                 from aProject.sourceSets.test.allSource
