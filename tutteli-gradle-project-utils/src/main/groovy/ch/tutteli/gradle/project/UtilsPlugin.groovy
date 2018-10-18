@@ -37,6 +37,6 @@ class UtilsPlugin implements Plugin<Project> {
     }
 
     private static IllegalStateException illegalStateCannotCreate(String what) {
-        new IllegalStateException("Can only create a " + what + " if there is are sourceSets present. Did you forget to apply kotlin?")
+        new IllegalStateException("Can only create a " + what + " if there are sourceSets present. Did you forget to apply kotlin?")
     }
 }
