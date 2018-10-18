@@ -14,7 +14,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create(EXTENSION_NAME, KotlinUtilsPluginExtension, project)
         augmentProjectExt(project, extension)
-        setUpModuleInfo(project)
+        setUpModuleInfoForProjectAndSubprojects(project)
     }
 
     private void augmentProjectExt(Project project, KotlinUtilsPluginExtension extension) {
@@ -109,9 +109,19 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         return project.project(commonName)
     }
 
-    private static void setUpModuleInfo(Project project) {
-        if (project.components.findByName('java') != null && JavaVersion.current() >= JavaVersion.VERSION_1_9) {
+    private static void setUpModuleInfoForProjectAndSubprojects(Project project) {
+        if (JavaVersion.current() >= JavaVersion.VERSION_1_9) {
+            setUpModuleInfo(project)
+            project.subprojects.forEach { subproject ->
+                subproject.afterEvaluate {
+                    setUpModuleInfo(subproject)
+                }
+            }
+        }
+    }
 
+    private static void setUpModuleInfo(Project project) {
+        if (project.components.findByName('java') != null) {
             def srcModule = "src/module"
             def moduleInfo = project.file("${project.projectDir}/$srcModule/module-info.java")
             if (moduleInfo.exists()) {
