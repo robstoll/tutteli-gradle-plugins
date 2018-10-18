@@ -22,16 +22,17 @@ class UtilsPluginIntTest {
         include 'test-project-one'
         """
         settingsSetup.buildGradle << """
-        buildscript {
-            dependencies {
-                classpath files($settingsSetup.pluginClasspath)
+            ${settingsSetup.buildscriptWithKotlin('1.2.71')}
+            apply plugin: 'ch.tutteli.project.utils'
+            
+            println("here we are: \${prefixedProject('one').name}")
+            println("another one: \${prefixedProjectName('one')}")
+            
+            subprojects {
+                apply plugin: 'kotlin'
+                createTestJarTask(it)
             }
-        }
-        apply plugin: 'ch.tutteli.project.utils'
-        
-        println("here we are: \${prefixedProject('one').name}")
-        println("another one: \${prefixedProjectName('one')}")
-        """
+            """
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)

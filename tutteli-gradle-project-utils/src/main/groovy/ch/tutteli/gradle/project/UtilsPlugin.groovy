@@ -20,17 +20,17 @@ class UtilsPlugin implements Plugin<Project> {
         project.ext.prefixedProjectName = prefixedProjectName
 
 
-        project.ext.createTestJarTask = {
-            if(!project.hasProperty('sourceSets')) throw illegalStateCannotCreate(TASK_NAME_TEST_JAR)
-            project.tasks.create(name: TASK_NAME_TEST_JAR, type: Jar) {
-                from project.sourceSets.test.output
+        project.ext.createTestJarTask = { Project aProject ->
+            if(!aProject.hasProperty('sourceSets')) throw illegalStateCannotCreate(TASK_NAME_TEST_JAR)
+            aProject.tasks.create(name: TASK_NAME_TEST_JAR, type: Jar) {
+                from aProject.sourceSets.test.output
                 classifier = 'tests'
             }
         }
-        project.ext.createTestSourcesJarTask = {
-            if(!project.hasProperty('sourceSets')) throw illegalStateCannotCreate(TASK_NAME_TEST_SOURCES_JAR)
-            project.tasks.create(name: TASK_NAME_TEST_SOURCES_JAR, type: Jar) {
-                from project.sourceSets.test.allSource
+        project.ext.createTestSourcesJarTask = { Project aProject ->
+            if(!aProject.hasProperty('sourceSets')) throw illegalStateCannotCreate(TASK_NAME_TEST_SOURCES_JAR)
+            aProject.tasks.create(name: TASK_NAME_TEST_SOURCES_JAR, type: Jar) {
+                from aProject.sourceSets.test.allSource
                 classifier = 'testsources'
             }
         }
