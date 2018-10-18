@@ -29,6 +29,7 @@ It supports three styles:
 
 It also provides the helper function `kotlinJvmJs` to ease the inclusion of kotlin multi-platform projects.
 
+
 # ch.tutteli.project.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.project.utils/0.17.1)
 This plugin is the complement of the settings plugin and you will typically use it together. 
 Yet, you apply it in your `build.gradle` instead of the `settings.gradle` and accordingly this plugin adds utility functions to `Project`.
@@ -39,6 +40,7 @@ Currently, it provides the following functions:
 - `createTestJarTask` creates a task named `testJar` which creates a jar containing your test binaries
 - `createTestSourcesJarTask` creates a task named `testSourcesJar` which creates a jar containing your test sources
 
+
 # ch.tutteli.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/0.17.1)
 Applies the [dokka-plugin](https://github.com/Kotlin/dokka) and creates a `javadocJar` task which can be used for publishing.
 Moreover it applies a [default configuration to dokka](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.17.1/tutteli-gradle-dokka/src/main/groovy/ch/tutteli/gradle/dokka/DokkaPluginExtension.groovy#L22)
@@ -47,6 +49,7 @@ It exposes the `tutteliDokka` extension where you can define i.a. the `githubUse
  
 See [DokkaPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.17.1/tutteli-gradle-dokka/src/test/groovy/ch/tutteli/gradle/dokka/DokkaPluginIntTest.groovy#L112)
 for an example.
+
 
 # ch.tutteli.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/0.17.1)
 Applies the [junit-platform-gradle-plugin](https://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle)
@@ -58,13 +61,15 @@ Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins
 for an example.
 In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin below.
 
-# ch.tutteli.kotlin.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.utils/0.17.1)
-Provides some utility functions to declare dependencies on kotlin projects, to configure projects as well as utility functions to exclude kotlin.
-Requires that `kotlinutils.kotlinVersion` (property on the extension) is configured.
+# ch.tutteli.kotlin.module.info [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.module.info/0.17.1)
 
 In case the used jdk for gradle is JDK9 or newer and the user has defined `module-info.java` under `src/module` 
 then it compiles it add adds it to the kotlin target classes.
-This way it gets included in the jar and the kotlin compiler verifies `requires` and the like.
+This way the kotlin compiler verifies `requires` and the like and the `module-info.class` gets included in the jar when it is built.
+
+# ch.tutteli.kotlin.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.utils/0.17.1)
+Provides some utility functions to declare dependencies on kotlin projects, to configure projects as well as utility functions to exclude kotlin.
+Requires that `kotlinutils.kotlinVersion` (property on the extension) is configured.
 
 Following a list of functions it supports:
 - declare dependencies on libs: `kotlinStdlib()`, `kotlinStdlibJs()`, `kotlinStdlibCommon()`, `kotlinReflect()`  

@@ -30,6 +30,18 @@ class SettingsExtensionObject {
             .collect { it.replace('\\', '\\\\') }
             .collect { "\'${it}\'" }
     }
+
+    String buildscriptWithKotlin(String kotlinVersion) {
+        return """
+        buildscript {
+            repositories { maven { url "https://plugins.gradle.org/m2/" } }
+            dependencies {
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
+                classpath files($pluginClasspath)
+            }
+        }
+        """
+    }
 }
 
 class SettingsExtension implements ParameterResolver, AfterEachCallback {

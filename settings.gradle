@@ -31,6 +31,7 @@ include {
     _ 'project-utils'
     dokka
     junitjacoco
+    _ 'kotlin-module-info'
     _ 'kotlin-utils'
     publish
     spek
