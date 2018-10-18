@@ -187,7 +187,7 @@ class KotlinUtilsPluginIntTest {
         //act
         return GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments(":sub1:jar", "tasks", "--all", "--stacktrace")
+            .withArguments(":sub1:jar", "--stacktrace")
             .build()
     }
 
