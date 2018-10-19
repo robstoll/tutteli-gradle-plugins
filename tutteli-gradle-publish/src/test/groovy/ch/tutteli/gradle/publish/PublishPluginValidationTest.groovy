@@ -70,7 +70,7 @@ class PublishPluginValidationTest {
         //arrange
         Project project = setUp()
         getPluginExtension(project).component.set(null)
-        getPluginExtension(project).artifacts.set(null)
+        getPluginExtension(project).artifacts.set(null as Iterable)
         //act && assert
         assertThrowsProjectConfigWithCauseIllegalStateNotDefined("either ${PublishPlugin.EXTENSION_NAME}.component or ${PublishPlugin.EXTENSION_NAME}.artifacts", project)
     }
@@ -90,7 +90,7 @@ class PublishPluginValidationTest {
         //arrange
         Project project = setUp()
         getPluginExtension(project).component.set(project.components.getByName('java'))
-        getPluginExtension(project).artifacts.set(null)
+        getPluginExtension(project).artifacts.set(null as Iterable)
         //act && assert no exception
         project.evaluate()
     }
