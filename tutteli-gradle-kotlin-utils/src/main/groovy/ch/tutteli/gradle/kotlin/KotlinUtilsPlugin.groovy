@@ -88,6 +88,9 @@ class KotlinUtilsPlugin implements Plugin<Project> {
                 dependencies {
                     compile kotlinStdlib()
                     expectedBy getCommonProject(project, subproject)
+
+                    testCompile kotlinTest()
+                    testCompile kotlinTestJunit5()
                 }
             }
         }
