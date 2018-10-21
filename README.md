@@ -72,7 +72,7 @@ Provides some utility functions to declare dependencies on kotlin projects, to c
 Requires that `kotlinutils.kotlinVersion` (property on the extension) is configured.
 
 Following a list of functions it supports:
-- declare dependencies on libs: `kotlinStdlib()`, `kotlinStdlibJs()`, `kotlinStdlibCommon()`, `kotlinReflect()`  
+- declare dependencies on libs: `kotlinStdlib()`, `kotlinStdlibJs()`, `kotlinStdlibCommon()`, `kotlinReflect()`, `kotlinTestJs()`, `kotlinTestCommon()`, , `kotlinTestAnotationsCommon()`  
 - exclude dependencies: `excludeKotlin`, `excludeKbox`, `excludeAtriumVerbs`, `excluding {...}` (see example)
 - configure projects: `configureCommonProjects`, `configureJsProjects`   
 
