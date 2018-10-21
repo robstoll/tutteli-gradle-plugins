@@ -44,7 +44,7 @@ class DokkaPluginIntTest {
             .withArguments("dokka")
             .build()
         //assert
-        assertTrue(result.output.contains("was here url: $url/tree/master"), "url should be in output:\n" + result.output)
+        assertTrue(result.output.contains("was here url: $url/tree/v0.19.0"), "url should be in output:\n" + result.output)
         assertFalse(result.output.contains("was here extLink"), "should not contain extLink in output:\n" + result.output)
         assertTrue(result.output.contains("outputFormat: $outputFormat"), "outputFormat should be in output:\n" + result.output)
     }
@@ -85,7 +85,7 @@ class DokkaPluginIntTest {
             .withArguments("dokka")
             .build()
         //assert
-        assertTrue(result.output.contains("was here url: https://github.com/robstoll/test-project/tree/master"), "url should be in output:\n" + result.output)
+        assertTrue(result.output.contains("was here url: https://github.com/robstoll/test-project/tree/v0.19.0"), "url should be in output:\n" + result.output)
         assertFalse(result.output.contains("was here extLink"), "should not contain extLink in output:\n" + result.output)
         assertTrue(result.output.contains("outputFormat: $outputFormat"), "outputFormat should be in output:\n" + result.output)
     }
