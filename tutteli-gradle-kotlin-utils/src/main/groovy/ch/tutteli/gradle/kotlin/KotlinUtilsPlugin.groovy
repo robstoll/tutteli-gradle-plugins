@@ -20,9 +20,13 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.kotlinStdlibJs = { getKotlinDependency(extension, 'stdlib-js') }
         project.ext.kotlinStdlibCommon = { getKotlinDependency(extension, 'stdlib-common') }
         project.ext.kotlinReflect = { getKotlinDependency(extension, 'reflect') }
+        project.ext.kotlinTest= { getKotlinDependency(extension, 'test') }
+        project.ext.kotlinTestJunit5= { getKotlinDependency(extension, 'test-junit5') }
+        project.ext.kotlinTestJs = { getKotlinDependency(extension, 'test-js') }
         project.ext.kotlinTestCommon = { getKotlinDependency(extension, 'test-common') }
         project.ext.kotlinTestAnnotationsCommon = { getKotlinDependency(extension, 'test-annotations-common') }
-        project.ext.kotlinTestJs = { getKotlinDependency(extension, 'test-js') }
+
+
 
         project.ext.excludeKbox = { ExcludeExtension.excludeKbox(owner as ExternalModuleDependency) }
         project.ext.excludeKotlin = { ExcludeExtension.excludeKotlin(owner as ExternalModuleDependency) }

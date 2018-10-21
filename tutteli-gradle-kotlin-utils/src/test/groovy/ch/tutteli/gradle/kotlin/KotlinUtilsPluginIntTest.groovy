@@ -60,6 +60,8 @@ class KotlinUtilsPluginIntTest {
                 kotlin()
                 exclude group: 'org.jetbrains.spek', module: 'spek-api'
             }
+            testCompile kotlinTest()
+            testCompile kotlinTestJunit5()
             testCompile kotlinTestJs()
             testCompile kotlinTestCommon()
             testCompile kotlinTestAnnotationsCommon()
