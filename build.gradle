@@ -165,7 +165,7 @@ Release & deploy
 2. Update master:
     a) point to the tag
         1) search for `branch=master` and replace it with `tag=vX.Y.Z` (build status and coverage in README.md)
-        2) search for `tree/master` and replace it with `tree/vX.Y.Z` (README.md)
+        2) search for `tree/master` and replace it with `tree/vX.Y.Z` (README.md) => do not exclude in tests
     b) change `version` in settings.gradle to X.Y.Z (remove -SNAPSHOT)
     c) search for old version and replace by new with the *exception* of previous_version in settings.gradle
     c) commit & push (modified README.md and settings.gradle)
