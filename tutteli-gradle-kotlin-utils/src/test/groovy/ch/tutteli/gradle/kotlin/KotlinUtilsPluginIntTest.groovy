@@ -60,6 +60,9 @@ class KotlinUtilsPluginIntTest {
                 kotlin()
                 exclude group: 'org.jetbrains.spek', module: 'spek-api'
             }
+            testCompile kotlinTestJs()
+            testCompile kotlinTestCommon()
+            testCompile kotlinTestAnnotationsCommon()
         }        
         """
         //act
@@ -85,7 +88,8 @@ class KotlinUtilsPluginIntTest {
     void configureCommonProjectsOnly(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
-        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()"
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects() " +
+            "println(\"name: \" + getProjectNameWithoutSuffix(project(':test1-js')))"
         //act
         def gradleRunner = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
@@ -97,6 +101,11 @@ class KotlinUtilsPluginIntTest {
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+
+        def result = gradleRunner
+            .withArguments("help")
+            .build()
+        assertTrue(result.output.contains("name: test1"), "getProjectNameWithoutSuffix(test1-js) == test1:\n" + result.output)
     }
 
     @Test

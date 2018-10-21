@@ -30,7 +30,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.excluding = { Closure<ExcludeExtension> closure ->
             return {
                 def excludes = closure.clone()
-                excludes.resolveStrategy = Closure.DELEGATE_FIRST
+                excludes.resolveStrategy = DELEGATE_FIRST
                 excludes.delegate = new ExcludeExtension(owner as ExternalModuleDependency)
                 excludes.call()
             }
@@ -43,6 +43,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.getCommonProjects = getCommonProjects
         project.ext.getJsProjects = getJsProjects
         project.ext.getJvmProjects = getJvmProjects
+        project.ext.getProjectNameWithoutSuffix = { Project aProject -> getProjectNameWithoutSuffix(aProject) }
 
         project.ext.configureCommonProjects = {
 
@@ -104,13 +105,17 @@ class KotlinUtilsPlugin implements Plugin<Project> {
     }
 
     private static Project getCommonProject(Project project, Project subproject) {
+        def commonName = ":${getProjectNameWithoutSuffix(subproject)}-common"
+        return project.project(commonName)
+    }
+
+    private static String getProjectNameWithoutSuffix(Project subproject){
         def name = subproject.name
         def suffix = name.endsWith('-jvm') ? '-jvm'
             : name.endsWith('-js') ? '-js'
             : null
         if (suffix == null) throw new IllegalArgumentException("unknown project suffix, expected -jvm or -js. Project name was: $name")
 
-        def commonName = ":${name.substring(0, name.indexOf(suffix))}-common"
-        return project.project(commonName)
+        return name.substring(0, name.indexOf(suffix))
     }
 }

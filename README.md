@@ -74,7 +74,8 @@ Requires that `kotlinutils.kotlinVersion` (property on the extension) is configu
 Following a list of functions it supports:
 - declare dependencies on libs: `kotlinStdlib()`, `kotlinStdlibJs()`, `kotlinStdlibCommon()`, `kotlinReflect()`, `kotlinTestJs()`, `kotlinTestCommon()`, , `kotlinTestAnotationsCommon()`  
 - exclude dependencies: `excludeKotlin`, `excludeKbox`, `excludeAtriumVerbs`, `excluding {...}` (see example)
-- configure projects: `configureCommonProjects`, `configureJsProjects`   
+- configure projects: `configureCommonProjects`, `configureJsProjects`, `configureJvmProjects`
+- `getCommonProjects()`, `getJsProjects()`, `getJvmProjects()`, `getProjectNameWithoutSuffix(project)`   
 
 You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
 
