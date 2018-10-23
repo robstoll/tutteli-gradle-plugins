@@ -76,6 +76,7 @@ class PublishPlugin implements Plugin<Project> {
             requireExtensionPropertyPresentNotEmpty(extension.licenses, "licenses")
 
             def bintrayExtension = project.extensions.getByType(BintrayExtension)
+            requireExtensionPropertyPresentAndNotBlank(extension.bintrayRepo, "bintrayRepo")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayUser, "envNameBintrayUser")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayApiKey, "envNameBintrayApiKey")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayGpgPassphrase, "envNameBintrayGpgPassphrase")

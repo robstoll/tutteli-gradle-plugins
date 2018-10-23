@@ -31,6 +31,7 @@ class SetUp {
         PublishPluginExtension extension = getPluginExtension(project)
         extension.githubUser.set(GITHUB_USER)
         extension.bintrayPkg.set('atrium')
+        //extension.bintrayRepo already set because it is a ch.tutteli project
         def bintray = getBintrayExtension(project)
         bintray.user = 'user'
         bintray.key = 'key'
