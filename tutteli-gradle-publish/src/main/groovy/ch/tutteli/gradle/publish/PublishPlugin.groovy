@@ -215,7 +215,7 @@ class PublishPlugin implements Plugin<Project> {
                 repo = repo ?: extension.bintrayRepo.get()
                 def pkgName = name ?: extension.bintrayPkg.getOrElse(project.rootProject.name)
                 name = pkgName
-                userOrg = userOrg ?: extension.bintrayOrganistion.getOrElse(null)
+                userOrg = userOrg ?: extension.bintrayOrganisation.getOrElse(null)
                 licenses = licenses ?: uniqueShortNames
                 vcsUrl = vcsUrl ?: repoUrl
                 version.with {

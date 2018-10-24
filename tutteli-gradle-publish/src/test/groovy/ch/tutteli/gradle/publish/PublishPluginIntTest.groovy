@@ -90,7 +90,7 @@ class PublishPluginIntTest {
                 id = 'robstoll'
                 name = 'Robert Stoll'
                 email = 'rstoll@tutteli.ch'
-                url = 'tuteli.ch'
+                url = 'tutteli.ch'
             }
             developer {
                 id = 'robstoll_tutteli'
@@ -107,7 +107,7 @@ class PublishPluginIntTest {
             bintrayPkg = '$pkgName'
 
             // you can define the organisation if you don't publish to a repo of the user
-            bintrayOrganistion = '$organisation'
+            bintrayOrganisation = '$organisation'
 
             // you can customise the env variable names if they differ from the convention
             propNameBintrayUser = 'myBintrayUser'                       // default is bintrayUser

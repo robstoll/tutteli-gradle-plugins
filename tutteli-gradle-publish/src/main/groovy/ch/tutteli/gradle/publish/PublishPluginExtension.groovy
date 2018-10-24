@@ -31,7 +31,7 @@ class PublishPluginExtension {
     final Property<String> envNameBintrayGpgPassphrase
     final Property<String> bintrayRepo
     final Property<String> bintrayPkg
-    final Property<String> bintrayOrganistion
+    final Property<String> bintrayOrganisation
     final Property<Boolean> signWithGpg
     final Property<String> manifestVendor
 
@@ -58,7 +58,7 @@ class PublishPluginExtension {
         envNameBintrayGpgPassphrase.set('BINTRAY_GPG_PASSPHRASE')
         bintrayRepo = project.objects.property(String)
         bintrayPkg = project.objects.property(String)
-        bintrayOrganistion = project.objects.property(String)
+        bintrayOrganisation = project.objects.property(String)
         signWithGpg = project.objects.property(Boolean)
         signWithGpg.set(true)
         manifestVendor = project.objects.property(String)
