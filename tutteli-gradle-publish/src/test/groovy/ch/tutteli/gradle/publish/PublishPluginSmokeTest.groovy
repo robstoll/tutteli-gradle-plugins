@@ -1,6 +1,7 @@
 package ch.tutteli.gradle.publish
 
 import ch.tutteli.gradle.test.Asserts
+import com.jfrog.bintray.gradle.BintrayExtension
 import org.apache.maven.model.Model
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer
 import org.gradle.api.Action
@@ -15,6 +16,8 @@ import org.junit.jupiter.api.Test
 import static ch.tutteli.gradle.publish.SetUp.*
 import static ch.tutteli.gradle.test.Asserts.assertContainsRegex
 import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertNotNull
+import static org.junit.jupiter.api.Assertions.assertTrue
 
 class PublishPluginSmokeTest {
 
@@ -24,6 +27,9 @@ class PublishPluginSmokeTest {
         Project project = setUp()
         //assert
         assertExtensionAndTaskDefined(project)
+        project.evaluate()
+        assertNotNull(project.extensions.getByType(BintrayExtension).user, "bintrayExtension.user")
+        assertTrue(project.extensions.getByType(BintrayExtension).pkg.version.gpg.sign, "bintrayExtension.pkg.version.gpg.sign")
     }
 
     @Test

@@ -3,7 +3,9 @@ package ch.tutteli.gradle.publish
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.TaskAction
 
 import javax.inject.Inject
 
@@ -13,6 +15,7 @@ class ValidateBeforePublishTask extends DefaultTask {
     Project project
     PublishPluginExtension extension
 
+    @TaskAction
     def validate() {
         def bintrayExtension = project.extensions.getByType(BintrayExtension)
         if (!bintrayExtension.user?.trim()) throw throwIllegalPropertyNorSystemEnvSet(extension.propNameBintrayUser, extension.envNameBintrayUser)

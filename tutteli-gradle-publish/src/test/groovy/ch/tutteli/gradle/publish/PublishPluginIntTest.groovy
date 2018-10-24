@@ -4,6 +4,7 @@ import ch.tutteli.gradle.test.SettingsExtension
 import ch.tutteli.gradle.test.SettingsExtensionObject
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -15,6 +16,7 @@ import java.util.zip.ZipFile
 import static ch.tutteli.gradle.test.Asserts.assertContainsRegex
 import static ch.tutteli.gradle.test.Asserts.getNL_INDENT
 import static org.junit.jupiter.api.Assertions.assertFalse
+import static org.junit.jupiter.api.Assertions.assertThrows
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
@@ -119,7 +121,7 @@ class PublishPluginIntTest {
             // There is no need for it though, everything can be configured via the above
             // do not try to disable sign, will be overwritten by signWithGpg
             bintray {
-                user = '$user'
+                user = '$user' //usually provided by property or env variable
             }     
         }        
         
@@ -187,6 +189,62 @@ class PublishPluginIntTest {
         assertContainsRegex(pom, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
         assertBintray(result, user, apiKey, pkgName, projectName, repoUrl, version, "Apache-2.0,Lic-1.2", "pass")
     }
+
+    @Test
+    void smokeTest_GpgPassphraseMissing(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        def projectName = 'test-project'
+        settingsSetup.settings << "rootProject.name='$projectName'"
+        def version = '1.0.0-SNAPSHOT'
+        def githubUser = 'robstoll'
+        def user = 'myUser'
+        def apiKey = 'test'
+        def pkgName = "tutteli-gradle"
+
+        settingsSetup.buildGradle << """
+        buildscript {
+            dependencies {
+                classpath files($settingsSetup.pluginClasspath)
+            }
+        }
+        // has to be before ch.tutteli.publish
+        apply plugin: 'java' 
+        apply plugin: 'ch.tutteli.publish'
+        
+        project.with {
+            group = 'com.example'
+            version = '$version'
+            description = 'test project'
+        }
+        
+        tutteliPublish {
+            //minimal setup required for publish, all other things are only needed if not the default is used
+            githubUser = '$githubUser'
+            bintrayRepo = 'tutteli-jars'
+            //gpg passphrase not defined via property or something
+            
+            bintray {
+                user = '$user'
+                key = 'apiKey'
+            }
+        }        
+        """
+        //act
+        GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("tasks", "--stacktrace")
+            .build()
+        //assert no exception
+        def exception = assertThrows(UnexpectedBuildFailure) {
+            GradleRunner.create()
+                .withProjectDir(settingsSetup.tmp)
+                .withArguments("validateBeforePublishToBintray", "--stacktrace")
+                .build()
+        }
+        assertTrue(exception.message.contains("You need to define property with name bintrayGpgPassphrase or System.env variable with name BINTRAY_GPG_PASSPHRASE"),
+            "did not fail due to missing passphase\n$exception.message")
+    }
+
 
     @Test
     void combinePlugins(SettingsExtensionObject settingsSetup) throws IOException {
