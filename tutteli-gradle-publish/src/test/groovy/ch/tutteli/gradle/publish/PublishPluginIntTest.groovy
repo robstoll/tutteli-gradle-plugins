@@ -32,6 +32,7 @@ class PublishPluginIntTest {
         def user = 'myUser'
         def apiKey = 'test'
         def pkgName = "tutteli-gradle"
+        def organisation = "company"
 
         settingsSetup.buildGradle << """
         buildscript {
@@ -104,6 +105,10 @@ class PublishPluginIntTest {
             
             // you can change the pkg name if it does not correspond to `project.name`
             bintrayPkg = '$pkgName'
+
+            // you can define the organisation if you don't publish to a repo of the user
+            bintrayOrganistion = '$organisation'
+
             // you can customise the env variable names if they differ from the convention
             propNameBintrayUser = 'myBintrayUser'                       // default is bintrayUser
             propNameBintrayApiKey = 'myBintrayApiKey'                   // default is bintrayApiKey
@@ -187,7 +192,7 @@ class PublishPluginIntTest {
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
         assertContainsRegex(pom, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
-        assertBintray(result, user, apiKey, pkgName, projectName, repoUrl, version, "Apache-2.0,Lic-1.2", "pass")
+        assertBintray(result, user, apiKey, pkgName, projectName, repoUrl, version, "Apache-2.0,Lic-1.2", "pass", organisation)
     }
 
     @Test
@@ -198,8 +203,6 @@ class PublishPluginIntTest {
         def version = '1.0.0-SNAPSHOT'
         def githubUser = 'robstoll'
         def user = 'myUser'
-        def apiKey = 'test'
-        def pkgName = "tutteli-gradle"
 
         settingsSetup.buildGradle << """
         buildscript {
@@ -348,7 +351,7 @@ class PublishPluginIntTest {
         assertTrue(output.contains("artifact: jar - null"), "java jar\n${output}")
         assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
         assertTrue(output.contains("artifact: jar - javadoc"), "javadoc jar\n${output}")
-        assertBintray(result, user, apiKey, projectName, projectName, repoUrl, version, "Apache-2.0", "pass")
+        assertBintray(result, user, apiKey, projectName, projectName, repoUrl, version, "Apache-2.0", "pass", "null")
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, vendor, kotlinVersion)
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, vendor, kotlinVersion)
         assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-javadoc.jar", projectName, version, repoUrl, vendor, kotlinVersion)
@@ -470,7 +473,7 @@ class PublishPluginIntTest {
         assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
         assertTrue(output.contains("artifact: jar - tests"), "test jar \n${output}")
         assertFalse(output.contains("artifact: jar - testsources"), "testsources jar should not be in output, was defined after plugin apply\n${output}")
-        assertBintray(result, "null", "null", rootProjectName, subprojectNameWithoutJvm, repoUrl, version, "EUPL-1.2", "null")
+        assertBintray(result, "null", "null", rootProjectName, subprojectNameWithoutJvm, repoUrl, version, "EUPL-1.2", "null", "null")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + dependentName + " $version"), "bintrayExtension.pkg.version.desc " + dependentName + " $version\n$result.output")
         assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
         assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-sources.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
@@ -484,6 +487,7 @@ class PublishPluginIntTest {
             println("bintrayExtension.publications: \$bintrayExtension.publications")
             println("bintrayExtension.pkg.repo: \$bintrayExtension.pkg.repo")
             println("bintrayExtension.pkg.name: \$bintrayExtension.pkg.name")
+            println("bintrayExtension.pkg.userOrg: \$bintrayExtension.pkg.userOrg")
             println("bintrayExtension.pkg.licenses: \${bintrayExtension.pkg.licenses.join(',')}")
             println("bintrayExtension.pkg.vcsUrl: \$bintrayExtension.pkg.vcsUrl")
             println("bintrayExtension.pkg.version.name: \$bintrayExtension.pkg.version.name")
@@ -508,12 +512,24 @@ class PublishPluginIntTest {
         """
     }
 
-    private static void assertBintray(BuildResult result, String user, String key, String pkgName, String projectName, String repoUrl, String version, String licenses, String passphrase) {
+    private static void assertBintray(
+        BuildResult result,
+        String user,
+        String key,
+        String pkgName,
+        String projectName,
+        String repoUrl,
+        String version,
+        String licenses,
+        String passphrase,
+        String organisation
+    ) {
         assertTrue(result.output.contains("bintrayExtension.user: $user"), "bintrayExtension.user $user\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.key: $key"), "bintrayExtension.key $key\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.publications: [tutteli]"), "bintrayExtension.publications [tutteli]\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.repo: tutteli-jars"), "bintrayExtension.pkg.repo tutteli-jars\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.name: $pkgName"), "bintrayExtension.pkg.name $pkgName\n$result.output")
+        assertTrue(result.output.contains("bintrayExtension.pkg.userOrg: $organisation"), "bintrayExtension.pkg.userOrg $organisation\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.licenses: $licenses"), "bintrayExtension.pkg.licenses $licenses\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.vcsUrl: $repoUrl"), "bintrayExtension.pkg.vcsUrl $repoUrl\n$result.output")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.name: $version"), "bintrayExtension.pkg.version.name $version\n$result.output")

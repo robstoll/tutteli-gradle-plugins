@@ -170,15 +170,6 @@ class PublishPluginValidationTest {
     }
 
     @Test
-    void evaluate_bintrayRepoNotSet_throwsIllegalStateException() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).bintrayRepo.set(null)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.bintrayRepo", project)
-    }
-
-    @Test
     void evaluate_envNameBintrayUserUnset_throwsIllegalStateException() {
         //arrange
         Project project = setUp()
