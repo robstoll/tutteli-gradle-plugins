@@ -178,7 +178,7 @@ class PublishPluginIntTest {
             "<id>robstoll</id>$NL_INDENT" +
             "<name>Robert Stoll</name>$NL_INDENT" +
             "<email>rstoll@tutteli.ch</email>$NL_INDENT" +
-            "<url>tuteli.ch</url>$NL_INDENT" +
+            "<url>tutteli.ch</url>$NL_INDENT" +
             "</developer>$NL_INDENT" +
             "<developer>$NL_INDENT" +
             "<id>robstoll_tutteli</id>$NL_INDENT" +
