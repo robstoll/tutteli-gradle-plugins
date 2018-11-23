@@ -24,6 +24,8 @@ class KotlinUtilsPluginIntTest {
         include 'test2-js'
         include 'test1-jvm'
         include 'test2-jvm'
+        include 'test1-android'
+        include 'test2-android'
         """
 
     @Test
@@ -103,6 +105,8 @@ class KotlinUtilsPluginIntTest {
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
 
         def result = gradleRunner
             .withArguments("help")
@@ -126,6 +130,8 @@ class KotlinUtilsPluginIntTest {
 
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
     }
 
     @Test
@@ -144,10 +150,53 @@ class KotlinUtilsPluginIntTest {
 
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-js")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
+    }
+
+    @Test
+    void configureCommonAndAndroidProjects(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureAndroidProjects()"
+        //act
+        def gradleRunner = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test1-common")
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test2-common")
+        executeDependenciesAndAssertCommonAndAndroid(gradleRunner, ":test1")
+        executeDependenciesAndAssertCommonAndAndroid(gradleRunner, ":test2")
+
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-js")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
     }
 
     @Test
     void configureCommonJsAndJvmProjects(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects() \n configureAndroidProjects()"
+        //act
+        def gradleRunner = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+
+
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test1-common")
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test2-common")
+        executeDependenciesAndAssertCommonAndJs(gradleRunner, ":test1")
+        executeDependenciesAndAssertCommonAndJs(gradleRunner, ":test2")
+        executeDependenciesAndAssertCommonAndAndroid(gradleRunner, ":test1")
+        executeDependenciesAndAssertCommonAndAndroid(gradleRunner, ":test2")
+
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+    }
+
+    @Test
+    void configureCommonJsAndAndroidProjects(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
         settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects() \n configureJvmProjects()"
@@ -204,6 +253,10 @@ class KotlinUtilsPluginIntTest {
 
     private static void executeDependenciesAndAssertCommonAndJvm(GradleRunner gradleRunner, String prefix) {
         executeDependenciesAndAssertCommonAnd(gradleRunner, prefix, "-jvm", "stdlib", "stdlib-js")
+    }
+
+    private static void executeDependenciesAndAssertCommonAndAndroid(GradleRunner gradleRunner, String prefix) {
+        executeDependenciesAndAssertCommonAnd(gradleRunner, prefix, "-android", "stdlib", "stdlib-js")
     }
 
     private static void executeDependenciesAndAssertCommonAnd(

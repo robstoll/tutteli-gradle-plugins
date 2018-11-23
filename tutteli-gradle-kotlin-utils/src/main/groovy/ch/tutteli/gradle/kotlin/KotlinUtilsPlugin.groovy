@@ -26,8 +26,6 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.kotlinTestCommon = { getKotlinDependency(extension, 'test-common') }
         project.ext.kotlinTestAnnotationsCommon = { getKotlinDependency(extension, 'test-annotations-common') }
 
-
-
         project.ext.excludeKbox = { ExcludeExtension.excludeKbox(owner as ExternalModuleDependency) }
         project.ext.excludeKotlin = { ExcludeExtension.excludeKotlin(owner as ExternalModuleDependency) }
         project.ext.excludeAtriumVerbs = { ExcludeExtension.excludeAtriumVerbs(owner as ExternalModuleDependency) }
@@ -43,6 +41,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         def getCommonProjects = { getSubprojectsWithSuffix(project, "-common") }
         def getJsProjects = { getSubprojectsWithSuffix(project, "-js") }
         def getJvmProjects = { getSubprojectsWithSuffix(project, "-jvm") }
+        def getAndroidProjects = { getSubprojectsWithSuffix(project, "-android") }
 
         project.ext.getCommonProjects = getCommonProjects
         project.ext.getJsProjects = getJsProjects
@@ -82,16 +81,24 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         }
 
         project.ext.configureJvmProjects = {
-            project.configure(getJvmProjects()) { Project subproject ->
-                apply plugin: 'kotlin-platform-jvm'
+            configureJvmLikeProjects(project, getJvmProjects())
+        }
 
-                dependencies {
-                    compile kotlinStdlib()
-                    expectedBy getCommonProject(project, subproject)
+        project.ext.configureAndroidProjects = {
+            configureJvmLikeProjects(project, getAndroidProjects())
+        }
+    }
 
-                    testCompile kotlinTest()
-                    testCompile kotlinTestJunit5()
-                }
+    private static void configureJvmLikeProjects(Project rootProject, Set<Project> projects){
+        rootProject.configure(projects) { Project subproject ->
+            apply plugin: 'kotlin-platform-jvm'
+
+            dependencies {
+                compile kotlinStdlib()
+                expectedBy getCommonProject(rootProject, subproject)
+
+                testCompile kotlinTest()
+                testCompile kotlinTestJunit5()
             }
         }
     }
@@ -120,8 +127,9 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         def name = subproject.name
         def suffix = name.endsWith('-jvm') ? '-jvm'
             : name.endsWith('-js') ? '-js'
+            : name.endsWith('-android') ? '-android'
             : null
-        if (suffix == null) throw new IllegalArgumentException("unknown project suffix, expected -jvm or -js. Project name was: $name")
+        if (suffix == null) throw new IllegalArgumentException("unknown project suffix, expected -jvm, -js or -android. Project name was: $name")
 
         return name.substring(0, name.indexOf(suffix))
     }
