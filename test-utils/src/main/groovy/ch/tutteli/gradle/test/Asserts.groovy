@@ -16,6 +16,11 @@ class Asserts {
         assertProjectInOutput(result, prefix + '-jvm')
     }
 
+    static void assertJvmJsAndroidInOutput(BuildResult result, String prefix) {
+        assertJvmJsInOutput(result, prefix)
+        assertProjectInOutput(result, prefix + '-android')
+    }
+
     static void assertProjectInOutput(BuildResult result, String projectName) {
         assertTrue(result.output.contains(projectName), "project $projectName in output: ${result.output}")
     }

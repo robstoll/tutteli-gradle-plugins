@@ -35,6 +35,15 @@ class SettingsUtilPluginExtension {
         }
     }
 
+    void kotlinJvmJsAndroid(String folderName) {
+        kotlinJvmJsAndroid(folderName, "$folderName-")
+    }
+    void kotlinJvmJsAndroid(String folderName, String additionalPrefix){
+        folder(folderName, additionalPrefix) {
+            prefixed("common", "js", "jvm", "android")
+        }
+    }
+
     void prefixed(String... projects) {
         //we need a local variable if we want to keep the field private
         def currentPrefix = this.currentPrefix

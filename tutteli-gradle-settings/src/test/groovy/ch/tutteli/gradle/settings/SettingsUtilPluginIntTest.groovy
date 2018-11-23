@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 import static ch.tutteli.gradle.test.Asserts.assertJvmJsInOutput
+import static ch.tutteli.gradle.test.Asserts.assertJvmJsAndroidInOutput
 import static ch.tutteli.gradle.test.Asserts.assertProjectInOutput
 
 @ExtendWith(SettingsExtension)
@@ -54,7 +55,7 @@ class SettingsUtilPluginIntTest {
             }
 
             kotlinJvmJs('core', 'core-')     // defines three projects which are contained in folder 'core' and are 
-                                             // additionally prefixed with 'eleven-' named 'common', 'js' and 'jvm'
+                                             // additionally prefixed with 'core-' named 'common', 'js' and 'jvm'
                                              // and sets `project.projectDir` accordingly. For instance, for 'jvm':
                                              // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm" 
                                              
@@ -62,6 +63,16 @@ class SettingsUtilPluginIntTest {
                                              // not specify the additional prefix which means it will use the folder
                                              // name + '-' suffix for the prefix resulting in the following for 'js':
                                              // "\${rootProject.projectDir}/domain/\${rootProject.name}-domain-js"                                                 
+
+            kotlinJvmJsAndroid('gui', 'ui-') // defines three projects which are contained in folder 'gui' and are 
+                                             // additionally prefixed with 'ui-' named 'common', 'android', 'js' and 
+                                             // 'jvm' and sets `project.projectDir` accordingly. For instance, for 'jvm':
+                                             // "\${rootProject.projectDir}/gui/\${rootProject.name}-ui-jvm" 
+                                             
+            kotlinJvmJsAndroid('web')        // similar to kotlinJvmJsAndroid('gui', 'gui-') above but this time we do 
+                                             // not specify the additional prefix which means it will use the folder
+                                             // name + '-' suffix for the prefix resulting in the following for 'js':
+                                             // "\${rootProject.projectDir}/web/\${rootProject.name}-web-js"     
 
             // You can also include non prefixed projects with this style. 
             // Have a look at the method extensionWithMethodCalls, 
@@ -77,6 +88,8 @@ class SettingsUtilPluginIntTest {
         assertProjectOneTwoFiveInOutput(result)
         assertJvmJsInOutput(result, ':test-project-core')
         assertJvmJsInOutput(result, ':test-project-domain')
+        assertJvmJsAndroidInOutput(result, ':test-project-ui')
+        assertJvmJsAndroidInOutput(result, ':test-project-web')
         assertStatusOk(result)
     }
 
@@ -249,6 +262,16 @@ class SettingsUtilPluginIntTest {
         new File(tmp, 'domain/test-project-domain-common').mkdir()
         new File(tmp, 'domain/test-project-domain-js').mkdir()
         new File(tmp, 'domain/test-project-domain-jvm').mkdir()
+        new File(tmp, 'gui').mkdir()
+        new File(tmp, 'gui/test-project-ui-common').mkdir()
+        new File(tmp, 'gui/test-project-ui-android').mkdir()
+        new File(tmp, 'gui/test-project-ui-js').mkdir()
+        new File(tmp, 'gui/test-project-ui-jvm').mkdir()
+        new File(tmp, 'web').mkdir()
+        new File(tmp, 'web/test-project-web-common').mkdir()
+        new File(tmp, 'web/test-project-web-android').mkdir()
+        new File(tmp, 'web/test-project-web-js').mkdir()
+        new File(tmp, 'web/test-project-web-jvm').mkdir()
     }
 
     private static void assertProjectOneTwoFiveInOutput(BuildResult result) {
