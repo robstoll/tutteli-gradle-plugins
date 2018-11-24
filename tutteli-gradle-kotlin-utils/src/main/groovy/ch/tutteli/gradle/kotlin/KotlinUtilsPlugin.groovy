@@ -46,6 +46,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.getCommonProjects = getCommonProjects
         project.ext.getJsProjects = getJsProjects
         project.ext.getJvmProjects = getJvmProjects
+        project.ext.getAndroidProjects = getAndroidProjects
         project.ext.getProjectNameWithoutSuffix = { Project aProject -> getProjectNameWithoutSuffix(aProject) }
 
         project.ext.configureCommonProjects = {
