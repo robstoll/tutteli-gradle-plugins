@@ -13,6 +13,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create(EXTENSION_NAME, KotlinUtilsPluginExtension, project)
         augmentProjectExt(project, extension)
+        createBuildTasks(project)
     }
 
     private void augmentProjectExt(Project project, KotlinUtilsPluginExtension extension) {
@@ -133,5 +134,17 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         if (suffix == null) throw new IllegalArgumentException("unknown project suffix, expected -jvm, -js or -android. Project name was: $name")
 
         return name.substring(0, name.indexOf(suffix))
+    }
+
+    private static void createBuildTasks(Project project) {
+        project.afterEvaluate {
+            createBuildTask(project, 'buildAllAndroid', '-android')
+            createBuildTask(project, 'buildAllJs', '-js')
+            createBuildTask(project, 'buildAllJvm', '-jvm')
+        }
+    }
+    private static void createBuildTask(Project project, String taskName, String suffix){
+        def buildTasks = getSubprojectsWithSuffix(project, suffix).findResults { it.tasks.findByName('build') }
+        project.tasks.create(name: taskName, group: 'Utils', description: "depends on all subprojects with a $suffix suffix", dependsOn: buildTasks )
     }
 }

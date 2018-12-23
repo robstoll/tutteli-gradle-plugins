@@ -213,6 +213,123 @@ class KotlinUtilsPluginIntTest {
         executeDependenciesAndAssertCommonAndJvm(gradleRunner, ":test2")
     }
 
+    @Test
+    void buildAllJsNotConfigured(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup)
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments('buildAllJs')
+            .build()
+        //assert
+        Asserts.assertStatusOk(result, [],[],[':buildAllJs'])
+    }
+
+    @Test
+    void buildAllJs(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects()"
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments('buildAllJs')
+            .build()
+        //assert
+        Asserts.assertStatusOk(result,
+            [':test1-common:jar',
+             ':test1-js:jar',
+             ':test1-js:assemble',
+             ':test1-js:build',
+             ':test2-common:jar',
+             ':test2-js:jar',
+             ':test2-js:assemble',
+             ':test2-js:build',
+             ':buildAllJs'
+            ],
+            [],
+            [':test1-common:classes',
+             ':test1-js:classes',
+             ':test1-js:testClasses',
+             ':test1-js:check',
+             ':test2-common:classes',
+             ':test2-js:classes',
+             ':test2-js:testClasses',
+             ':test2-js:check'
+            ])
+    }
+
+    @Test
+    void buildAllAndroid(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureAndroidProjects()"
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments('buildAllAndroid')
+            .build()
+        //assert
+        Asserts.assertStatusOk(result,
+            [':test1-common:jar',
+             ':test1-android:jar',
+             ':test1-android:assemble',
+             ':test1-android:build',
+             ':test2-common:jar',
+             ':test2-android:jar',
+             ':test2-android:assemble',
+             ':test2-android:build',
+             ':buildAllAndroid'
+            ],
+            [],
+            [':test1-common:classes',
+             ':test1-android:classes',
+             ':test1-android:testClasses',
+             ':test1-android:check',
+             ':test2-common:classes',
+             ':test2-android:classes',
+             ':test2-android:testClasses',
+             ':test2-android:check'
+            ])
+    }
+
+
+    @Test
+    void buildAllJvm(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJvmProjects()"
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments('buildAllJvm')
+            .build()
+        //assert
+        Asserts.assertStatusOk(result,
+            [':test1-common:jar',
+             ':test1-jvm:jar',
+             ':test1-jvm:assemble',
+             ':test1-jvm:build',
+             ':test2-common:jar',
+             ':test2-jvm:jar',
+             ':test2-jvm:assemble',
+             ':test2-jvm:build',
+             ':buildAllJvm'
+            ],
+            [],
+            [':test1-common:classes',
+             ':test1-jvm:classes',
+             ':test1-jvm:testClasses',
+             ':test1-jvm:check',
+             ':test2-common:classes',
+             ':test2-jvm:classes',
+             ':test2-jvm:testClasses',
+             ':test2-jvm:check'
+            ])
+    }
+
     private static GString headerBuildFile(SettingsExtensionObject settingsSetup) {
         def headerBuildFile = """
         buildscript {
