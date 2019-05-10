@@ -147,7 +147,7 @@ class PublishPluginIntTest {
             .withArguments("projects", "generatePomFileForTutteliPublication", "--stacktrace")
             .build()
         //assert
-        assertTrue(result.output.contains("Some licenses were duplicated. Please check if you made a mistake."), "should contain warning about duplicated licenses")
+        assertTrue(result.output.contains("Some licenses were duplicated. Please check if you made a mistake."), "should contain warning about duplicated licenses:\n$result.output")
         String pom = Paths.get(settingsSetup.tmp.absolutePath, 'build', 'publications', 'tutteli', 'pom-default.xml').toFile().getText('UTF-8')
 
         assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
@@ -460,6 +460,12 @@ class PublishPluginIntTest {
             "<artifactId>$subprojectNameWithoutJvm</artifactId>$NL_INDENT" +
             "<version>$version</version>$NL_INDENT" +
             "<scope>compile</scope>$NL_INDENT" +
+            "</dependency>$NL_INDENT" +
+            "<dependency>$NL_INDENT" +
+            "<groupId>$groupId</groupId>$NL_INDENT" +
+            "<artifactId>$subprojectNameWithoutJvm</artifactId>$NL_INDENT" +
+            "<version>$version</version>$NL_INDENT" +
+            "<scope>runtime</scope>$NL_INDENT" +
             "</dependency>$NL_INDENT" +
             "</dependencies>"
         )

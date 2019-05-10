@@ -77,7 +77,7 @@ configure(pluginProjects) {
         //delegates to the jacoco extension (just for your convenience, everything in one place)
         jacoco {
             //e.g. set the version to a different version than the default
-            //toolVersion = '0.8.1'
+            //toolVersion = '0.8.3'
         }
 
         //delegates to the junitPlatform extension (just for your convenience, everything in one place)

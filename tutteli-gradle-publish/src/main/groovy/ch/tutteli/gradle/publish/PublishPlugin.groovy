@@ -47,7 +47,7 @@ class PublishPlugin implements Plugin<Project> {
 
         def includeBuildTime = project.tasks.create(name: TASK_NAME_INCLUDE_TIME) {
             doLast {
-                extension.artifacts.getOrElse(Collections.emptyList())
+                extension.artifacts.getOrElse(Collections.emptySet())
                     .findAll { it instanceof org.gradle.jvm.tasks.Jar }
                     .collect { it as org.gradle.jvm.tasks.Jar }
                     .each { augmentManifest(it, project, extension) }
@@ -110,6 +110,9 @@ class PublishPlugin implements Plugin<Project> {
                     artifactId aId
                     version project.version
 
+                    //set to empty in case it was not set at all or reset to null
+                    extension.artifacts.set(extension.artifacts.getOrElse(Collections.emptySet()))
+
                     MavenPublication publication = it
                     if (extension.component.isPresent()) {
                         def component = extension.component.get()
@@ -122,16 +125,16 @@ class PublishPlugin implements Plugin<Project> {
                             }
                             publication.artifacts.remove(jarPub)
                             def jarTask = project.tasks.getByName('jar')
+
                             if (!extension.artifacts.get().contains(jarTask)) {
                                 extension.artifacts.add(jarTask)
                             }
                         }
-
                     }
-                    def artifacts = extension.artifacts.getOrElse(Collections.emptyList())
+                    def artifacts = extension.artifacts.get()
                     artifacts.each {
                         if (it instanceof org.gradle.jvm.tasks.Jar) {
-                            it.baseName = aId
+                            it.archiveBaseName.set(aId)
                         }
                         publication.artifact it
                     }
@@ -150,7 +153,7 @@ class PublishPlugin implements Plugin<Project> {
 
     private static Action<? extends XmlProvider> pomConfig(Project project, PublishPluginExtension extension) {
         String repoUrl = determineRepoUrl(project, extension)
-        def extensionLicenses = extension.licenses.get()
+        def extensionLicenses = extension.licenses.getOrElse(Collections.emptyList())
         def uniqueLicenses = extensionLicenses.toSet().toSorted()
         if (extensionLicenses.size() != uniqueLicenses.size()) {
             LOGGER.warn("Some licenses were duplicated. Please check if you made a mistake.")
@@ -158,29 +161,25 @@ class PublishPlugin implements Plugin<Project> {
         def pomConfig = {
             url repoUrl
             licenses {
-                if (extension.licenses.isPresent()) {
-                    uniqueLicenses.each { chosenLicense ->
-                        requireNotNullNorBlank(chosenLicense.longName, "license.longName")
-                        license {
-                            name chosenLicense.longName
-                            if (chosenLicense.url) url chosenLicense.url
-                            if (chosenLicense.distribution) distribution chosenLicense.distribution
-                        }
+                uniqueLicenses.each { chosenLicense ->
+                    requireNotNullNorBlank(chosenLicense.longName, "license.longName")
+                    license {
+                        name chosenLicense.longName
+                        if (chosenLicense.url) url chosenLicense.url
+                        if (chosenLicense.distribution) distribution chosenLicense.distribution
                     }
                 }
             }
             developers {
-                if (extension.developers.isPresent()) {
-                    extension.developers.get().each { dev ->
-                        developer {
-                            id dev.id
-                            if (dev.name) name dev.name
-                            if (dev.email) email dev.email
-                            if (dev.url) url dev.url
-                            if (dev.organization) organization dev.organization
-                            if (dev.organizationUrl) organizationUrl dev.organizationUrl
-                            //never used roles, timezone so far, skip it for now
-                        }
+                extension.developers.getOrElse(Collections.emptyList()).each { dev ->
+                    developer {
+                        id dev.id
+                        if (dev.name) name dev.name
+                        if (dev.email) email dev.email
+                        if (dev.url) url dev.url
+                        if (dev.organization) organization dev.organization
+                        if (dev.organizationUrl) organizationUrl dev.organizationUrl
+                        //never used roles, timezone so far, skip it for now
                     }
                 }
             }

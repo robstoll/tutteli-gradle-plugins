@@ -32,13 +32,12 @@ class JunitJacocoPluginExtension {
         //necessary that it is accessible within the closure without the need of a public getter
         def junitTask = junitPlatformTestTask
         jacoco {
-            toolVersion = '0.8.2'
+            toolVersion = '0.8.3'
             applyTo junitTask
         }
 
         jacocoReport {
-            sourceDirectories = project.sourceSets.main.allJava.sourceDirectories
-            classDirectories = project.files(project.sourceSets.main.output.classesDirs)
+            sourceSets project.sourceSets.main
             executionData junitTask
             reports {
                 csv.enabled = false

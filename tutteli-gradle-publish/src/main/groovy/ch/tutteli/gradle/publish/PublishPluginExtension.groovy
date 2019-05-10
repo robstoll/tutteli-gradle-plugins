@@ -8,6 +8,7 @@ import org.gradle.api.Task
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 import org.gradle.jvm.tasks.Jar
 
 import static Validation.requireNotNullNorBlank
@@ -19,8 +20,7 @@ class PublishPluginExtension {
 
     final Property<String> githubUser
     final Property<SoftwareComponent> component
-    //TODO switch to SetProperty requires gradle 4.5
-    final ListProperty<Task> artifacts
+    final SetProperty<Task> artifacts
     final ListProperty<License> licenses
     final ListProperty<Developer> developers
     final Property<String> propNameBintrayUser
@@ -40,7 +40,7 @@ class PublishPluginExtension {
         bintrayExtension = project.extensions.getByType(BintrayExtension)
         githubUser = project.objects.property(String)
         component = project.objects.property(SoftwareComponent)
-        artifacts = project.objects.listProperty(Task)
+        artifacts = project.objects.setProperty(Task)
         licenses = project.objects.listProperty(License)
         resetLicenses(StandardLicenses.APACHE_2_0, 'repo')
         developers = project.objects.listProperty(Developer)

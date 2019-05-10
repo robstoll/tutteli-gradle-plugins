@@ -3,6 +3,7 @@ package ch.tutteli.gradle.kotlin
 import ch.tutteli.gradle.test.Asserts
 import ch.tutteli.gradle.test.SettingsExtension
 import ch.tutteli.gradle.test.SettingsExtensionObject
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
@@ -15,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 @ExtendWith(SettingsExtension)
 class KotlinUtilsPluginIntTest {
 
-    private static final String KOTLIN_VERSION = '1.2.40'
+    private static final String KOTLIN_VERSION = '1.3.31'
     private static final String settingsFileContent = """
         rootProject.name='test-project'
         include 'test1-common'
@@ -239,11 +240,15 @@ class KotlinUtilsPluginIntTest {
             .build()
         //assert
         Asserts.assertStatusOk(result,
-            [':test1-common:jar',
+            [':test1-common:inspectClassesForKotlinIC',
+             ':test1-common:jar',
+             ':test1-js:inspectClassesForKotlinIC',
              ':test1-js:jar',
              ':test1-js:assemble',
              ':test1-js:build',
+             ':test2-common:inspectClassesForKotlinIC',
              ':test2-common:jar',
+             ':test2-js:inspectClassesForKotlinIC',
              ':test2-js:jar',
              ':test2-js:assemble',
              ':test2-js:build',
@@ -269,15 +274,19 @@ class KotlinUtilsPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments('buildAllAndroid')
+            .withArguments('buildAllAndroid', '--stacktrace', '--warning-mode', 'all')
             .build()
         //assert
         Asserts.assertStatusOk(result,
-            [':test1-common:jar',
+            [':test1-common:inspectClassesForKotlinIC',
+             ':test1-common:jar',
+             ':test1-android:inspectClassesForKotlinIC',
              ':test1-android:jar',
              ':test1-android:assemble',
              ':test1-android:build',
+             ':test2-common:inspectClassesForKotlinIC',
              ':test2-common:jar',
+             ':test2-android:inspectClassesForKotlinIC',
              ':test2-android:jar',
              ':test2-android:assemble',
              ':test2-android:build',
@@ -308,11 +317,15 @@ class KotlinUtilsPluginIntTest {
             .build()
         //assert
         Asserts.assertStatusOk(result,
-            [':test1-common:jar',
+            [':test1-common:inspectClassesForKotlinIC',
+             ':test1-common:jar',
+             ':test1-jvm:inspectClassesForKotlinIC',
              ':test1-jvm:jar',
              ':test1-jvm:assemble',
              ':test1-jvm:build',
+             ':test2-common:inspectClassesForKotlinIC',
              ':test2-common:jar',
+             ':test2-jvm:inspectClassesForKotlinIC',
              ':test2-jvm:jar',
              ':test2-jvm:assemble',
              ':test2-jvm:build',
@@ -333,8 +346,9 @@ class KotlinUtilsPluginIntTest {
     private static GString headerBuildFile(SettingsExtensionObject settingsSetup) {
         def headerBuildFile = """
         buildscript {
+            repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
-                repositories { maven { url "https://plugins.gradle.org/m2/" } }
+               
                 classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
                 classpath files($settingsSetup.pluginClasspath)
             }
@@ -345,8 +359,10 @@ class KotlinUtilsPluginIntTest {
             kotlinVersion = '$KOTLIN_VERSION'
         }
 
-        repositories{
-            mavenCentral()
+        subprojects {
+            repositories{
+                mavenCentral()
+            }
         }
 
         """
@@ -358,9 +374,11 @@ class KotlinUtilsPluginIntTest {
             .withArguments(subproject + ":dependencies")
             .build()
         //assert
-        assertTrue(result.output.contains("\n\\--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + result.output)
-        assertFalse(result.output.contains("org.jetbrains.kotlin:kotlin-stdlib:"), "stdlib should not be in output:\n" + result.output)
-        assertFalse(result.output.contains("org.jetbrains.kotlin:kotlin-stdlib-js:"), "stdlib-js should not be in output:\n" + result.output)
+        def output = outputWithoutKotlinCompilerClasspath(result)
+
+        assertTrue(output.contains("\n\\--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + output)
+        assertFalse(output.contains("org.jetbrains.kotlin:kotlin-stdlib:"), "stdlib should not be in output:\n" + output)
+        assertFalse(output.contains("org.jetbrains.kotlin:kotlin-stdlib-js:"), "stdlib-js should not be in output:\n" + output)
         Asserts.assertStatusOk(result, subproject + ":dependencies")
     }
 
@@ -376,6 +394,10 @@ class KotlinUtilsPluginIntTest {
         executeDependenciesAndAssertCommonAnd(gradleRunner, prefix, "-android", "stdlib", "stdlib-js")
     }
 
+    private static String outputWithoutKotlinCompilerClasspath(BuildResult result) {
+        return result.output.replaceFirst(/kotlinCompilerClasspath[\S\s]+kotlinCompilerPluginClasspath/, '')
+    }
+
     private static void executeDependenciesAndAssertCommonAnd(
         GradleRunner gradleRunner,
         String prefix,
@@ -388,10 +410,11 @@ class KotlinUtilsPluginIntTest {
             .withArguments(prefix + suffix + ":dependencies")
             .build()
         //assert
-        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-" + libInThere + ":$KOTLIN_VERSION"), "should contain $libInThere:\n" + result.output)
-        assertTrue(result.output.contains("\n\\--- project $prefix-common"), "should contain project $prefix-common:\n" + result.output)
-        assertTrue(result.output.contains("  \\--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + result.output)
-        assertFalse(result.output.contains("org.jetbrains.kotlin:kotlin-" + libNotInThere + ":"), "$libNotInThere should not be in output:\n" + result.output)
+        def output = outputWithoutKotlinCompilerClasspath(result)
+        assertTrue(output.contains("\n+--- org.jetbrains.kotlin:kotlin-" + libInThere + ":$KOTLIN_VERSION"), "should contain $libInThere:\n" + output)
+        assertTrue(output.contains("\n\\--- project $prefix-common"), "should contain project $prefix-common:\n" + output)
+        assertTrue(output.contains("  \\--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + output)
+        assertFalse(output.contains("org.jetbrains.kotlin:kotlin-" + libNotInThere + ":"), "$libNotInThere should not be in output:\n" + output)
 
         Asserts.assertStatusOk(result, prefix + suffix + ":dependencies")
     }
