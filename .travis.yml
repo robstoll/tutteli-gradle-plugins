@@ -3,6 +3,7 @@ jdk:
   # junit5 requires java 8
   - oraclejdk8
   - oraclejdk9
+  - oraclejdk11
 
 before_install:
  - chmod +x gr
