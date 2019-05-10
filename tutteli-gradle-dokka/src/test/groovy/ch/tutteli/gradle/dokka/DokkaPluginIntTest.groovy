@@ -26,6 +26,10 @@ class DokkaPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
+        repositories {
+            maven { url 'https://dl.bintray.com/kotlin/dokka' } 
+        }
+        
         apply plugin: 'ch.tutteli.dokka'
         
         tutteliDokka {
@@ -62,6 +66,10 @@ class DokkaPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
+        repositories {
+            maven { url 'https://dl.bintray.com/kotlin/dokka' } 
+        }
+        
         apply plugin: 'ch.tutteli.dokka'
         
         tutteliDokka {
@@ -104,6 +112,10 @@ class DokkaPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
+        repositories {
+            maven { url 'https://dl.bintray.com/kotlin/dokka' } 
+        }
+        
         apply plugin: 'ch.tutteli.dokka'
         
         tutteliDokka {

@@ -32,10 +32,10 @@ class DokkaPluginSmokeTest {
         assertEquals("$project.buildDir/kdoc".toString(), dokkaTask.outputDirectory,)
         assertEquals(1, dokkaTask.linkMappings.size(), "linkMappings: " + dokkaTask.linkMappings)
         def linkMapping = dokkaTask.linkMappings.get(0)
-        assertEquals(project.projectDir.absolutePath, linkMapping.dir,)
+        assertEquals('./', linkMapping.dir,)
         assertEquals(DokkaPluginExtension.DEFAULT_REPO_URL, linkMapping.url)
         assertEquals('#L', linkMapping.suffix)
-        assertEquals('0.9.17', DokkaVersion.version)
+        assertEquals('0.9.18', DokkaVersion.version)
 
         Jar javadocTask = project.tasks.getByName(DokkaPlugin.TASK_NAME_JAVADOC) as Jar
         assertNotNull(javadocTask, DokkaPlugin.TASK_NAME_JAVADOC)

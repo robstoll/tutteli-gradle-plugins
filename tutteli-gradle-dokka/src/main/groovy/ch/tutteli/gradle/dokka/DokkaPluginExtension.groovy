@@ -27,7 +27,7 @@ class DokkaPluginExtension {
             outputFormat = 'html'
             outputDirectory = "$project.buildDir/kdoc"
             linkMapping {
-                dir = project.rootProject.projectDir.absolutePath
+                dir = './'
                 url = DEFAULT_REPO_URL
                 suffix = '#L'
             }
