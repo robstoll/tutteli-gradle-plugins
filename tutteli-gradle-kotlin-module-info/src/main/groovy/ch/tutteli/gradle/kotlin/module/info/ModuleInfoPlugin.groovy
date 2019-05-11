@@ -23,11 +23,6 @@ class ModuleInfoPlugin implements Plugin<Project> {
         def srcModule = "src/module"
         def moduleInfo = project.file("${project.projectDir}/$srcModule/module-info.java")
         if (moduleInfo.exists()) {
-
-            final JavaPluginConvention javaPlugin = project.getConvention().getPlugin(JavaPluginConvention.class)
-            javaPlugin.setSourceCompatibility('9')
-            javaPlugin.setTargetCompatibility('9')
-
             project.sourceSets {
                 module {
                     java {
