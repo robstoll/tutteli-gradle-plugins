@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 class SpekPluginIntTest {
 
     @Test
-    void smokeTest(SettingsExtensionObject settingsSetup) throws IOException {
+    void smokeTestVersion1(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << """
         rootProject.name='test-project'
@@ -26,6 +26,7 @@ class SpekPluginIntTest {
         }
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.spek'
+        spek.version = '1.1.5'
         """
         File kotlin = new File(settingsSetup.tmp, 'src/test/kotlin/')
         kotlin.mkdirs()
@@ -37,6 +38,60 @@ class SpekPluginIntTest {
         object TestSpec : Spek({
             it("successful test") {
                 println("was here")
+            }
+        })
+        """
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("build")
+            .build()
+        //assert
+        assertTrue(result.output.contains("was here"), "println in output:\n" + result.output)
+        Asserts.assertStatusOk(result,
+            [
+                ":inspectClassesForKotlinIC",
+                ":jar",
+                ":assemble",
+                ":compileTestKotlin",
+                ":junitPlatformTest",
+                ":junitPlatformJacocoReport",
+                ":check",
+                ":build"
+            ],
+            [":test"],
+            [":classes", ":testClasses"]
+        )
+    }
+
+    @Test
+    void smokeTestVersion2(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << """
+        rootProject.name='test-project'
+        """
+        settingsSetup.buildGradle << """
+        buildscript {
+            dependencies {
+                classpath files($settingsSetup.pluginClasspath)
+            }
+        }
+        apply plugin: 'kotlin'
+        apply plugin: 'ch.tutteli.spek'
+        spek.version = '2.0.4'
+        """
+        File kotlin = new File(settingsSetup.tmp, 'src/test/kotlin/')
+        kotlin.mkdirs()
+        File spec = new File(kotlin, 'TestSpec.kt')
+        spec << """
+        import org.spekframework.spek2.Spek
+        import org.spekframework.spek2.style.specification.describe
+        
+        object TestSpec : Spek({
+            describe("dummy test") {
+                it("successful test") {
+                    println("was here")
+                }
             }
         })
         """
