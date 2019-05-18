@@ -141,10 +141,11 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             createBuildTask(project, 'buildAllAndroid', '-android')
             createBuildTask(project, 'buildAllJs', '-js')
             createBuildTask(project, 'buildAllJvm', '-jvm')
+            createBuildTask(project, 'buildAllCommon', '-common')
         }
     }
     private static void createBuildTask(Project project, String taskName, String suffix){
         def buildTasks = getSubprojectsWithSuffix(project, suffix).findResults { it.tasks.findByName('build') }
-        project.tasks.create(name: taskName, group: 'Utils', description: "depends on all subprojects with a $suffix suffix", dependsOn: buildTasks )
+        project.tasks.create(name: taskName, group: 'build', description: "depends on all subprojects with a $suffix suffix", dependsOn: buildTasks )
     }
 }

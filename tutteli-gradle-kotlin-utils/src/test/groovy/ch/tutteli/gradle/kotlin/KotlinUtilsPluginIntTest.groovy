@@ -229,6 +229,38 @@ class KotlinUtilsPluginIntTest {
     }
 
     @Test
+    void buildAllCommon(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()"
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments('buildAllCommon')
+            .build()
+        //assert
+        Asserts.assertStatusOk(result,
+            [':test1-common:inspectClassesForKotlinIC',
+             ':test1-common:jar',
+             ':test1-common:assemble',
+             ':test1-common:build',
+             ':test2-common:inspectClassesForKotlinIC',
+             ':test2-common:jar',
+             ':test2-common:assemble',
+             ':test2-common:build',
+             ':buildAllCommon'
+            ],
+            [],
+            [':test1-common:classes',
+            ':test1-common:testClasses',
+            ':test1-common:check',
+             ':test2-common:classes',
+             ':test2-common:testClasses',
+             ':test2-common:check'
+            ])
+    }
+
+    @Test
     void buildAllJs(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
@@ -303,7 +335,6 @@ class KotlinUtilsPluginIntTest {
              ':test2-android:check'
             ])
     }
-
 
     @Test
     void buildAllJvm(SettingsExtensionObject settingsSetup) throws IOException {
