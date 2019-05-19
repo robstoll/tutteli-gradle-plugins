@@ -9,6 +9,6 @@ buildscript {
 }
 
 dependencies {
-    compile "com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintray_version"
-    testCompile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    implementation "com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintray_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 }

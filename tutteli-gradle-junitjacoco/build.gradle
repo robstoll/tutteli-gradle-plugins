@@ -9,5 +9,5 @@ buildscript {
 }
 
 dependencies {
-    compile "org.junit.platform:junit-platform-gradle-plugin:$junit_platform_version"
+    implementation "org.junit.platform:junit-platform-gradle-plugin:$junit_platform_version"
 }

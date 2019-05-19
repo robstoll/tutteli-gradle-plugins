@@ -9,10 +9,12 @@ buildscript {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
     /**
      * Short for `compile project(":${rootProject.name}-junitjacoco")`
      */
-    compile prefixedProject('junitjacoco')
+    implementation prefixedProject('junitjacoco')
+    implementation "org.junit.platform:junit-platform-gradle-plugin:$junit_platform_version"
 }

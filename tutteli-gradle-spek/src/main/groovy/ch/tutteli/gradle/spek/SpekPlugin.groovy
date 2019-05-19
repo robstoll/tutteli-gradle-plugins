@@ -43,8 +43,6 @@ class SpekPlugin implements Plugin<Project> {
             }
 
             project.dependencies {
-                implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-
                 if (isVersion1) {
                     testImplementation("org.jetbrains.spek:spek-api:$spekVersion") {
                         exclude group: 'org.jetbrains.kotlin'
@@ -53,11 +51,19 @@ class SpekPlugin implements Plugin<Project> {
                         exclude group: 'org.junit.platform'
                         exclude group: 'org.jetbrains.kotlin'
                     }
-                    testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion" //spek requires reflect
-                } else {
-                    testImplementation "org.spekframework.spek2:spek-dsl-jvm:$spekVersion"
-                    testRuntimeOnly "org.spekframework.spek2:spek-runner-junit5:$spekVersion"
 
+                    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+                    testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion" //spek requires reflect
+
+                } else {
+                    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
+                        exclude group: 'org.jetbrains.kotlin'
+                    }
+                    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
+                        exclude group: 'org.jetbrains.kotlin'
+                    }
+
+                    testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
                     testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion" //spek requires reflect
                 }
             }

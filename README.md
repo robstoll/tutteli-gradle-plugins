@@ -1,7 +1,7 @@
 [![Gradle Plugin Portal](https://img.shields.io/badge/gradle%20plugin-v0.24.0-blue.svg)](https://plugins.gradle.org/u/robstoll)
 [![Apache license](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](http://opensource.org/licenses/Apache2.0)
 [![Build Status Travis](https://travis-ci.org/robstoll/tutteli-gradle-plugins.svg?branch=v0.24.0)](https://travis-ci.org/robstoll/tutteli-gradle-plugins/branches)
-[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/bv5e7rhsjko5mqy4/branch/v0.24.0?svg=true)](https://ci.appveyor.com/project/robstoll/tutteli-gradle-plugins/branch/v0.23.2)
+[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/bv5e7rhsjko5mqy4/branch/v0.24.0?svg=true)](https://ci.appveyor.com/project/robstoll/tutteli-gradle-plugins/branch/v0.24.0)
 [![Coverage](https://codecov.io/gh/robstoll/tutteli-gradle-plugins/branch/master/graph/badge.svg)](https://codecov.io/github/robstoll/tutteli-gradle-plugins/branch/master)
 
 # Tutteli gradle plugin

@@ -19,11 +19,7 @@ class SpekPluginIntTest {
         rootProject.name='test-project'
         """
         settingsSetup.buildGradle << """
-        buildscript {
-            dependencies {
-                classpath files($settingsSetup.pluginClasspath)
-            }
-        }
+        ${settingsSetup.buildscriptWithKotlin('1.2.71')}
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.spek'
         spek.version = '1.1.5'
@@ -71,11 +67,7 @@ class SpekPluginIntTest {
         rootProject.name='test-project'
         """
         settingsSetup.buildGradle << """
-        buildscript {
-            dependencies {
-                classpath files($settingsSetup.pluginClasspath)
-            }
-        }
+        ${settingsSetup.buildscriptWithKotlin('1.3.31')}
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.spek'
         spek.version = '2.0.4'

@@ -9,5 +9,5 @@ buildscript {
 }
 
 dependencies {
-    compile "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
+    implementation "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
 }
