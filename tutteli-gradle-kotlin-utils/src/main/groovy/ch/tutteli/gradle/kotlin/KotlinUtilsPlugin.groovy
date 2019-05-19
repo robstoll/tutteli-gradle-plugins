@@ -55,6 +55,13 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             project.configure(getCommonProjects()) {
                 apply plugin: 'kotlin-platform-common'
 
+                compileKotlinCommon {
+                    kotlinOptions.allWarningsAsErrors = true
+                }
+                compileTestKotlinCommon {
+                    kotlinOptions.allWarningsAsErrors = true
+                }
+
                 dependencies {
                     compile kotlinStdlibCommon()
                     testCompile kotlinTestCommon()
@@ -66,6 +73,13 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.configureJsProjects = {
             project.configure(getJsProjects()) { Project subproject ->
                 apply plugin: 'kotlin-platform-js'
+
+                compileKotlin2Js {
+                    kotlinOptions.allWarningsAsErrors = true
+                }
+                compileTestKotlin2Js {
+                    kotlinOptions.allWarningsAsErrors = true
+                }
 
                 dependencies {
                     compile kotlinStdlibJs()
@@ -94,6 +108,13 @@ class KotlinUtilsPlugin implements Plugin<Project> {
     private static void configureJvmLikeProjects(Project rootProject, Set<Project> projects){
         rootProject.configure(projects) { Project subproject ->
             apply plugin: 'kotlin-platform-jvm'
+
+            compileKotlin {
+                kotlinOptions.allWarningsAsErrors = true
+            }
+            compileTestKotlin {
+                kotlinOptions.allWarningsAsErrors = true
+            }
 
             dependencies {
                 compile kotlinStdlib()
