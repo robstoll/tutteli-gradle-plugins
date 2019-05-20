@@ -8,6 +8,7 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.zip.ZipEntry
@@ -16,6 +17,7 @@ import java.util.zip.ZipFile
 import static ch.tutteli.gradle.test.Asserts.assertContainsRegex
 import static ch.tutteli.gradle.test.Asserts.getNL_INDENT
 import static org.junit.jupiter.api.Assertions.assertFalse
+import static org.junit.jupiter.api.Assertions.assertNotNull
 import static org.junit.jupiter.api.Assertions.assertThrows
 import static org.junit.jupiter.api.Assertions.assertTrue
 
@@ -144,7 +146,7 @@ class PublishPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("projects", "generatePomFileForTutteliPublication", "--stacktrace")
+            .withArguments("projects", "publishTutteliPublicationToMavenLocal", "--stacktrace")
             .build()
         //assert
         assertTrue(result.output.contains("Some licenses were duplicated. Please check if you made a mistake."), "should contain warning about duplicated licenses:\n$result.output")
@@ -247,7 +249,6 @@ class PublishPluginIntTest {
         assertTrue(exception.message.contains("You need to define property with name bintrayGpgPassphrase or System.env variable with name BINTRAY_GPG_PASSPHRASE"),
             "did not fail due to missing passphase\n$exception.message")
     }
-
 
     @Test
     void combinePlugins(SettingsExtensionObject settingsSetup) throws IOException {
@@ -486,6 +487,68 @@ class PublishPluginIntTest {
         assertJarOfSubprojectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-tests.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
     }
 
+    @Test
+    void kotlinApplied1_2_71(SettingsExtensionObject settingsSetup) throws IOException {
+        kotlinApplied(settingsSetup, '1.2.71')
+    }
+    @Test
+    void kotlinApplied1_3_31(SettingsExtensionObject settingsSetup) throws IOException{
+        kotlinApplied(settingsSetup, '1.3.31')
+    }
+
+    private static void kotlinApplied(SettingsExtensionObject settingsSetup, String kotlinVersion){
+        def projectName = 'test-project'
+        settingsSetup.settings << "rootProject.name='$projectName'"
+        def version = '1.0.0-SNAPSHOT'
+        def githubUser = 'robstoll'
+
+        settingsSetup.buildGradle << """
+        ${settingsSetup.buildscriptWithKotlin(kotlinVersion)}
+    
+        repositories {
+            jcenter()
+        }        
+
+        apply plugin: 'kotlin'
+        apply plugin: 'ch.tutteli.publish'
+        
+        project.with {
+            group = 'com.example'
+            version = '$version'
+            description = 'test project'
+        }
+        tutteliPublish {
+            //minimal setup required for publish, all other things are only needed if not the default is used
+            githubUser = '$githubUser'
+            bintrayRepo = 'tutteli-jars'
+        }
+        """
+        File license = new File(settingsSetup.tmp, 'LICENSE.txt')
+        license << 'Copyright...'
+        Path main = Files.createDirectories(settingsSetup.tmpPath.resolve('src').resolve('main'))
+        Path resources = Files.createDirectory(main.resolve('resources'))
+        File txt = new File(resources.toFile(), 'a.txt')
+        txt << 'dummy'
+        Path tutteli = Files.createDirectories(main.resolve('kotlin').resolve('ch').resolve('tutteli').resolve('atrium'))
+        File kt = new File(tutteli.toFile(), 'a.kt')
+        kt << 'package ch.tutteli.atrium'
+
+        //act
+        GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("includeBuildTimeInManifest", "generatePomFileForTutteliPublication", "publishTutteliPublicationToMavenLocal", "--stacktrace")
+            .build()
+        def repoUrl = "https://github.com/$githubUser/$projectName"
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, null, kotlinVersion)
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, null, kotlinVersion)
+        def zipFile = new ZipFile(buildLib(settingsSetup).resolve("$projectName-${version}-sources.jar").toFile())
+
+        zipFile.withCloseable {
+            assertInZipFile(zipFile, 'main/resources/a.txt')
+            assertInZipFile(zipFile, 'main/kotlin/ch/tutteli/atrium/a.kt')
+        }
+    }
+
     private static String printBintray() {
         return """def bintrayExtension = project.extensions.getByName('bintray')
             println("bintrayExtension.user: \$bintrayExtension.user")
@@ -548,7 +611,10 @@ class PublishPluginIntTest {
     }
 
     private static void assertJarWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
-        assertJarWithLicenseAndManifest(Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs'), jarName, projectName, version, repoUrl, vendor, kotlinVersion)
+        assertJarWithLicenseAndManifest(buildLib(settingsSetup), jarName, projectName, version, repoUrl, vendor, kotlinVersion)
+    }
+    private static Path buildLib(SettingsExtensionObject settingsSetup){
+        return Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs')
     }
 
     private static void assertJarOfSubprojectWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String dirName, String jarName, String subprojectName, String version, String repoUrl, String vendor, String kotlinVersion) {
@@ -558,13 +624,20 @@ class PublishPluginIntTest {
     private static void assertJarWithLicenseAndManifest(Path jarPath, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
         def zipFile = new ZipFile(jarPath.resolve(jarName).toFile())
         zipFile.withCloseable {
-            assertTrue(zipFile.entries().any { it.getName() == 'LICENSE.txt' }, "did not find LICENSE.txt in jar")
-            def manifest = zipFile.getInputStream(zipFile.entries().find {
-                it.getName() == 'META-INF/MANIFEST.MF'
-            } as ZipEntry).text
+            assertInZipFile(zipFile, 'LICENSE.txt')
+            def manifest = zipFile.getInputStream(findInZipFile(zipFile, 'META-INF/MANIFEST.MF')).text
             assertManifest(manifest, ': ', projectName, version, repoUrl, vendor, kotlinVersion)
             assertTrue(manifest.contains("Build-Time: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "manifest build time was not ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}\n${manifest}")
         }
+    }
+
+    private static void assertInZipFile(ZipFile zipFile, String path){
+        assertNotNull(findInZipFile(zipFile, path), "$path not found in $zipFile.name")
+    }
+    private static ZipEntry findInZipFile(ZipFile zipFile, String path){
+        return zipFile.entries().find {
+            it.getName() == path
+        } as ZipEntry
     }
 
     private static void assertManifest(String output, String separator, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {

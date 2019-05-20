@@ -2,10 +2,7 @@ package ch.tutteli.gradle.publish
 
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.BintrayPlugin
-import org.gradle.api.Action
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.api.XmlProvider
+import org.gradle.api.*
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Property
@@ -35,7 +32,16 @@ class PublishPlugin implements Plugin<Project> {
         )
 
         project.tasks.create(name: TASK_NAME_SOURCES_JAR, type: Jar) {
-            from project.sourceSets.main.allSource
+            from("${project.projectDir}/src/main") {
+                into "main"
+            }
+
+            def modulesDir = project.file("$project.projectDir/src/module")
+            if (modulesDir.exists()) {
+                from(modulesDir) {
+                    into("module")
+                }
+            }
             classifier = 'sources'
         }
 
@@ -118,20 +124,22 @@ class PublishPlugin implements Plugin<Project> {
                         def component = extension.component.get()
                         publication.from(component)
 
-                        // Not the best solution only works for component java
-                        if (component == project.components.findByName('java')) {
-                            def jarPub = publication.artifacts.find {
-                                it.file.name.endsWith(project.name + "-" + project.version + ".jar")
-                            }
+                        // it could be we rename the archiveBaseName, thus we remove the jarTask from the publication
+                        // and re-add it again as artifact (for which the name adjustment tasks place)
+                        def jarPub = publication.artifacts.find {
+                            it.file.name.endsWith(project.name + "-" + project.version + ".jar")
+                        }
+                        if (jarPub != null) {
                             publication.artifacts.remove(jarPub)
                             def jarTask = project.tasks.getByName('jar')
-
                             if (!extension.artifacts.get().contains(jarTask)) {
                                 extension.artifacts.add(jarTask)
                             }
                         }
                     }
-                    def artifacts = extension.artifacts.get()
+                    def artifacts = removeKotlinSourcesIfSources(project, extension.artifacts.get())
+//                    artifacts = removeKotlinSourcesIfSources(project, artifacts)
+
                     artifacts.each {
                         if (it instanceof org.gradle.jvm.tasks.Jar) {
                             it.archiveBaseName.set(aId)
@@ -142,6 +150,16 @@ class PublishPlugin implements Plugin<Project> {
                 }
             }
         }
+    }
+
+    private static Set<Task> removeKotlinSourcesIfSources(Project project, Set<Task> artifacts) {
+        def kotlinSourcesJar = project.tasks.findByName('kotlinSourcesJar')
+        return (
+            artifacts.contains(kotlinSourcesJar) &&
+                artifacts.contains(project.tasks.findByName(TASK_NAME_SOURCES_JAR))
+        ) ? artifacts.findAll { it != kotlinSourcesJar }
+            : artifacts
+
     }
 
     private static String determineArtifactId(Project project) {
