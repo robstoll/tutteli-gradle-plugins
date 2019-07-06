@@ -56,10 +56,14 @@ class KotlinUtilsPlugin implements Plugin<Project> {
                 apply plugin: 'kotlin-platform-common'
 
                 compileKotlinCommon {
-                    kotlinOptions.allWarningsAsErrors = true
+                    if (System.getenv('CI')) {
+                        kotlinOptions.allWarningsAsErrors = true
+                    }
                 }
                 compileTestKotlinCommon {
-                    kotlinOptions.allWarningsAsErrors = true
+                    if (System.getenv('CI')) {
+                        kotlinOptions.allWarningsAsErrors = true
+                    }
                 }
 
                 dependencies {
@@ -75,10 +79,14 @@ class KotlinUtilsPlugin implements Plugin<Project> {
                 apply plugin: 'kotlin-platform-js'
 
                 compileKotlin2Js {
-                    kotlinOptions.allWarningsAsErrors = true
+                    if (System.getenv('CI')) {
+                        kotlinOptions.allWarningsAsErrors = true
+                    }
                 }
                 compileTestKotlin2Js {
-                    kotlinOptions.allWarningsAsErrors = true
+                    if (System.getenv('CI')) {
+                        kotlinOptions.allWarningsAsErrors = true
+                    }
                 }
 
                 dependencies {
@@ -110,10 +118,14 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             apply plugin: 'kotlin-platform-jvm'
 
             compileKotlin {
-                kotlinOptions.allWarningsAsErrors = true
+                if (System.getenv('CI')) {
+                    kotlinOptions.allWarningsAsErrors = true
+                }
             }
             compileTestKotlin {
-                kotlinOptions.allWarningsAsErrors = true
+                if (System.getenv('CI')) {
+                    kotlinOptions.allWarningsAsErrors = true
+                }
             }
 
             dependencies {
