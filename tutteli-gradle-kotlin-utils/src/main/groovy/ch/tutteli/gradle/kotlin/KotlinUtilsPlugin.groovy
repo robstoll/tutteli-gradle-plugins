@@ -50,18 +50,20 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.getAndroidProjects = getAndroidProjects
         project.ext.getProjectNameWithoutSuffix = { Project aProject -> getProjectNameWithoutSuffix(aProject) }
 
+        def treatWarningsAsErrors = { Boolean.parseBoolean(System.getenv('CI')) || Boolean.parseBoolean('WARN_AS_ERROR') }
+
         project.ext.configureCommonProjects = {
 
             project.configure(getCommonProjects()) {
                 apply plugin: 'kotlin-platform-common'
 
                 compileKotlinCommon {
-                    if (System.getenv('CI')) {
+                    if (treatWarningsAsErrors()) {
                         kotlinOptions.allWarningsAsErrors = true
                     }
                 }
                 compileTestKotlinCommon {
-                    if (System.getenv('CI')) {
+                    if (treatWarningsAsErrors()) {
                         kotlinOptions.allWarningsAsErrors = true
                     }
                 }
@@ -79,12 +81,12 @@ class KotlinUtilsPlugin implements Plugin<Project> {
                 apply plugin: 'kotlin-platform-js'
 
                 compileKotlin2Js {
-                    if (System.getenv('CI')) {
+                    if (treatWarningsAsErrors()) {
                         kotlinOptions.allWarningsAsErrors = true
                     }
                 }
                 compileTestKotlin2Js {
-                    if (System.getenv('CI')) {
+                    if (treatWarningsAsErrors()) {
                         kotlinOptions.allWarningsAsErrors = true
                     }
                 }
@@ -118,12 +120,12 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             apply plugin: 'kotlin-platform-jvm'
 
             compileKotlin {
-                if (System.getenv('CI')) {
+                if (treatWarningsAsErrors()) {
                     kotlinOptions.allWarningsAsErrors = true
                 }
             }
             compileTestKotlin {
-                if (System.getenv('CI')) {
+                if (treatWarningsAsErrors()) {
                     kotlinOptions.allWarningsAsErrors = true
                 }
             }
