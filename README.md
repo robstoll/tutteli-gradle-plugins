@@ -77,6 +77,8 @@ Following a list of functions it supports:
 - configure projects: `configureCommonProjects`, `configureJsProjects`, `configureJvmProjects`
 - `getCommonProjects()`, `getJsProjects()`, `getJvmProjects()`, `getProjectNameWithoutSuffix(project)`   
 
+Moreover it turns warnings into errors if one of the env variables `CI` or `WARN_AS_ERROR` is set to `true`.
+
 You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.27.2/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
 
 # ch.tutteli.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.publish/0.27.2)
