@@ -50,8 +50,6 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.getAndroidProjects = getAndroidProjects
         project.ext.getProjectNameWithoutSuffix = { Project aProject -> getProjectNameWithoutSuffix(aProject) }
 
-        def treatWarningsAsErrors = { Boolean.parseBoolean(System.getenv('CI')) || Boolean.parseBoolean('WARN_AS_ERROR') }
-
         project.ext.configureCommonProjects = {
 
             project.configure(getCommonProjects()) {
@@ -139,6 +137,11 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             }
         }
     }
+
+    private static boolean treatWarningsAsErrors() {
+        return Boolean.parseBoolean(System.getenv('CI')) || Boolean.parseBoolean('WARN_AS_ERROR')
+    }
+
 
     private static String getKotlinDependency(KotlinUtilsPluginExtension extension, String name) {
         def kotlinVersion = resolveKotlinVersion(extension)
