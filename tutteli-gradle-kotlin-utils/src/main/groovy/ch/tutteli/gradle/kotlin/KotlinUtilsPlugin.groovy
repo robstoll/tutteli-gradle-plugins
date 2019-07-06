@@ -139,7 +139,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
     }
 
     private static boolean treatWarningsAsErrors() {
-        return Boolean.parseBoolean(System.getenv('CI')) || Boolean.parseBoolean('WARN_AS_ERROR')
+        return Boolean.parseBoolean(System.getenv('CI')) || Boolean.parseBoolean(System.getenv('WARN_AS_ERROR'))
     }
 
 
