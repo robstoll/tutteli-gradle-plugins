@@ -6,7 +6,7 @@ buildscript {
         dokka_version = '0.9.18'
         bintray_version = '1.8.4'
 
-        publish_version = '0.9.10'
+        publish_version = '0.10.1'
     }
 
     repositories {
