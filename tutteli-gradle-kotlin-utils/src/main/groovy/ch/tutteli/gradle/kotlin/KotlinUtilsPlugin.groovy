@@ -18,6 +18,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
 
     private void augmentProjectExt(Project project, KotlinUtilsPluginExtension extension) {
         project.ext.kotlinStdlib = { getKotlinDependency(extension, 'stdlib') }
+        project.ext.kotlinStdlibJdk8 = { getKotlinDependency(extension, 'stdlib-jdk8') }
         project.ext.kotlinStdlibJs = { getKotlinDependency(extension, 'stdlib-js') }
         project.ext.kotlinStdlibCommon = { getKotlinDependency(extension, 'stdlib-common') }
         project.ext.kotlinReflect = { getKotlinDependency(extension, 'reflect') }
@@ -42,11 +43,15 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         def getCommonProjects = { getSubprojectsWithSuffix(project, "-common") }
         def getJsProjects = { getSubprojectsWithSuffix(project, "-js") }
         def getJvmProjects = { getSubprojectsWithSuffix(project, "-jvm") }
+        def getJdk8Projects = { getSubprojectsWithSuffix(project, "-jdk8") }
+        def getJdk11Projects = { getSubprojectsWithSuffix(project, "-jdk11") }
         def getAndroidProjects = { getSubprojectsWithSuffix(project, "-android") }
 
         project.ext.getCommonProjects = getCommonProjects
         project.ext.getJsProjects = getJsProjects
         project.ext.getJvmProjects = getJvmProjects
+        project.ext.getJdk8Projects = getJdk8Projects
+        project.ext.getJdk11Projects = getJdk11Projects
         project.ext.getAndroidProjects = getAndroidProjects
         project.ext.getProjectNameWithoutSuffix = { Project aProject -> getProjectNameWithoutSuffix(aProject) }
 
@@ -105,15 +110,33 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         }
 
         project.ext.configureJvmProjects = {
-            configureJvmLikeProjects(project, getJvmProjects())
+            configureJvmLikeProjects(project, getJvmProjects(), project.kotlinStdlib)
+        }
+
+        project.ext.configureJdk8Projects = {
+            configureJvmLikeProjects(project, getJdk8Projects(), project.kotlinStdlibJdk8)
+            project.configure(getJdk8Projects()) {  Project subproject ->
+                compileKotlin {
+                    kotlinOptions.jvmTarget = "1.8"
+                }
+            }
+        }
+
+        project.ext.configureJdk11Projects = {
+            configureJvmLikeProjects(project, getJdk11Projects(), project.kotlinStdlibJdk8)
+            project.configure(getJdk11Projects()) { Project subproject ->
+                compileKotlin {
+                    kotlinOptions.jvmTarget = "11"
+                }
+            }
         }
 
         project.ext.configureAndroidProjects = {
-            configureJvmLikeProjects(project, getAndroidProjects())
+            configureJvmLikeProjects(project, getAndroidProjects(), project.kotlinStdlib)
         }
     }
 
-    private static void configureJvmLikeProjects(Project rootProject, Set<Project> projects){
+    private static void configureJvmLikeProjects(Project rootProject, Set<Project> projects, stlibClosure){
         rootProject.configure(projects) { Project subproject ->
             apply plugin: 'kotlin-platform-jvm'
 
@@ -129,7 +152,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             }
 
             dependencies {
-                compile kotlinStdlib()
+                compile stlibClosure()
                 expectedBy getCommonProject(rootProject, subproject)
 
                 testCompile kotlinTest()
@@ -166,6 +189,8 @@ class KotlinUtilsPlugin implements Plugin<Project> {
     private static String getProjectNameWithoutSuffix(Project subproject){
         def name = subproject.name
         def suffix = name.endsWith('-jvm') ? '-jvm'
+            : name.endsWith('-jdk8') ? '-jdk8'
+            : name.endsWith('-jdk11') ? '-jdk11'
             : name.endsWith('-js') ? '-js'
             : name.endsWith('-android') ? '-android'
             : null
@@ -179,6 +204,8 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             createBuildTask(project, 'buildAllAndroid', '-android')
             createBuildTask(project, 'buildAllJs', '-js')
             createBuildTask(project, 'buildAllJvm', '-jvm')
+            createBuildTask(project, 'buildAllJdk8', '-jdk8')
+            createBuildTask(project, 'buildAllJdk11', '-jdk11')
             createBuildTask(project, 'buildAllCommon', '-common')
         }
     }

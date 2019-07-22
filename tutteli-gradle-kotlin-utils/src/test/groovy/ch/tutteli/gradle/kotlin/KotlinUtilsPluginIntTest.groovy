@@ -27,6 +27,10 @@ class KotlinUtilsPluginIntTest {
         include 'test2-jvm'
         include 'test1-android'
         include 'test2-android'
+        include 'test1-jdk8'
+        include 'test2-jdk8'
+        include 'test1-jdk11'
+        include 'test2-jdk11'
         """
 
     @Test
@@ -108,6 +112,10 @@ class KotlinUtilsPluginIntTest {
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk11")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk11")
 
         def result = gradleRunner
             .withArguments("help")
@@ -131,6 +139,10 @@ class KotlinUtilsPluginIntTest {
 
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk11")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk11")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
     }
@@ -151,6 +163,58 @@ class KotlinUtilsPluginIntTest {
 
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-js")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk11")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk11")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
+    }
+
+    @Test
+    void configureCommonAndJdk8Projects(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJdk8Projects()"
+        //act
+        def gradleRunner = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test1-common")
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test2-common")
+        executeDependenciesAndAssertCommonAndJdk8(gradleRunner, ":test1")
+        executeDependenciesAndAssertCommonAndJdk8(gradleRunner, ":test2")
+
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-js")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk11")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk11")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
+    }
+
+    @Test
+    void configureCommonAndJdk11Projects(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJdk11Projects()"
+        //act
+        def gradleRunner = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test1-common")
+        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test2-common")
+        executeDependenciesAndAssertCommonAndJdk11(gradleRunner, ":test1")
+        executeDependenciesAndAssertCommonAndJdk11(gradleRunner, ":test2")
+
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-js")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk8")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
     }
@@ -173,10 +237,14 @@ class KotlinUtilsPluginIntTest {
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk11")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk11")
     }
 
     @Test
-    void configureCommonJsAndJvmProjects(SettingsExtensionObject settingsSetup) throws IOException {
+    void configureCommonJsAndAndroidProjects(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
         settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects() \n configureAndroidProjects()"
@@ -194,10 +262,14 @@ class KotlinUtilsPluginIntTest {
 
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk11")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk11")
     }
 
     @Test
-    void configureCommonJsAndAndroidProjects(SettingsExtensionObject settingsSetup) throws IOException {
+    void configureCommonJsAndJvmProjects(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
         settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects()\n configureJsProjects() \n configureJvmProjects()"
@@ -212,6 +284,13 @@ class KotlinUtilsPluginIntTest {
         executeDependenciesAndAssertCommonAndJs(gradleRunner, ":test2")
         executeDependenciesAndAssertCommonAndJvm(gradleRunner, ":test1")
         executeDependenciesAndAssertCommonAndJvm(gradleRunner, ":test2")
+
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk8")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jdk11")
+        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jdk11")
     }
 
     @Test
@@ -421,6 +500,14 @@ class KotlinUtilsPluginIntTest {
         executeDependenciesAndAssertCommonAnd(gradleRunner, prefix, "-jvm", "stdlib", "stdlib-js")
     }
 
+    private static void executeDependenciesAndAssertCommonAndJdk8(GradleRunner gradleRunner, String prefix) {
+        executeDependenciesAndAssertCommonAnd(gradleRunner, prefix, "-jdk8", "stdlib-jdk8", "stdlib-js")
+    }
+
+    private static void executeDependenciesAndAssertCommonAndJdk11(GradleRunner gradleRunner, String prefix) {
+        executeDependenciesAndAssertCommonAnd(gradleRunner, prefix, "-jdk11", "stdlib-jdk8", "stdlib-js")
+    }
+
     private static void executeDependenciesAndAssertCommonAndAndroid(GradleRunner gradleRunner, String prefix) {
         executeDependenciesAndAssertCommonAnd(gradleRunner, prefix, "-android", "stdlib", "stdlib-js")
     }
@@ -456,7 +543,7 @@ class KotlinUtilsPluginIntTest {
                 .withArguments(subproject + ":dependencies")
                 .build()
         } catch (UnexpectedBuildFailure ex) {
-            assertTrue(ex.message.contains("Project 'dependencies ' not found in project '$subproject'."))
+            assertTrue(ex.message.contains("Project 'dependencies ' not found in project '$subproject'."), ex.message)
         }
     }
 }
