@@ -2,25 +2,23 @@ package ch.tutteli.gradle.junitjacoco
 
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.provider.Property
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
-import org.junit.platform.gradle.plugin.JUnitPlatformExtension
 
 class JunitJacocoPluginExtension {
-    private Task junitPlatformTestTask
     private JacocoPluginExtension jacocoPluginExtension
     private JacocoReport jacocoReportTask
-    private JUnitPlatformExtension junitPlatformExtension
 
+    /**
+     * @deprecated Use the gradle API instead: test { reports { junitXml { enabled = false }}}
+     */
+    @Deprecated(/*since = "0.28.0"*/)
     Property<Boolean> enableJunitReport
 
-    JunitJacocoPluginExtension(Project project, Task junitPlatformTestTask) {
-        this.junitPlatformTestTask = junitPlatformTestTask
+    JunitJacocoPluginExtension(Project project) {
         this.jacocoPluginExtension = project.extensions.getByType(JacocoPluginExtension)
-        this.jacocoReportTask = project.task(type: JacocoReport, JunitJacocoPlugin.REPORT_TASK_NAME) as JacocoReport
-        this.junitPlatformExtension = project.extensions.getByType(JUnitPlatformExtension)
+        this.jacocoReportTask = project.tasks.getByName(JunitJacocoPlugin.JACOCO_TASK_NAME) as JacocoReport
         this.enableJunitReport = project.objects.property(Boolean)
         this.enableJunitReport.set(false)
         project.check.dependsOn jacocoReportTask
@@ -29,16 +27,12 @@ class JunitJacocoPluginExtension {
 
     private void defaultConfig() {
 
-        //necessary that it is accessible within the closure without the need of a public getter
-        def junitTask = junitPlatformTestTask
         jacoco {
             toolVersion = '0.8.3'
-            applyTo junitTask
         }
 
-        jacocoReport {
+        jacocoReportTask.configure {
             sourceSets project.sourceSets.main
-            executionData junitTask
             reports {
                 csv.enabled = false
                 csv.destination project.file("${project.jacoco.reportsDir}/report.csv")
@@ -54,11 +48,11 @@ class JunitJacocoPluginExtension {
         configure.execute(jacocoPluginExtension)
     }
 
+    /**
+     * @deprecated Use the gradle API instead: jacocoTestReport {...}
+     */
+    @Deprecated(/*since = "0.28.0"*/)
     void jacocoReport(Action<JacocoReport> configure) {
         configure.execute(jacocoReportTask)
-    }
-
-    void junitPlatform(Action<JUnitPlatformExtension> configure) {
-        configure.execute(junitPlatformExtension)
     }
 }

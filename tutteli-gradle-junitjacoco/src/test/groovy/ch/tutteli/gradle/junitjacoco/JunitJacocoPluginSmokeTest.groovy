@@ -2,9 +2,11 @@ package ch.tutteli.gradle.junitjacoco
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.junit.jupiter.api.Test
 
-import static ch.tutteli.gradle.junitjacoco.JunitJacocoPlugin.*
+import static ch.tutteli.gradle.junitjacoco.JunitJacocoPlugin.getEXTENSION_NAME
+import static ch.tutteli.gradle.junitjacoco.JunitJacocoPlugin.getJACOCO_TASK_NAME
 import static org.junit.jupiter.api.Assertions.*
 
 class JunitJacocoPluginSmokeTest {
@@ -17,17 +19,14 @@ class JunitJacocoPluginSmokeTest {
         project.plugins.apply(JunitJacocoPlugin)
         //assert
         assertNotNull(project.extensions.getByName(EXTENSION_NAME), EXTENSION_NAME)
-        assertNotNull(project.extensions.getByName('junitPlatform'), 'junitPlatform')
-        def junitPlatformTestTask = project.tasks.getByName(JUNIT_TASK_NAME)
 
         assertNotNull(project.extensions.getByName('jacoco'), 'jacoco')
-        def jacocoReport = project.tasks.getByName(REPORT_TASK_NAME)
-        assertTrue(jacocoReport.reports.xml.enabled as Boolean, 'jacoco xml report is enabled by default')
-        assertFalse(jacocoReport.reports.csv.enabled as Boolean, 'jacoco csv report is disabled by default')
-        assertFalse(jacocoReport.reports.html.enabled as Boolean, 'jacoco html report is disabled by default')
+        def jacocoReport = project.tasks.getByName(JACOCO_TASK_NAME) as JacocoReport
+        assertTrue(jacocoReport.reports.xml.enabled, 'jacoco xml report is enabled by default')
+        assertFalse(jacocoReport.reports.csv.enabled, 'jacoco csv report is disabled by default')
+        assertFalse(jacocoReport.reports.html.enabled, 'jacoco html report is disabled by default')
 
         project.evaluate()
-        assertTrue(junitPlatformTestTask.args.size > 1, "$JUNIT_TASK_NAME was evaluated (has args)")
-        assertTrue(junitPlatformTestTask.args.indexOf(ARG_REPORTS_DIR) == -1, "$ARG_REPORTS_DIR is absent per default")
+        assertFalse(project.test.reports.junitXml.enabled, "junitXml report is disabled per default")
     }
 }

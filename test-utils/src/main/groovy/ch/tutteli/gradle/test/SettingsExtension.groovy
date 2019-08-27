@@ -33,6 +33,7 @@ class SettingsExtensionObject {
 
     String buildscriptWithKotlin(String kotlinVersion) {
         return """
+        import org.gradle.api.tasks.testing.logging.TestLogEvent
         buildscript {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
@@ -41,6 +42,20 @@ class SettingsExtensionObject {
             }
         }
         """
+    }
+
+
+    String configureTestLogging() {
+        return """
+            tasks.withType(Test) {
+                testLogging {
+                    events TestLogEvent.FAILED,
+                        TestLogEvent.PASSED,
+                        TestLogEvent.SKIPPED,
+                        TestLogEvent.STANDARD_OUT
+                }
+            }
+            """
     }
 }
 

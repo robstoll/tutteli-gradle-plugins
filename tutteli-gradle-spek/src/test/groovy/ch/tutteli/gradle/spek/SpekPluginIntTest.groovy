@@ -23,6 +23,7 @@ class SpekPluginIntTest {
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.spek'
         spek.version = '1.1.5'
+        ${settingsSetup.configureTestLogging()}
         """
         File kotlin = new File(settingsSetup.tmp, 'src/test/kotlin/')
         kotlin.mkdirs()
@@ -50,12 +51,12 @@ class SpekPluginIntTest {
                 ":jar",
                 ":assemble",
                 ":compileTestKotlin",
-                ":junitPlatformTest",
-                ":junitPlatformJacocoReport",
+                ":test",
+                ":jacocoTestReport",
                 ":check",
                 ":build"
             ],
-            [":test"],
+            [],
             [":classes", ":testClasses"]
         )
     }
@@ -71,6 +72,7 @@ class SpekPluginIntTest {
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.spek'
         spek.version = '2.0.4'
+        ${settingsSetup.configureTestLogging()}
         """
         File kotlin = new File(settingsSetup.tmp, 'src/test/kotlin/')
         kotlin.mkdirs()
@@ -100,12 +102,12 @@ class SpekPluginIntTest {
                 ":jar",
                 ":assemble",
                 ":compileTestKotlin",
-                ":junitPlatformTest",
-                ":junitPlatformJacocoReport",
+                ":test",
+                ":jacocoTestReport",
                 ":check",
                 ":build"
             ],
-            [":test"],
+            [],
             [":classes", ":testClasses"]
         )
     }
