@@ -33,7 +33,7 @@ class JunitJacocoPluginExtension {
             toolVersion = '0.8.3'
         }
 
-        jacocoReportTask.configure {
+        jacocoReport {
             sourceSets project.sourceSets.main
             reports {
                 csv.enabled = false

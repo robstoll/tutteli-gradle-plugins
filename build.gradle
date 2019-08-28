@@ -67,7 +67,7 @@ configure(pluginProjects) {
         //enable or disable junit xml (disabled by default, enable it as follows)
         enableJunitReport = true
 
-        //allows to configure the JacocoReportTask
+        //delegates to jacocoTestReport (just for your convenience, everything in one place)
         jacocoReport {
             reports {
                 html.enabled = true
