@@ -16,5 +16,4 @@ dependencies {
      * Short for `compile project(":${rootProject.name}-junitjacoco")`
      */
     implementation prefixedProject('junitjacoco')
-    implementation "org.junit.platform:junit-platform-gradle-plugin:$junit_platform_version"
 }
