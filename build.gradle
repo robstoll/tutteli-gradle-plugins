@@ -6,6 +6,7 @@ buildscript {
         bintray_version = '1.8.4'
 
         publish_version = '0.10.1'
+        jacoco_toolVersion = '0.8.4'
     }
 
     repositories {
@@ -18,6 +19,17 @@ buildscript {
     }
 }
 
+configurations {
+    dependABot
+}
+
+dependencies {
+    dependABot "org.junit:junit5-engine:$junit_version"
+    dependABot "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    dependABot "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
+    dependABot "com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintray_version"
+    dependABot "org.jacoco:jacoco:$jacoco_toolVersion"
+}
 
 buildscript {
     ext.error = false
@@ -49,7 +61,7 @@ subprojects {
     repositories {
         mavenCentral()
         jcenter()
-        maven{ url "https://dl.bintray.com/mockito/maven" }
+        maven { url "https://dl.bintray.com/mockito/maven" }
     }
 }
 
