@@ -49,8 +49,9 @@ class JunitJacocoPluginExtension {
         project.tasks.withType(Test) {
             testLogging {
                 events  TestLogEvent.FAILED,
-                        TestLogEvent.SKIPPED
-                        TestLogEvent.STANDARD_OUT
+                        TestLogEvent.SKIPPED,
+                        TestLogEvent.STANDARD_OUT,
+                        TestLogEvent.STANDARD_ERROR
                 exceptionFormat TestExceptionFormat.FULL
                 showExceptions true
                 showCauses true
