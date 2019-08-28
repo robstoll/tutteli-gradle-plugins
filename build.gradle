@@ -1,7 +1,6 @@
 buildscript {
     ext {
         junit_version = '5.5.1'
-        junit_platform_version = '1.2.0'
         kotlin_version = '1.3.31'
         dokka_version = '0.9.18'
         bintray_version = '1.8.4'
@@ -68,7 +67,7 @@ configure(pluginProjects) {
         //enable or disable junit xml (disabled by default, enable it as follows)
         enableJunitReport = true
 
-        //allows to configure the JacocoReportTask
+        //delegates to jacocoTestReport (just for your convenience, everything in one place)
         jacocoReport {
             reports {
                 html.enabled = true
@@ -80,10 +79,13 @@ configure(pluginProjects) {
             //e.g. set the version to a different version than the default
             //toolVersion = '0.8.3'
         }
+    }
 
-        //delegates to the junitPlatform extension (just for your convenience, everything in one place)
-        junitPlatform {
-            reportsDir = file("${buildDir}/reports/junit")
+    test {
+        reports {
+            html {
+                destination = file("${buildDir}/reports/junit")
+            }
         }
     }
 }

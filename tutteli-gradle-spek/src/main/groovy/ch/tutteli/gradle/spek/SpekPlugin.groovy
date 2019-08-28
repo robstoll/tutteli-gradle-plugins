@@ -5,13 +5,13 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.UnknownPluginException
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
-import org.junit.platform.gradle.plugin.JUnitPlatformExtension
 
 class SpekPluginExtension {
     String version = '2.0.4'
 }
 
 class SpekPlugin implements Plugin<Project> {
+    static final String JUNIT_PLATFORM_VERSION = "5.5.1"
     static final String EXTENSION_NAME = 'spek'
     protected static
     final String ERR_KOTLIN_PLUGIN = "You need to apply a JVM compliant kotlin plugin before applying the ch.tutteli.spek plugin." +
@@ -32,12 +32,12 @@ class SpekPlugin implements Plugin<Project> {
         project.afterEvaluate {
             String spekVersion = extension.version
             boolean isVersion1 = spekVersion.startsWith("1")
-            project.extensions.getByType(JUnitPlatformExtension).filters {
-                engines {
+            project.test {
+                options {
                     if (isVersion1) {
-                        include 'spek'
+                        includeEngines 'spek'
                     } else {
-                        include 'spek2'
+                        includeEngines 'spek2'
                     }
                 }
             }
@@ -53,6 +53,7 @@ class SpekPlugin implements Plugin<Project> {
                     }
 
                     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+                    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$JUNIT_PLATFORM_VERSION"
                     testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion" //spek requires reflect
 
                 } else {

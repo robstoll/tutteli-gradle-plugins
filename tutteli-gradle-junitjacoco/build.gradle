@@ -3,11 +3,7 @@ buildscript {
         plugin_id = 'ch.tutteli.junitjacoco'
         plugin_class = 'ch.tutteli.gradle.junitjacoco.JunitJacocoPlugin'
         plugin_name = 'Tutteli Jacoco Plugin'
-        plugin_description = 'Applies the junit5 platform plugin and binds jacoco to it.'
+        plugin_description = 'Sets up JaCoCo for the JUnit 5 Platform'
         plugin_tags = ['jacoco', 'junit']
     }
-}
-
-dependencies {
-    implementation "org.junit.platform:junit-platform-gradle-plugin:$junit_platform_version"
 }
