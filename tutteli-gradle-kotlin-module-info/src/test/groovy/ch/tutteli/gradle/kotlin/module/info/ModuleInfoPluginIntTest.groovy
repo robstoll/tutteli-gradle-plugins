@@ -41,7 +41,6 @@ class ModuleInfoPluginIntTest {
         assertTrue(result.output.contains("source set 'module'"), "should contain source set 'module':\n$result.output")
     }
 
-
     @Test
     void moduleInfoInSubprojectFails(SettingsExtensionObject settingsSetup) throws IOException {
         //not for jdk8
@@ -54,7 +53,6 @@ class ModuleInfoPluginIntTest {
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':sub1:compileKotlin'"), ":sub1:compileKotlin did not fail.\n$exception.message")
         assertTrue(exception.message.contains('Unresolved reference: atrium'), "not atrium was the problem.\n$exception.message")
     }
-
 
     @Test
     void moduleInfoInSubprojectSucceeds(SettingsExtensionObject settingsSetup) {
