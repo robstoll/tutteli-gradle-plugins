@@ -58,6 +58,12 @@ subprojects {
     version = rootProject.version
     group = rootProject.group
 
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+
     repositories {
         mavenCentral()
         jcenter()
@@ -194,7 +200,6 @@ task removeRepo(type: Delete) {
     }
     project.compileGroovy.dependsOn generateHardCodedDependencies
 }
-
 
 /*
 Release & deploy
