@@ -5,7 +5,7 @@ build:
 
 build_script:
   - gr.bat assemble --no-daemon
-  - gr.bat -i repo --no-daemon
+  - gr.bat repo --no-daemon
 
 test_script:
   - gr.bat build --no-daemon
