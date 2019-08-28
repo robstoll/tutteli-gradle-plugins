@@ -1,13 +1,14 @@
 package ch.tutteli.gradle.junitjacoco
 
+import ch.tutteli.gradle.junitjacoco.generated.Dependencies
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.testing.Test
-import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
-import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
+import org.gradle.testing.jacoco.tasks.JacocoReport
 
 class JunitJacocoPluginExtension {
     private JacocoPluginExtension jacocoPluginExtension
@@ -30,7 +31,7 @@ class JunitJacocoPluginExtension {
 
     private void defaultConfig(Project project) {
         jacoco {
-            toolVersion = '0.8.3'
+            toolVersion = Dependencies.jacoco_toolsVersion
         }
 
         jacocoReport {

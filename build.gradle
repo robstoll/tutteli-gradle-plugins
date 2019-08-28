@@ -173,6 +173,29 @@ task removeRepo(type: Delete) {
     delete gradle.ext.repo
 }
 
+[
+    'junitjacoco',
+    'spek',
+].each { projectName ->
+    Project project = project(":tutteli-gradle-$projectName")
+    def generateHardCodedDependencies = project.task('generateHardCodedDependencies', group: 'build') {
+        doLast {
+            def folder = new File("${project.projectDir}/src/main/groovy/ch/tutteli/gradle/$projectName/generated")
+            mkdir folder
+            new File(folder, "Dependencies.groovy").text =
+                """package ch.tutteli.gradle.${projectName}.generated
+                |
+                |class Dependencies {
+                |   public static final jacoco_toolsVersion = '$project.jacoco_toolVersion'
+                |   public static final junit_version = '$project.junit_version'
+                |}
+                """.stripMargin('|')
+        }
+    }
+    project.compileGroovy.dependsOn generateHardCodedDependencies
+}
+
+
 /*
 Release & deploy
 ----------------
