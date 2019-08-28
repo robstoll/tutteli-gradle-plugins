@@ -2,6 +2,7 @@ package ch.tutteli.gradle.junitjacoco
 
 import ch.tutteli.gradle.junitjacoco.generated.Dependencies
 import org.gradle.api.Action
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.testing.Test
@@ -56,6 +57,15 @@ class JunitJacocoPluginExtension {
                 showExceptions true
                 showCauses true
                 showStackTraces true
+            }
+
+            afterSuite { desc, result ->
+                if (!desc.parent) {
+                    if (result.testCount == 0) {
+                        throw new GradleException("No tests executed, most likely the discovery failed.")
+                    }
+                    println("Result: ${result.resultType} (${result.successfulTestCount} suceeded, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)")
+                }
             }
         }
     }
