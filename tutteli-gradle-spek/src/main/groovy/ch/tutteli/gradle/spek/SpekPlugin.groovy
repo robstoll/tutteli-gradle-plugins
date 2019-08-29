@@ -8,7 +8,7 @@ import org.gradle.api.plugins.UnknownPluginException
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 
 class SpekPluginExtension {
-    String version = '2.0.4'
+    String version = Dependencies.spek_version
 }
 
 class SpekPlugin implements Plugin<Project> {
