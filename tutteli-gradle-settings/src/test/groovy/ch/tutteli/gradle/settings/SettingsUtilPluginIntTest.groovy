@@ -50,7 +50,15 @@ class SettingsUtilPluginIntTest {
                                              // "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
 
                 subfolder {                  // defines that the following projects are in folder apis/subfolder
-                    five                     // same as four but projectDir base path is \${rootProject.projectDir}/apis/subfolder     
+                    five                     // same as four but projectDir base path is \${rootProject.projectDir}/apis/subfolder
+                
+                    dsl('dsl-') {            // defines that the following projects are in folder `dsl` 
+                                             // and all prefixed projects are additionally prefixed with `dsl-` 
+                                             // (resulting in a prefix of `api-dsl-`)
+                                             
+                        six                  // same as five but projectDir base path is 
+                                             // \${rootProject.projectDir}/apis/subfolder/dsl                                                
+                    }
                 }
             }
 
@@ -85,7 +93,7 @@ class SettingsUtilPluginIntTest {
             .withArguments("projects")
             .build()
         //assert
-        assertProjectOneTwoFiveInOutput(result)
+        assertProjectOneTwoSixInOutput(result)
         assertJvmJsInOutput(result, ':test-project-core')
         assertJvmJsInOutput(result, ':test-project-domain')
         assertJvmJsAndroidInOutput(result, ':test-project-ui')
@@ -126,26 +134,33 @@ class SettingsUtilPluginIntTest {
                                                 // and it sets `project.projectDir` to: 
                                                 // "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
                 
-                folder ('subfolder') {
+                folder('subfolder') {
                     prefixed 'five'             // same as four but `project.projectDir` is 
                                                 // \${rootProject.projectDir}/api/subfolder/\${rootProject.name}-api-five 
+                    folder('dsl', 'dsl-') {     // defines that the following projects are in folder `dsl` 
+                                                // and all prefixed projects are additionally prefixed with `dsl-` 
+                                                // (resulting in a prefix of `api-dsl-`)
+                                                
+                        prefixed 'six'          // same as five but projectDir base path is
+                                                // \${rootProject.projectDir}/apis/subfolder/dsl
+                    }
                 }
                 
-                project 'six'                   // short for `include ":six"` => additional prefix is ignored
+                project 'seven'                   // short for `include ":six"` => additional prefix is ignored
                                                 // and it sets `project.projectDir` to:
-                                                // "\${rootProject.projectDir}/apis/six"
+                                                // "\${rootProject.projectDir}/apis/six"                                                
             }
             
             folder ('test') {
-                project 'seven'                 // short for `include ":seven"`
+                project 'eight'                 // short for `include ":seven"`
                                                 // and it sets `project.projectDir` to:
                                                 // "\${rootProject.projectDir}/test/seven"
                                       
-                project ('seven', 'eight')      // also here, you can define multiple projects
+                project ('eight', 'nine')      // also here, you can define multiple projects
             }
             
-            project 'nine'                      // short for `include ":eight"`
-            project ('nine', 'ten')             // also here, you can define multiple projects
+            project 'ten'                      // short for `include ":eight"`
+            project ('ten', 'eleven')             // also here, you can define multiple projects
             
             kotlinJvmJs('core', 'core-')        // defines three projects which are contained in folder 'core' and are 
                                                 // additionally prefixed with 'core-' named 'common', 'js' and 'jvm'
@@ -164,11 +179,12 @@ class SettingsUtilPluginIntTest {
             .withArguments("projects")
             .build()
         //assert
-        assertProjectOneTwoFiveInOutput(result)
-        assertProjectInOutput(result, ':six')
+        assertProjectOneTwoSixInOutput(result)
         assertProjectInOutput(result, ':seven')
         assertProjectInOutput(result, ':eight')
         assertProjectInOutput(result, ':nine')
+        assertProjectInOutput(result, ':ten')
+        assertProjectInOutput(result, ':eleven')
         assertJvmJsInOutput(result, ':test-project-core')
         assertJvmJsInOutput(result, ':test-project-domain')
         assertStatusOk(result)
@@ -217,19 +233,26 @@ class SettingsUtilPluginIntTest {
         includePrefixedInFolder('apis/subfolder', 'api-five')
         
         /**
-         * Shortcut for `include ":six"`
+         * Shortcut for `include ":\${rootProject.name}-api-dsl-six"`
          * and it sets `project.projectDir` accordingly: 
-         * "\${rootProject.projectDir}/apis/six"
+         * "\${rootProject.projectDir}/apis/subfolder/dsl/\${rootProject.name}-api-dsl-six"
          */
-        includeCustomInFolder('apis', 'six')
+        includePrefixedInFolder('apis/subfolder/dsl', 'api-dsl-six')
         
         /**
-         * Shortcut for `include(":six", ":seven")`
+         * Shortcut for `include ":seven"`
          * and it sets `project.projectDir` accordingly: 
-         * "\${rootProject.projectDir}/test/seven"    and
-         * "\${rootProject.projectDir}/test/eight"
+         * "\${rootProject.projectDir}/apis/seven"
          */
-        includeCustomInFolder('test', 'seven', 'eight')
+        includeCustomInFolder('apis', 'seven')
+        
+        /**
+         * Shortcut for `include(":eight", ":nine")`
+         * and it sets `project.projectDir` accordingly: 
+         * "\${rootProject.projectDir}/test/eight"    and
+         * "\${rootProject.projectDir}/test/nine"
+         */
+        includeCustomInFolder('test', 'eight', 'nine')
         """
         //act
         def result = GradleRunner.create()
@@ -237,9 +260,10 @@ class SettingsUtilPluginIntTest {
             .withArguments("projects")
             .build()
         //assert
-        assertProjectOneTwoFiveInOutput(result)
-        assertProjectInOutput(result, ':six')
+        assertProjectOneTwoSixInOutput(result)
         assertProjectInOutput(result, ':seven')
+        assertProjectInOutput(result, ':eight')
+        assertProjectInOutput(result, ':nine')
         assertStatusOk(result)
     }
 
@@ -249,11 +273,12 @@ class SettingsUtilPluginIntTest {
         new File(tmp, 'test/test-project-three').mkdirs()
         new File(tmp, 'apis/test-project-api-four').mkdirs()
         new File(tmp, 'apis/subfolder/test-project-api-five').mkdirs()
-        new File(tmp, 'apis/six').mkdir()
-        new File(tmp, 'test/seven').mkdir()
+        new File(tmp, 'apis/subfolder/dsl/test-project-api-dsl-six').mkdirs()
+        new File(tmp, 'apis/seven').mkdir()
         new File(tmp, 'test/eight').mkdir()
-        new File(tmp, 'nine').mkdir()
+        new File(tmp, 'test/nine').mkdir()
         new File(tmp, 'ten').mkdir()
+        new File(tmp, 'eleven').mkdir()
         new File(tmp, 'core').mkdir()
         new File(tmp, 'core/test-project-core-common').mkdir()
         new File(tmp, 'core/test-project-core-js').mkdir()
@@ -274,12 +299,13 @@ class SettingsUtilPluginIntTest {
         new File(tmp, 'web/test-project-web-jvm').mkdir()
     }
 
-    private static void assertProjectOneTwoFiveInOutput(BuildResult result) {
+    private static void assertProjectOneTwoSixInOutput(BuildResult result) {
         assertProjectInOutput(result, ':test-project-one')
         assertProjectInOutput(result, ':test-project-two-with-slash')
         assertProjectInOutput(result, ':test-project-three')
         assertProjectInOutput(result, ':test-project-api-four')
         assertProjectInOutput(result, ':test-project-api-five')
+        assertProjectInOutput(result, ':test-project-api-dsl-six')
     }
 
     private static assertStatusOk(BuildResult result) {
