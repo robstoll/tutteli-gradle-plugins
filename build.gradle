@@ -7,7 +7,7 @@ buildscript {
         spek_version = '2.0.6'
 
         publish_version = '0.10.1'
-        jacoco_toolVersion = '0.8.4'
+        jacoco_toolVersion = '0.8.5'
     }
 
     repositories {
