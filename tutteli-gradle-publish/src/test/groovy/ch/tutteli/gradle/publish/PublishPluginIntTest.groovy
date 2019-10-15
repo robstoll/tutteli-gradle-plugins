@@ -454,7 +454,14 @@ class PublishPluginIntTest {
             "</license>$NL_INDENT" +
             "</licenses"
         )
-        assertContainsRegex(pom, "developers", "<developers/>")
+        assertContainsRegex(pom, "developers", "<developers>$NL_INDENT" +
+            "<developer>$NL_INDENT" +
+            "<id>robstoll</id>$NL_INDENT" +
+            "<name>Robert Stoll</name>$NL_INDENT" +
+            "<email>rstoll@tutteli.ch</email>$NL_INDENT" +
+            "<url>https://tutteli.ch</url>$NL_INDENT" +
+            "</developer>$NL_INDENT" +
+            "</developers>")
         assertContainsRegex(pom, "dependencies", "<dependencies>$NL_INDENT" +
             "<dependency>$NL_INDENT" +
             "<groupId>$groupId</groupId>$NL_INDENT" +

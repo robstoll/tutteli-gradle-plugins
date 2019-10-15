@@ -67,6 +67,12 @@ class PublishPluginExtension {
             githubUser.set('robstoll')
             bintrayRepo.set('tutteli-jars')
             manifestVendor.set('tutteli.ch')
+            def dev = new Developer()
+            dev.id = "robstoll"
+            dev.name = "Robert Stoll"
+            dev.email = "rstoll@tutteli.ch"
+            dev.url = "https://tutteli.ch"
+            developers.add(dev)
         }
 
         // reset group of sub-projects
