@@ -26,11 +26,19 @@ class SetUp {
         project.version = VERSION
         project.group = GROUP_ID
         project.description = DESCRIPTION
+
+        project.ext {
+            gpgPassphrase = 'test'
+            gpgKeyRing = 'test'
+            gpgKeyId = 'test'
+        }
+
         pluginApplier.execute(project)
         project.plugins.apply(PublishPlugin)
         PublishPluginExtension extension = getPluginExtension(project)
         extension.githubUser.set(GITHUB_USER)
         extension.bintrayPkg.set('atrium')
+
         //extension.bintrayRepo already set because it is a ch.tutteli project
         def bintray = getBintrayExtension(project)
         bintray.user = 'user'

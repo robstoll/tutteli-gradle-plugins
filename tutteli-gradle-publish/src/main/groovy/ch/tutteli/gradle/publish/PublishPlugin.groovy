@@ -6,9 +6,12 @@ import org.gradle.api.*
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Property
+import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.plugins.signing.SigningExtension
+import org.gradle.plugins.signing.SigningPlugin
 
 import static ch.tutteli.gradle.publish.Validation.*
 
@@ -18,12 +21,15 @@ class PublishPlugin implements Plugin<Project> {
     static final String TASK_NAME_INCLUDE_TIME = 'includeBuildTimeInManifest'
     static final String TASK_NAME_PUBLISH_TO_BINTRAY = 'publishToBintray'
     static final String TASK_NAME_SOURCES_JAR = 'sourcesJar'
-    static final String TASK_NAME_VALIDATE = 'validateBeforePublishToBintray'
+    static final String TASK_NAME_VALIDATE_PUBLISH = 'validateBeforePublish'
+    static final String TASK_NAME_VALIDATE_UPLOAD = 'validateBeforeUploadToBintray'
+    static final String TASK_GENERATE_POM = 'generatePomFileForTutteliPublication'
 
     @Override
     void apply(Project project) {
         project.plugins.apply(MavenPublishPlugin)
         project.plugins.apply(BintrayPlugin)
+        project.plugins.apply(SigningPlugin)
 
         if (!project.hasProperty('sourceSets')) throw new IllegalStateException(
             "The project $project.name does not have any sources. We currently require a project to have sources in order to publish it." +
@@ -42,12 +48,12 @@ class PublishPlugin implements Plugin<Project> {
                     into("module")
                 }
             }
-            classifier = 'sources'
+            archiveClassifier.set('sources')
         }
 
         def extension = project.extensions.create(EXTENSION_NAME, PublishPluginExtension, project)
 
-        def validateBeforePublish = project.tasks.create(name: TASK_NAME_VALIDATE, type: ValidateBeforePublishTask)
+        def validateBeforePublish = project.tasks.create(name: TASK_NAME_VALIDATE_PUBLISH, type: ValidateBeforePublishTask)
         validateBeforePublish.project = project
         validateBeforePublish.extension = extension
 
@@ -59,15 +65,20 @@ class PublishPlugin implements Plugin<Project> {
                     .each { augmentManifest(it, project, extension) }
             }
         }
+        includeBuildTime.dependsOn validateBeforePublish
+        project.tasks.getByName('jar').mustRunAfter(includeBuildTime)
+
+        def validateBeforeUpload = project.tasks.create(name: TASK_NAME_VALIDATE_UPLOAD, type: ValidateBeforeUploadTask)
+        validateBeforeUpload.project = project
+        validateBeforeUpload.extension = extension
 
         project.tasks.create(name: TASK_NAME_PUBLISH_TO_BINTRAY) {
             def bintrayUpload = project.tasks.getByName('bintrayUpload')
-            dependsOn validateBeforePublish
             dependsOn includeBuildTime
+            dependsOn validateBeforeUpload
             dependsOn bintrayUpload
-
-            includeBuildTime.mustRunAfter(validateBeforePublish)
             bintrayUpload.mustRunAfter(includeBuildTime)
+            bintrayUpload.mustRunAfter(validateBeforeUpload)
         }
 
         project.afterEvaluate {
@@ -84,11 +95,23 @@ class PublishPlugin implements Plugin<Project> {
             def bintrayExtension = project.extensions.getByType(BintrayExtension)
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayUser, "envNameBintrayUser")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayApiKey, "envNameBintrayApiKey")
-            requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayGpgPassphrase, "envNameBintrayGpgPassphrase")
             requireSetOnBintrayExtensionOrProperty(bintrayExtension.pkg.repo, extension.bintrayRepo, "bintrayRepo")
+
+            requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgPassphrase, "envNameGpgPassphrase")
+            requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgKeyId, "envNameGpgKeyId")
+            requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgKeyRing, "envNameGpgSecretKeyRingFile")
+            requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgSigningKey, "envNameGpgSigningKey")
 
             configurePublishing(project, extension)
             configureBintray(project, extension, bintrayExtension)
+
+            def generatePom = project.tasks.getByName(TASK_GENERATE_POM)
+            generatePom.dependsOn(includeBuildTime)
+
+            def signingExtension = project.extensions.getByType(SigningExtension)
+            signingExtension.sign((project.publishing.publications as PublicationContainer).getByName('tutteli'))
+            def signTask = project.tasks.getByName("signTutteliPublication")
+            project.tasks.getByName('publishTutteliPublicationToMavenLocal').dependsOn(signTask)
         }
     }
 
@@ -138,7 +161,6 @@ class PublishPlugin implements Plugin<Project> {
                         }
                     }
                     def artifacts = removeKotlinSourcesIfSources(project, extension.artifacts.get())
-//                    artifacts = removeKotlinSourcesIfSources(project, artifacts)
 
                     artifacts.each {
                         if (it instanceof org.gradle.jvm.tasks.Jar) {
@@ -241,17 +263,23 @@ class PublishPlugin implements Plugin<Project> {
                     released = released ?: new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ')
                     vcsTag = vcsTag ?: "v$project.version"
                     gpg.with {
-                        sign = extension.signWithGpg.get()
-                        if (sign) {
-                            passphrase = passphrase ?: getPropertyOrSystemEnv(project, extension.propNameBintrayGpgPassphrase, extension.envNameBintrayGpgPassphrase)
-                        }
+                        sign = false // we sign the files locally, store private key @ bintray is discouraged
                     }
                 }
             }
         }
     }
 
-    private static String getPropertyOrSystemEnv(Project project, Property<String> propName, Property<String> envName) {
+    private static void configureSigning(Project project, PublishPluginExtension extension) {
+
+        if (extension.signWithGpg.get()) {
+            project.ext."signing.password" = getPropertyOrSystemEnv(project, extension.propNameGpgPassphrase, extension.envNameGpgPassphrase)
+            project.ext."signing.keyId" = getPropertyOrSystemEnv(project, extension.propNameGpgKeyId, extension.envNameGpgKeyId)
+            project.ext."signing.secretKeyRingFile" = getPropertyOrSystemEnv(project, extension.propNameGpgKeyRing, extension.envNameGpgKeyRing)
+        }
+    }
+
+    static String getPropertyOrSystemEnv(Project project, Property<String> propName, Property<String> envName) {
         def value = project.findProperty(propName.get())
         if (!value?.trim()) {
             value = System.getenv(envName.get())

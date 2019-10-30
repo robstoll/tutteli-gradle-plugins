@@ -13,6 +13,8 @@ class SettingsExtensionObject {
     public final File tmp
     public final File settings
     public final File buildGradle
+    public final File gpgKeyRing
+
     public final List<String> pluginClasspath
 
     SettingsExtensionObject(Path tmpPath) {
@@ -20,6 +22,7 @@ class SettingsExtensionObject {
         tmp = tmpPath.toFile()
         settings = new File(tmp, 'settings.gradle')
         buildGradle = new File(tmp, 'build.gradle')
+        gpgKeyRing = new File(tmp, 'keyring.gpg')
 
         URL pluginClasspathResource = getClass().classLoader.getResource('plugin-classpath.txt')
         if (pluginClasspathResource == null) {
@@ -35,11 +38,14 @@ class SettingsExtensionObject {
         return """
         import org.gradle.api.tasks.testing.logging.TestLogEvent
         buildscript {
-            repositories { maven { url "https://plugins.gradle.org/m2/" } }
+            repositories { 
+                maven { url "https://plugins.gradle.org/m2/" }
+            }
             dependencies {
                 classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
                 classpath files($pluginClasspath)
             }
+
         }
         """
     }

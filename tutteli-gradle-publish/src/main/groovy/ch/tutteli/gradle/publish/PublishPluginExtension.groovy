@@ -25,10 +25,15 @@ class PublishPluginExtension {
     final ListProperty<Developer> developers
     final Property<String> propNameBintrayUser
     final Property<String> propNameBintrayApiKey
-    final Property<String> propNameBintrayGpgPassphrase
+    final Property<String> propNameGpgKeyId
+    final Property<String> propNameGpgKeyRing
+    final Property<String> propNameGpgPassphrase
     final Property<String> envNameBintrayUser
     final Property<String> envNameBintrayApiKey
-    final Property<String> envNameBintrayGpgPassphrase
+    final Property<String> envNameGpgPassphrase
+    final Property<String> envNameGpgKeyId
+    final Property<String> envNameGpgKeyRing
+    final Property<String> envNameGpgSigningKey
     final Property<String> bintrayRepo
     final Property<String> bintrayPkg
     final Property<String> bintrayOrganisation
@@ -48,14 +53,27 @@ class PublishPluginExtension {
         propNameBintrayUser.set('bintrayUser')
         propNameBintrayApiKey = project.objects.property(String)
         propNameBintrayApiKey.set('bintrayApiKey')
-        propNameBintrayGpgPassphrase = project.objects.property(String)
-        propNameBintrayGpgPassphrase.set('bintrayGpgPassphrase')
+        propNameGpgPassphrase = project.objects.property(String)
+        propNameGpgPassphrase.set('gpgPassphrase')
+        propNameGpgKeyId = project.objects.property(String)
+        propNameGpgKeyId.set('gpgKeyId')
+        propNameGpgKeyRing = project.objects.property(String)
+        propNameGpgKeyRing.set('gpgKeyRing')
+
+
         envNameBintrayUser = project.objects.property(String)
         envNameBintrayUser.set('BINTRAY_USER')
         envNameBintrayApiKey = project.objects.property(String)
         envNameBintrayApiKey.set('BINTRAY_API_KEY')
-        envNameBintrayGpgPassphrase = project.objects.property(String)
-        envNameBintrayGpgPassphrase.set('BINTRAY_GPG_PASSPHRASE')
+        envNameGpgPassphrase = project.objects.property(String)
+        envNameGpgPassphrase.set('GPG_PASSPHRASE')
+        envNameGpgKeyId = project.objects.property(String)
+        envNameGpgKeyId.set('GPG_KEY_ID')
+        envNameGpgKeyRing = project.objects.property(String)
+        envNameGpgKeyRing.set('GPG_KEY_RING')
+        envNameGpgSigningKey = project.objects.property(String)
+        envNameGpgSigningKey.set('GPG_SIGNING_KEY')
+
         bintrayRepo = project.objects.property(String)
         bintrayPkg = project.objects.property(String)
         bintrayOrganisation = project.objects.property(String)

@@ -29,7 +29,7 @@ class PublishPluginSmokeTest {
         assertExtensionAndTaskDefined(project)
         project.evaluate()
         assertNotNull(project.extensions.getByType(BintrayExtension).user, "bintrayExtension.user")
-        assertTrue(project.extensions.getByType(BintrayExtension).pkg.version.gpg.sign, "bintrayExtension.pkg.version.gpg.sign")
+        assertFalse(project.extensions.getByType(BintrayExtension).pkg.version.gpg.sign, "bintrayExtension.pkg.version.gpg.sign")
     }
 
     @Test
@@ -158,7 +158,7 @@ class PublishPluginSmokeTest {
         project.tasks.getByName(PublishPlugin.TASK_NAME_PUBLISH_TO_BINTRAY)
         project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
         project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_VALIDATE)
+        project.tasks.getByName(PublishPlugin.TASK_NAME_VALIDATE_PUBLISH)
     }
 
     private static PublishPluginExtension getPluginExtension(Project project) {

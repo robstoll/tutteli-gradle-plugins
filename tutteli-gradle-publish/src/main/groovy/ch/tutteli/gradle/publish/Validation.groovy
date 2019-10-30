@@ -29,4 +29,8 @@ class Validation {
             "You need to define $description for publishing (empty or blank is considered to be undefined)"
         )
     }
+
+    static void throwIllegalPropertyNorSystemEnvSet(Property<String> propName, Property<String> envName) {
+        throw newIllegalState("property with name ${propName.get()} or System.env variable with name ${envName.get()}")
+    }
 }

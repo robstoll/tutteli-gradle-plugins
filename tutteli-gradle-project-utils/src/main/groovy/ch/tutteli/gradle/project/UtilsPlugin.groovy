@@ -25,7 +25,7 @@ class UtilsPlugin implements Plugin<Project> {
             if(!aProject.hasProperty('sourceSets')) throw illegalStateCannotCreate(TASK_NAME_TEST_JAR)
             aProject.tasks.create(name: TASK_NAME_TEST_JAR, type: Jar) {
                 from aProject.sourceSets.test.output
-                classifier = 'tests'
+                archiveClassifier.set('tests')
             }
         }
         project.ext.createTestSourcesJarTask = { Project aProject ->
@@ -33,7 +33,7 @@ class UtilsPlugin implements Plugin<Project> {
             if(!aProject.hasProperty('sourceSets')) throw illegalStateCannotCreate(TASK_NAME_TEST_SOURCES_JAR)
             aProject.tasks.create(name: TASK_NAME_TEST_SOURCES_JAR, type: Jar) {
                 from aProject.sourceSets.test.allSource
-                classifier = 'testsources'
+                archiveClassifier.set('testsources')
             }
         }
     }

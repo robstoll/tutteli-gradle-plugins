@@ -1,15 +1,13 @@
 package ch.tutteli.gradle.publish
 
-import com.jfrog.bintray.gradle.BintrayExtension
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskAction
-
-import javax.inject.Inject
+import org.gradle.plugins.signing.SigningExtension
 
 import static ch.tutteli.gradle.publish.Validation.newIllegalState
+import static ch.tutteli.gradle.publish.Validation.throwIllegalPropertyNorSystemEnvSet
 
 class ValidateBeforePublishTask extends DefaultTask {
     Project project
@@ -17,13 +15,38 @@ class ValidateBeforePublishTask extends DefaultTask {
 
     @TaskAction
     def validate() {
-        def bintrayExtension = project.extensions.getByType(BintrayExtension)
-        if (!bintrayExtension.user?.trim()) throw throwIllegalPropertyNorSystemEnvSet(extension.propNameBintrayUser, extension.envNameBintrayUser)
-        if (!bintrayExtension.key?.trim()) throw throwIllegalPropertyNorSystemEnvSet(extension.propNameBintrayApiKey, extension.envNameBintrayApiKey)
-        if (bintrayExtension.pkg.version.gpg.sign && !bintrayExtension.pkg.version.gpg.passphrase?.trim()) throw throwIllegalPropertyNorSystemEnvSet(extension.propNameBintrayGpgPassphrase, extension.envNameBintrayGpgPassphrase)
+        if (extension.signWithGpg.get()) {
+
+            configureSigning(project, extension)
+
+            def signingPassword = (project.ext."signing.password")?.trim()
+            if (!signingPassword) throw throwIllegalPropertyNorSystemEnvSet(extension.propNameGpgPassphrase, extension.envNameGpgPassphrase)
+
+            def envNameGpgSigningKey = extension.envNameGpgSigningKey.get()
+            def signingKey = System.getenv(envNameGpgSigningKey)
+
+            // if we don't use in memory, then we have to provide a file
+            if (!signingKey?.trim()) {
+                if (!(project.ext."signing.keyId")?.trim()) throw throwIllegalPropertyNorSystemEnvSet(extension.propNameGpgKeyId, extension.envNameGpgKeyId)
+                if (!(project.ext."signing.secretKeyRingFile")?.trim()) throw throwIllegalPropertyNorSystemEnvSet(extension.propNameGpgKeyRing, extension.envNameGpgKeyRing)
+            } else {
+                if ((project.ext."signing.keyId")?.trim()) {
+                    throw newIllegalState("you are not allowed to specify an in memory GPG singing key (via $envNameGpgSigningKey) as well as project.ext.signing.keyId")
+                }
+                if ((project.ext."signing.secretKeyRingFile")?.trim()) {
+                    throw newIllegalState("you are not allowed to specify an in memory GPG singing key (via $envNameGpgSigningKey) as well as project.ext.signing.secretKeyRingFile")
+                }
+                def signingExtension = project.extensions.getByType(SigningExtension)
+                signingExtension.configure {
+                    useInMemoryPgpKeys(signingKey, signingPassword)
+                }
+            }
+        }
     }
 
-    private static void throwIllegalPropertyNorSystemEnvSet(Property<String> propName, Property<String> envName) {
-        throw newIllegalState("property with name ${propName.get()} or System.env variable with name ${envName.get()}")
+    private static void configureSigning(Project project, PublishPluginExtension extension) {
+        project.ext."signing.password" = PublishPlugin.getPropertyOrSystemEnv(project, extension.propNameGpgPassphrase, extension.envNameGpgPassphrase)
+        project.ext."signing.keyId" = PublishPlugin.getPropertyOrSystemEnv(project, extension.propNameGpgKeyId, extension.envNameGpgKeyId)
+        project.ext."signing.secretKeyRingFile" = PublishPlugin.getPropertyOrSystemEnv(project, extension.propNameGpgKeyRing, extension.envNameGpgKeyRing)
     }
 }
