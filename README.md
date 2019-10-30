@@ -95,25 +95,30 @@ It provides a `sourcesJar` task which includes all sources and adds them to the 
 It automatically uses `project.components.java` if available -- apply the `java` or `kotlin` plugin (or similar) first.   
 Likewise it uses the `javadocJar` as additional artifact if available. 
 In case you use the `ch.tutteli.dokka` plugin (which provides the `javadocJar`) then make sure you apply it before you apply this plugin.
+It basically uses all jars defined at the time the plugin is applied.
 
 The plugin also creates a manifest file for all jars mentioning the kotlin version if the kotlin plugin is available.
 See the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/v0.30.0/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L310)
 for more information.
 Furthermore it adds the `License.txt` or `LICENSE` file to the jar if such a file exists in the root of the rootProject.
-
-Last but not least it provides a `publishToBintray` task which adds the build-time to the manifest file in addition.
+Publishing artifacts (either to local or to bintray) will include the build-time of the artifact and the artifacts are
+signed using the gradle signing plugin.
+Last but not least it provides a `publishToBintray` which pushes the artifacts to bintray
 
 The conventions:
 - uses `version` for `artifactId` and removes `-jvm` if the name ends with it
 - Apache 2.0 is used as default license
 - project.group, project.description and project.version is used in publishing
-- bintray user, api key and gpg passphrase can either be provided by a property (we recommend gradle.properties) or by System.env with the following names:
+- bintray user, api key, as well as gpg passphrase/keyRing and keyId can either be provided by a property (we recommend gradle.properties) or by System.env with the following names:
 
-    |       prop           |         env            |
-    |----------------------|------------------------|
-    | bintrayUser          | BINTRAY_USER           |
-    | bintrayApiKey        | BINTRAY_API_KEY        |
-    | bintrayGpgPassphrase | BINTRAY_GPG_PASSPHRASE | 
+    |       prop      |         env        |
+    |-----------------|--------------------|
+    | bintrayUser     | BINTRAY_USER       |
+    | bintrayApiKey   | BINTRAY_API_KEY    |
+    | gpgPassphrase   | GPG_PASSPHRASE     |
+    | gpgKeyRing      | GPG_KEY_RING       | 
+    | gpgKeyId        | GPG_KEY_ID         | 
+- The private gpg key can also be provided via GPG_SIGNING_KEY instead of pointing to a file via gpgKeyring    
 
 # ch.tutteli.spek [🔗](https://plugins.gradle.org/plugin/ch.tutteli.spek/0.30.0)
 Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 
