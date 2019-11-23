@@ -109,7 +109,7 @@ The conventions:
 - uses `version` for `artifactId` and removes `-jvm` if the name ends with it
 - Apache 2.0 is used as default license
 - project.group, project.description and project.version is used in publishing
-- bintray user, api key, as well as gpg passphrase/keyRing and keyId can either be provided by a property (we recommend gradle.properties) or by System.env with the following names:
+- bintray user, api key, as well as gpg passphrase/keyRing and keyId can either be provided by a property (if you do, gradle.properties make sense) or by System.env with the following names:
 
     |       prop      |         env        |
     |-----------------|--------------------|
@@ -118,7 +118,7 @@ The conventions:
     | gpgPassphrase   | GPG_PASSPHRASE     |
     | gpgKeyRing      | GPG_KEY_RING       | 
     | gpgKeyId        | GPG_KEY_ID         | 
-- The private gpg key can also be provided via GPG_SIGNING_KEY instead of pointing to a file via gpgKeyring    
+- The private gpg key can also be provided via GPG_SIGNING_KEY instead of pointing to a file via gpgKeyRing    
 
 # ch.tutteli.spek [🔗](https://plugins.gradle.org/plugin/ch.tutteli.spek/0.31.0)
 Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 

@@ -7,6 +7,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Property
 import org.gradle.api.publish.PublicationContainer
+import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.bundling.Jar
@@ -24,6 +25,7 @@ class PublishPlugin implements Plugin<Project> {
     static final String TASK_NAME_VALIDATE_PUBLISH = 'validateBeforePublish'
     static final String TASK_NAME_VALIDATE_UPLOAD = 'validateBeforeUploadToBintray'
     static final String TASK_GENERATE_POM = 'generatePomFileForTutteliPublication'
+    static final String TASK_NAME_HELP_BINTRAY = 'addAllArtifactsToUpload'
 
     @Override
     void apply(Project project) {
@@ -109,9 +111,25 @@ class PublishPlugin implements Plugin<Project> {
             generatePom.dependsOn(includeBuildTime)
 
             def signingExtension = project.extensions.getByType(SigningExtension)
-            signingExtension.sign((project.publishing.publications as PublicationContainer).getByName('tutteli'))
+            def tutteliPublication = project.extensions.getByType(PublishingExtension).publications.findByName('tutteli')
+            signingExtension.sign(tutteliPublication)
             def signTask = project.tasks.getByName("signTutteliPublication")
-            project.tasks.getByName('publishTutteliPublicationToMavenLocal').dependsOn(signTask)
+            def pubToMaLo = project.tasks.getByName('publishTutteliPublicationToMavenLocal')
+            pubToMaLo.dependsOn(signTask)
+
+            def helpBintray = project.tasks.create(name: TASK_NAME_HELP_BINTRAY){
+                dependsOn(pubToMaLo)
+                doLast {
+                    // for whatever reason, bintray only includes artifacts in the upload but not all publishable artifacts.
+                    // things like the following are thus missing:
+                    // - signatures
+                    // - gradle metadata module etc.
+                    (tutteliPublication.getPublishableArtifacts() - tutteliPublication.artifacts).forEach {
+                        tutteliPublication.artifact(it)
+                    }
+                }
+            }
+            project.tasks.getByName('bintrayUpload').dependsOn(helpBintray)
         }
     }
 
@@ -148,7 +166,7 @@ class PublishPlugin implements Plugin<Project> {
                         publication.from(component)
 
                         // it could be we rename the archiveBaseName, thus we remove the jarTask from the publication
-                        // and re-add it again as artifact (for which the name adjustment tasks place)
+                        // and re-add it again as artifact (for which the name adjustment takes place)
                         def jarPub = publication.artifacts.find {
                             it.file.name.endsWith(project.name + "-" + project.version + ".jar")
                         }
@@ -267,15 +285,6 @@ class PublishPlugin implements Plugin<Project> {
                     }
                 }
             }
-        }
-    }
-
-    private static void configureSigning(Project project, PublishPluginExtension extension) {
-
-        if (extension.signWithGpg.get()) {
-            project.ext."signing.password" = getPropertyOrSystemEnv(project, extension.propNameGpgPassphrase, extension.envNameGpgPassphrase)
-            project.ext."signing.keyId" = getPropertyOrSystemEnv(project, extension.propNameGpgKeyId, extension.envNameGpgKeyId)
-            project.ext."signing.secretKeyRingFile" = getPropertyOrSystemEnv(project, extension.propNameGpgKeyRing, extension.envNameGpgKeyRing)
         }
     }
 
