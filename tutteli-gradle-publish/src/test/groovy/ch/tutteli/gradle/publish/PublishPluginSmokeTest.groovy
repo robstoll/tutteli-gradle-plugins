@@ -102,8 +102,8 @@ class PublishPluginSmokeTest {
             assertGroupIdArtifactIdAndVersion(pub)
             def pom = getPomAsString(pub)
             assertContainsRegex(pom, "description", "<description>$DESCRIPTION</description>")
-            def repoUrl = "https://github.com/$GITHUB_USER/$ARTIFACT_ID"
-            assertContainsRegex(pom, "url", "\n    <url>$repoUrl</url>")
+            def domainAndPath = "github.com/$GITHUB_USER/$ARTIFACT_ID"
+            assertContainsRegex(pom, "url", "\n    <url>https://$domainAndPath</url>")
             assertContainsRegex(pom, "license", "<licenses>$NL_INDENT<license>$NL_INDENT" +
                 "<name>${StandardLicenses.EUPL_1_2.longName}</name>$NL_INDENT" +
                 "<url>${StandardLicenses.EUPL_1_2.url}</url>$NL_INDENT" +
@@ -118,7 +118,11 @@ class PublishPluginSmokeTest {
                 "<url>https://tutteli.ch</url>$NL_INDENT" +
                 "</developer>$NL_INDENT" +
                 "</developers>")
-            assertContainsRegex(pom, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
+            assertContainsRegex(pom, "scm", "<scm>$NL_INDENT" +
+                "<connection>scm:git:git://${domainAndPath}.git</connection>$NL_INDENT" +
+                "<developerConnection>scm:git:ssh://${domainAndPath}.git</developerConnection>$NL_INDENT" +
+                "<url>https://$domainAndPath</url>$NL_INDENT" +
+                "</scm>")
         }
     }
 
@@ -137,8 +141,8 @@ class PublishPluginSmokeTest {
             assertGroupIdArtifactIdAndVersion(pub)
             def pom = getPomAsString(pub)
             assertContainsRegex(pom, "description", "<description>$DESCRIPTION</description>")
-            def repoUrl = "https://github.com/$GITHUB_USER/$ARTIFACT_ID"
-            assertContainsRegex(pom, "url", "\n    <url>$repoUrl</url>")
+            def domainAndPath = "github.com/$GITHUB_USER/$ARTIFACT_ID"
+            assertContainsRegex(pom, "url", "\n    <url>https://$domainAndPath</url>")
             assertContainsRegex(pom, "license", "<licenses>$NL_INDENT<license>$NL_INDENT" +
                 "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
                 "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
@@ -148,7 +152,11 @@ class PublishPluginSmokeTest {
             assertContainsRegex(pom, "developers", "<developers>$NL_INDENT<developer>$NL_INDENT" +
                 "<id>$GITHUB_USER</id>$NL_INDENT" +
                 "</developer>$NL_INDENT</developers>")
-            assertContainsRegex(pom, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
+            assertContainsRegex(pom, "scm", "<scm>$NL_INDENT" +
+                "<connection>scm:git:git://${domainAndPath}.git</connection>$NL_INDENT" +
+                "<developerConnection>scm:git:ssh://${domainAndPath}.git</developerConnection>$NL_INDENT" +
+                "<url>https://$domainAndPath</url>$NL_INDENT" +
+                "</scm>")
         }
     }
 
