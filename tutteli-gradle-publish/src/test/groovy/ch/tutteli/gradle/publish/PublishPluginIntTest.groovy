@@ -208,9 +208,13 @@ class PublishPluginIntTest {
             "</developers>"
         )
 
-        def repoUrl = "https://github.com/$githubUser/$projectName"
-        assertContainsRegex(pom, "scm url", "<scm>$NL_INDENT<url>$repoUrl</url>\r?\n\\s*</scm>")
-        assertBintray(result, user, apiKey, pkgName, projectName, repoUrl, version, "Apache-2.0,Lic-1.2", organisation)
+        def domainAndPath = "github.com/$githubUser/$projectName"
+        assertContainsRegex(pom, "scm", "<scm>$NL_INDENT" +
+            "<connection>scm:git:git://${domainAndPath}.git</connection>$NL_INDENT" +
+            "<developerConnection>scm:git:ssh://${domainAndPath}.git</developerConnection>$NL_INDENT" +
+            "<url>https://$domainAndPath</url>$NL_INDENT" +
+            "</scm>")
+        assertBintray(result, user, apiKey, pkgName, projectName, "https://" + domainAndPath, version, "Apache-2.0,Lic-1.2", organisation)
         assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
     }
 

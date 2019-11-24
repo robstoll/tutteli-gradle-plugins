@@ -6,7 +6,6 @@ import org.gradle.api.*
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Property
-import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
@@ -117,7 +116,7 @@ class PublishPlugin implements Plugin<Project> {
             def pubToMaLo = project.tasks.getByName('publishTutteliPublicationToMavenLocal')
             pubToMaLo.dependsOn(signTask)
 
-            def helpBintray = project.tasks.create(name: TASK_NAME_HELP_BINTRAY){
+            def helpBintray = project.tasks.create(name: TASK_NAME_HELP_BINTRAY) {
                 dependsOn(pubToMaLo)
                 doLast {
                     // for whatever reason, bintray only includes artifacts in the upload but not all publishable artifacts.
@@ -133,8 +132,8 @@ class PublishPlugin implements Plugin<Project> {
         }
     }
 
-    private static String determineRepoUrl(Project project, PublishPluginExtension extension) {
-        return "https://github.com/${extension.githubUser.get()}/$project.rootProject.name"
+    private static String determineRepoDomainAndPath(Project project, PublishPluginExtension extension) {
+        return "github.com/${extension.githubUser.get()}/$project.rootProject.name"
     }
 
     private static String determineVersion(Project project) {
@@ -210,7 +209,7 @@ class PublishPlugin implements Plugin<Project> {
     }
 
     private static Action<? extends XmlProvider> pomConfig(Project project, PublishPluginExtension extension) {
-        String repoUrl = determineRepoUrl(project, extension)
+        String domainAndPath = determineRepoDomainAndPath(project, extension)
         def extensionLicenses = extension.licenses.getOrElse(Collections.emptyList())
         def uniqueLicenses = extensionLicenses.toSet().toSorted()
         if (extensionLicenses.size() != uniqueLicenses.size()) {
@@ -218,7 +217,7 @@ class PublishPlugin implements Plugin<Project> {
         }
         def pomConfig = {
             description project.description
-            url repoUrl
+            url "https://" + domainAndPath
             licenses {
                 uniqueLicenses.each { chosenLicense ->
                     requireNotNullNorBlank(chosenLicense.longName, "license.longName")
@@ -243,7 +242,9 @@ class PublishPlugin implements Plugin<Project> {
                 }
             }
             scm {
-                url repoUrl
+                connection "scm:git:git://${domainAndPath}.git"
+                developerConnection "scm:git:ssh://${domainAndPath}.git"
+                url "https://$domainAndPath"
             }
         }
         return new Action<? extends XmlProvider>() {
@@ -262,7 +263,7 @@ class PublishPlugin implements Plugin<Project> {
         BintrayExtension bintrayExtension
     ) {
         def uniqueShortNames = extension.licenses.get().collect { it.shortName }.toSet().toSorted() as String[]
-        def repoUrl = determineRepoUrl(project, extension)
+        def repoUrl = "https://" + determineRepoDomainAndPath(project, extension)
 
         bintrayExtension.with {
             user = user ?: getPropertyOrSystemEnv(project, extension.propNameBintrayUser, extension.envNameBintrayUser)
@@ -302,11 +303,11 @@ class PublishPlugin implements Plugin<Project> {
         Project project,
         PublishPluginExtension extension
     ) {
-        String repoUrl = determineRepoUrl(project, extension)
+        String repoUrl = determineRepoDomainAndPath(project, extension)
         task.manifest {
             attributes(['Implementation-Title'  : determineArtifactId(project),
                         'Implementation-Version': project.version,
-                        'Implementation-URL'    : repoUrl,
+                        'Implementation-URL'    : "https://" + repoUrl,
                         'Build-Time'            : new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ')
             ] + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project))
             def licenseTxt = project.file("$project.rootProject.projectDir/LICENSE.txt")
