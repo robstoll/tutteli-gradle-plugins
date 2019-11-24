@@ -166,7 +166,8 @@ class PublishPluginIntTest {
         //assert
         assertTrue(result.output.contains("Some licenses were duplicated. Please check if you made a mistake."), "should contain warning about duplicated licenses:\n$result.output")
         String pom = Paths.get(settingsSetup.tmp.absolutePath, 'build', 'publications', 'tutteli', 'pom-default.xml').toFile().getText('UTF-8')
-
+        assertContainsRegex(pom, "name", "<name>$projectName</name>")
+        assertContainsRegex(pom, "description", "<description>test project</description>")
         assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
             "<license>$NL_INDENT" +
             "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
@@ -489,9 +490,10 @@ class PublishPluginIntTest {
             .withProjectDir(settingsSetup.tmp)
             .withArguments("pubToMaLo", "printSigning", "--stacktrace")
             .build()
-        println(result.output)
         //assert
         String pom = Paths.get(settingsSetup.tmp.absolutePath, dependentName, 'build', 'publications', 'tutteli', 'pom-default.xml').toFile().getText('UTF-8')
+        assertContainsRegex(pom, "name", "<name>$dependentName</name>")
+        assertContainsRegex(pom, "description", "<description>sub description</description>")
         assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
             "<license>$NL_INDENT" +
             "<name>${StandardLicenses.EUPL_1_2.longName}</name>$NL_INDENT" +
@@ -612,7 +614,6 @@ class PublishPluginIntTest {
             .withArguments("publishTutteliPublicationToMavenLocal", "printSigning")
             .build()
 
-        println(result.output)
         Asserts.assertStatusOk(result,
             [
                 ":validateBeforePublish",

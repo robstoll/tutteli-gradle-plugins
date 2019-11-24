@@ -217,6 +217,7 @@ class PublishPlugin implements Plugin<Project> {
             LOGGER.warn("Some licenses were duplicated. Please check if you made a mistake.")
         }
         def pomConfig = {
+            description project.description
             url repoUrl
             licenses {
                 uniqueLicenses.each { chosenLicense ->
@@ -249,7 +250,7 @@ class PublishPlugin implements Plugin<Project> {
             @Override
             void execute(XmlProvider p) {
                 def root = p.asNode()
-                root.appendNode('description', project.description)
+                root.appendNode('name', project.name)
                 root.children().last() + pomConfig
             }
         }
