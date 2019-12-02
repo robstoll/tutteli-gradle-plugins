@@ -132,7 +132,7 @@ configure(pluginProjects) { subproject ->
         testCompile("org.junit.jupiter:junit-jupiter-api:$junit_version")
         testRuntime("org.junit.jupiter:junit-jupiter-engine:$junit_version")
         testRuntime files(createClasspathManifest) //required for settings.gradle test
-        testCompile("org.mockito:mockito-core:3.1.0")
+        testCompile("org.mockito:mockito-core:3.2.0")
     }
 
     afterEvaluate {
