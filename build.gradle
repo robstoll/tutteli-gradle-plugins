@@ -4,7 +4,7 @@ buildscript {
         kotlin_version = '1.3.61'
         dokka_version = '0.9.18'
         bintray_version = '1.8.4'
-        spek_version = '2.0.8'
+        spek_version = '2.0.9'
 
         publish_version = '0.10.1'
         jacoco_toolVersion = '0.8.5'
