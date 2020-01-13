@@ -13,7 +13,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
     /**
-     * Short for `compile project(":${rootProject.name}-junitjacoco")`
+     * Short for `implementation project(":${rootProject.name}-junitjacoco")`
      */
     implementation prefixedProject('junitjacoco')
 }
