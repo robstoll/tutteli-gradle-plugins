@@ -125,7 +125,7 @@ Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin
 and sets up [Spek](http://spekframework.org/) as junit engine.
 Requires that a JVM compliant kotlin plugin is applied first.
 Moreover, it adds `mavenCentral()` to the repositories and sets up kotlin dependencies:
-kotlin-stdlib as compile and kotlin-reflect as testCompile dependency -- kotlin-reflect is required by spek.
+kotlin-stdlib as implementation and kotlin-reflect as testImplementation dependency -- kotlin-reflect is required by spek.
 
 # License
 All tutteli gradle plugins are licensed under [Apache 2.0](http://opensource.org/licenses/Apache2.0).

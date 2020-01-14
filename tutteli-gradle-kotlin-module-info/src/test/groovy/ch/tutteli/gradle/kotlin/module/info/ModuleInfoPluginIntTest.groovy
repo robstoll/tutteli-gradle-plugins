@@ -79,26 +79,26 @@ class ModuleInfoPluginIntTest {
         test << """
             import ch.tutteli.atrium.api.cc.en_GB.toBe
             import ch.tutteli.atrium.verbs.assert
-            
+
             fun foo() {
                 assert(1).toBe(1)
             }
             """
         settingsSetup.buildGradle << """
             ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
-            
+
             apply plugin: 'kotlin'
             apply plugin: 'ch.tutteli.kotlin.module.info'
-            
+
             repositories {
                 maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
                 jcenter()
             }
-            
+
             dependencies {
-                compile "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0"
+                implementation "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0"
             }
-            
+
             project.afterEvaluate {
                 project.sourceSets.each{
                     println(it)
@@ -130,14 +130,14 @@ class ModuleInfoPluginIntTest {
         test << """
             import ch.tutteli.atrium.api.cc.en_GB.toBe
             import ch.tutteli.atrium.verbs.assert
-            
+
             fun foo() {
                 assert(1).toBe(1)
             }
             """
         settingsSetup.buildGradle << """
             ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
-           
+
             def sub1 = project(':sub1')
             configure(sub1) {
                 apply plugin: 'kotlin-platform-jvm'
@@ -150,7 +150,7 @@ class ModuleInfoPluginIntTest {
                     compile "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0"
                 }
             }
-            
+
             project.afterEvaluate {
                 if(!project.hasProperty('sourceSets')){
                     println("root has no sourceSets")

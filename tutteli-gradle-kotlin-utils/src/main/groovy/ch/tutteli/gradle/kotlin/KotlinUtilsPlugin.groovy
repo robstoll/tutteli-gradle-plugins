@@ -67,9 +67,9 @@ class KotlinUtilsPlugin implements Plugin<Project> {
                 }
 
                 dependencies {
-                    compile kotlinStdlibCommon()
-                    testCompile kotlinTestCommon()
-                    testCompile kotlinTestAnnotationsCommon()
+                    implementation kotlinStdlibCommon()
+                    testImplementation kotlinTestCommon()
+                    testImplementation kotlinTestAnnotationsCommon()
                 }
             }
         }
@@ -90,10 +90,10 @@ class KotlinUtilsPlugin implements Plugin<Project> {
                 }
 
                 dependencies {
-                    compile kotlinStdlibJs()
+                    implementation kotlinStdlibJs()
                     expectedBy getCommonProject(project, subproject)
 
-                    testCompile kotlinTestJs()
+                    testImplementation kotlinTestJs()
                 }
 
                 compileKotlin2Js {
@@ -129,11 +129,11 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             }
 
             dependencies {
-                compile kotlinStdlib()
+                implementation kotlinStdlib()
                 expectedBy getCommonProject(rootProject, subproject)
 
-                testCompile kotlinTest()
-                testCompile kotlinTestJunit5()
+                testImplementation kotlinTest()
+                testImplementation kotlinTestJunit5()
             }
         }
     }
