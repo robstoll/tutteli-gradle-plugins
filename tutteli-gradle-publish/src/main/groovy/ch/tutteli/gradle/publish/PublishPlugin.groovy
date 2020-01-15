@@ -57,8 +57,6 @@ class PublishPlugin implements Plugin<Project> {
         def extension = project.extensions.create(EXTENSION_NAME, PublishPluginExtension, project)
 
         def validateBeforePublish = project.tasks.create(name: TASK_NAME_VALIDATE_PUBLISH, type: ValidateBeforePublishTask)
-        validateBeforePublish.project = project
-        validateBeforePublish.extension = extension
 
         def includeBuildTime = project.tasks.create(name: TASK_NAME_INCLUDE_TIME) {
             doLast {
@@ -72,8 +70,6 @@ class PublishPlugin implements Plugin<Project> {
         project.tasks.getByName('jar').mustRunAfter(includeBuildTime)
 
         def validateBeforeUpload = project.tasks.create(name: TASK_NAME_VALIDATE_UPLOAD, type: ValidateBeforeUploadTask)
-        validateBeforeUpload.project = project
-        validateBeforeUpload.extension = extension
 
         project.tasks.create(name: TASK_NAME_PUBLISH_TO_BINTRAY) {
             def bintrayUpload = project.tasks.getByName('bintrayUpload')
