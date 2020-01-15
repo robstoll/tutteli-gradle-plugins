@@ -5,6 +5,8 @@ jdk:
   - oraclejdk8
   - oraclejdk9
   - oraclejdk11
+  - openjdk12
+  - openjdk13
 
 before_install:
  - chmod +x gradlew
