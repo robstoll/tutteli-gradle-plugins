@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 @ExtendWith(SettingsExtension)
 class KotlinUtilsPluginIntTest {
 
-    private static final String KOTLIN_VERSION = '1.3.31'
+    private static final String KOTLIN_VERSION = '1.3.61'
     private static final String settingsFileContent = """
         rootProject.name='test-project'
         include 'test1-common'
@@ -35,40 +35,40 @@ class KotlinUtilsPluginIntTest {
         settingsSetup.settings << "rootProject.name='test-project'"
         settingsSetup.buildGradle << """
         ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
-        
+
         apply plugin: 'kotlin-platform-js'
         apply plugin: 'ch.tutteli.kotlin.utils'
         kotlinutils.kotlinVersion = '$KOTLIN_VERSION'
-        
+
         repositories{
             mavenCentral()
             maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
         }
-        
+
         dependencies {
-            compile kotlinStdlib(), excludeKbox
-            compile kotlinStdlibJs(), excludeAtriumVerbs
-            compile kotlinStdlibCommon(), excludeKotlin
-            compile kotlinReflect(), excluding {
+            implementation kotlinStdlib(), excludeKbox
+            implementation kotlinStdlibJs(), excludeAtriumVerbs
+            implementation kotlinStdlibCommon(), excludeKotlin
+            implementation kotlinReflect(), excluding {
                 kotlin()
                 kbox()
                 atriumVerbs()
             }
-            testCompile "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0", excluding {
+            testImplementation "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0", excluding {
                 kotlin()
                 atriumVerbs()
                 kbox()
             }
-            testRuntime "org.jetbrains.spek:spek-junit-platform-engine:1.1.5", excluding {
+            testRuntimeOnly "org.jetbrains.spek:spek-junit-platform-engine:1.1.5", excluding {
                 kotlin()
                 exclude group: 'org.jetbrains.spek', module: 'spek-api'
             }
-            testCompile kotlinTest()
-            testCompile kotlinTestJunit5()
-            testCompile kotlinTestJs()
-            testCompile kotlinTestCommon()
-            testCompile kotlinTestAnnotationsCommon()
-        }        
+            testImplementation kotlinTest()
+            testImplementation kotlinTestJunit5()
+            testImplementation kotlinTestJs()
+            testImplementation kotlinTestCommon()
+            testImplementation kotlinTestAnnotationsCommon()
+        }
         """
         //act
         def result = GradleRunner.create()
@@ -379,12 +379,12 @@ class KotlinUtilsPluginIntTest {
         buildscript {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
-               
+
                 classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        
+
         apply plugin: 'ch.tutteli.kotlin.utils'
         kotlinutils {
             kotlinVersion = '$KOTLIN_VERSION'

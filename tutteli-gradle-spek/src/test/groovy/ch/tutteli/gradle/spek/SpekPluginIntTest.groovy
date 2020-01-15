@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
 class SpekPluginIntTest {
+    def static final KOTLIN_VERSION = '1.3.61'
 
     @Test
     void smokeTestVersion1(SettingsExtensionObject settingsSetup) throws IOException {
@@ -19,7 +20,7 @@ class SpekPluginIntTest {
         rootProject.name='test-project'
         """
         settingsSetup.buildGradle << """
-        ${settingsSetup.buildscriptWithKotlin('1.2.71')}
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.spek'
         spek.version = '1.1.5'
@@ -31,7 +32,7 @@ class SpekPluginIntTest {
         spec << """
         import org.jetbrains.spek.api.Spek
         import org.jetbrains.spek.api.dsl.it
-        
+
         object TestSpec : Spek({
             it("successful test") {
                 println("was here")
@@ -68,7 +69,7 @@ class SpekPluginIntTest {
         rootProject.name='test-project'
         """
         settingsSetup.buildGradle << """
-        ${settingsSetup.buildscriptWithKotlin('1.3.31')}
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.spek'
         spek.version = '2.0.4'
@@ -80,7 +81,7 @@ class SpekPluginIntTest {
         spec << """
         import org.spekframework.spek2.Spek
         import org.spekframework.spek2.style.specification.describe
-        
+
         object TestSpec : Spek({
             describe("dummy test") {
                 it("successful test") {

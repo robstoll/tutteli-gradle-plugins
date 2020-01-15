@@ -21,13 +21,14 @@ import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(SettingsExtension)
 class PublishPluginIntTest {
+    def static final ATRIUM_VERSION = '0.8.0'
 
     @Test
     void smokeTest(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def projectName = 'test-project'
         settingsSetup.settings << "rootProject.name='$projectName'"
-        def version = '1.0.0-SNAPSHOT'
+        def version = '1.0.0'
         def githubUser = 'robstoll'
         def user = 'myUser'
         def apiKey = 'test'
@@ -53,17 +54,17 @@ class PublishPluginIntTest {
                 myGpgKeyId = '$gpgKeyId'
             }
         }
-        
+
         // has to be before ch.tutteli.publish
-        apply plugin: 'java' 
+        apply plugin: 'java'
         apply plugin: 'ch.tutteli.publish'
-        
+
         project.with {
             group = 'com.example'
             version = '$version'
             description = 'test project'
         }
-        
+
         tutteliPublish {
             //minimal setup required for publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
@@ -71,7 +72,7 @@ class PublishPluginIntTest {
 
             //different ways to override the default license
             resetLicenses 'EUPL-1.2'             // default distribution is 'repo'
-            resetLicenses 'EUPL-1.2', 'manually' 
+            resetLicenses 'EUPL-1.2', 'manually'
             resetLicenses ch.tutteli.gradle.publish.StandardLicenses.EUPL_1_2
             resetLicenses ch.tutteli.gradle.publish.StandardLicenses.EUPL_1_2, 'manually'
             resetLicenses {
@@ -86,7 +87,7 @@ class PublishPluginIntTest {
                 url = 'https://license.com'
                 //default distribution is repo
             }
-            
+
             // different ways to add additional licenses
             license 'Apache-2.0'
             license 'Apache-2.0', 'manually'
@@ -98,7 +99,7 @@ class PublishPluginIntTest {
                 url = 'https://license.com'
                 distribution = 'repo'
             }
-            
+
             // you can add multiple developers if required
             developer {
                 id = 'robstoll'
@@ -112,11 +113,11 @@ class PublishPluginIntTest {
                 email = 'rstoll@tutteli.ch'
                 organization = 'tutteli'
                 organizationUrl = 'tutteli.ch'
-            }            
-            
+            }
+
             // will add Implementation-Vendor to all manifest files.
             manifestVendor = 'tutteli.ch'
-            
+
             // you can change the pkg name if it does not correspond to `project.name`
             bintrayPkg = '$pkgName'
 
@@ -135,25 +136,25 @@ class PublishPluginIntTest {
             envNameGpgKeyId       = 'MY_GPG_KEY_ID'             // default is GPG_KEY_ID
             envNameGpgKeyRing     = 'MY_GPG_KEY_RING'           // default is GPG_KEY_RING
             envNameGpgSigningKey  = 'MY_GPG_SIGNING_KEY'        // default is GPG_SIGNING_KEY
-            
+
             // you can also disable GPG signing (default is true)
             signWithGpg = false
             // yet, we will re-activate it for this test
             signWithGpg = true
-            
+
             // you could configure JFrog's bintray extension here if you like.
             // There is no need for it though, everything can be configured via the above
             bintray {
                 user = '$user' //usually provided by property or env variable
-            }     
-        }        
-        
+            }
+        }
+
          // you could also configure JFrog's bintray extension outside of publish
          // but again, there is no need for it.
         bintray {
             key = '$apiKey'
-        }  
-        project.afterEvaluate { 
+        }
+        project.afterEvaluate {
             ${printBintray()}
         }
         ${taskPrintSigning()}
@@ -234,26 +235,26 @@ class PublishPluginIntTest {
             }
         }
         // has to be before ch.tutteli.publish
-        apply plugin: 'java' 
+        apply plugin: 'java'
         apply plugin: 'ch.tutteli.publish'
-        
+
         project.with {
             group = 'com.example'
             version = '$version'
             description = 'test project'
         }
-        
+
         tutteliPublish {
             //minimal setup required for publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
             bintrayRepo = 'tutteli-jars'
             //gpg passphrase not defined via property or something
-            
+
             bintray {
                 user = '$user'
                 key = 'apiKey'
             }
-        }        
+        }
         """
         //act
         GradleRunner.create()
@@ -297,7 +298,7 @@ class PublishPluginIntTest {
                 classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
                 classpath files($settingsSetup.pluginClasspath)
             }
-            
+
             ext {
                 // required since we don't set the System.env variables.
                 gpgPassphrase = '$gpgPassphrase'
@@ -305,44 +306,44 @@ class PublishPluginIntTest {
                 gpgKeyId = '$gpgKeyId'
             }
         }
-        repositories {  
+        repositories {
             mavenCentral();
-            maven { url "http://dl.bintray.com/robstoll/tutteli-jars" } 
+            maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
         }
         apply plugin: 'kotlin'
-        apply plugin: 'ch.tutteli.dokka' 
+        apply plugin: 'ch.tutteli.dokka'
         tutteliDokka.githubUser = '$githubUser'
 
         apply plugin: 'ch.tutteli.publish'
-                
+
         project.with {
             group = '$groupId'
             version = '$version'
             description = 'test project'
         }
-        
+
         tutteliPublish {
             githubUser = '$githubUser'
             // Apache License 2.0 is the default
             // developers are optional
-            
+
             // Optional, in case you want to mention the vendor in the manifest file of all jars
             manifestVendor = '$vendor'
 
             // minimal setup required for bintray extension
             bintrayRepo = 'tutteli-jars'
-            
+
             // required since we don't set the System.env variables.
             bintray {
                 user = '$user'
                 key = '$apiKey'
             }
-        }        
-        
-        dependencies { 
-            compile 'ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0'
         }
-        
+
+        dependencies {
+            implementation 'ch.tutteli.atrium:atrium-cc-en_GB-robstoll:$ATRIUM_VERSION'
+        }
+
         project.afterEvaluate {
             ${printArtifactsAndManifest()}
             ${printBintray()}
@@ -374,8 +375,8 @@ class PublishPluginIntTest {
             "<dependency>$NL_INDENT" +
             "<groupId>ch.tutteli.atrium</groupId>$NL_INDENT" +
             "<artifactId>atrium-cc-en_GB-robstoll</artifactId>$NL_INDENT" +
-            "<version>0.7.0</version>$NL_INDENT" +
-            "<scope>compile</scope>$NL_INDENT" +
+            "<version>$ATRIUM_VERSION</version>$NL_INDENT" +
+            "<scope>runtime</scope>$NL_INDENT" +
             "</dependency>$NL_INDENT" +
             "</dependencies>"
         )
@@ -432,48 +433,48 @@ class PublishPluginIntTest {
                 gpgKeyId = '$gpgKeyId'
             }
         }
-                
+
         project.with {
             group = '$groupId'
             version = '$version'
-        }     
-   
+        }
+
         subprojects {
-            it.description = 'sub description' 
-            
+            it.description = 'sub description'
+
             repositories {  mavenCentral(); }
             apply plugin: 'kotlin'
-            
+
             def testJar = task('testJar', type: Jar) {
                 from sourceSets.test.output
                 classifier = 'tests'
-            } 
-            
+            }
+
             apply plugin: 'ch.tutteli.publish'
-         
+
             // not included in publish as it was defined after the publish plugin was applied
-            
+
             def testSourcesJar = task('testSourcesJar', type: Jar) {
                 from sourceSets.test.allSource
                 classifier = 'testsources'
             }
-         
+
             tutteliPublish {
                 resetLicenses 'EUPL-1.2'
 
                 //already defined because it is a ch.tutteli project
                 //githubUser = '$githubUser'
-                //bintrayRepo = 'tutteli-jars' is default no need to set it                
+                //bintrayRepo = 'tutteli-jars' is default no need to set it
                 //manifestVendor = $vendor // we don't have a manifestVendor, thus we reset it to null
-                 
+
                 /* would be required if we used task publishToBintray, we don't so we don't have to define it
                 bintray {
                     user = 'test'
                     key = 'api-key'
                 }
                 */
-            }            
-         
+            }
+
             afterEvaluate {
                 ${printArtifactsAndManifest()}
                 ${printBintray()}
@@ -565,7 +566,7 @@ class PublishPluginIntTest {
     private static void kotlinApplied(SettingsExtensionObject settingsSetup, String kotlinVersion) {
         def projectName = 'test-project'
         settingsSetup.settings << "rootProject.name='$projectName'"
-        def version = '1.0.0-SNAPSHOT'
+        def version = '1.0.0'
         def githubUser = 'robstoll'
         def gpgPassphrase = 'bla'
         def gpgKeyId = 'A5875B96'
@@ -585,11 +586,11 @@ class PublishPluginIntTest {
         }
         repositories {
             jcenter()
-        }        
+        }
 
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.publish'
-        
+
         project.with {
             group = 'com.example'
             version = '$version'

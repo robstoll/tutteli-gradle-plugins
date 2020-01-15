@@ -260,6 +260,26 @@ class PublishPluginValidationTest {
         project.evaluate()
     }
 
+    @Test
+    void evaluate_signIfNotSnapshot() {
+        Project project = setUp()
+        project.version = "1.0.0"
+
+        project.evaluate()
+
+        assertTrue(getPluginExtension(project).signWithGpg.get())
+    }
+
+    //@Test
+    void evaluate_dontSignIfSnapshot() {
+        Project project = setUp()
+        project.version = "1.0.0-SNAPSHOT"
+
+        project.evaluate()
+
+        assertFalse(getPluginExtension(project).signWithGpg.get())
+    }
+
     private static void assertThrowsIllegalState(String what, Executable executable) {
         def exception = assertThrows(IllegalStateException) {
             executable.execute()
