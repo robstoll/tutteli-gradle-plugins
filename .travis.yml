@@ -7,12 +7,12 @@ jdk:
   - oraclejdk11
 
 before_install:
- - chmod +x gr
+ - chmod +x gradlew
 install: true
 
 script:
-  - ./gr repo
-  - ./gr build
+  - ./gradlew repo
+  - ./gradlew build
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
