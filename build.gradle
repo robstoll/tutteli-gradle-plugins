@@ -206,7 +206,8 @@ task removeRepo(type: Delete) {
 /*
 Release & deploy
 ----------------
-1. ./gr removeRepo
+(assumes you have an alias named gr pointing to gradlew)
+1. gr removeRepo
 2. Update master:
     a) point to the tag
         1) update version of the badges in README (except for codecov)
@@ -217,7 +218,7 @@ Release & deploy
     d) git tag vX.Y.Z
     e) git push origin vX.Y.Z
 3. publish plugins
-   a) ./gr publishPlugins
+   a) gr publishPlugins
 4. create release on github
 
 
