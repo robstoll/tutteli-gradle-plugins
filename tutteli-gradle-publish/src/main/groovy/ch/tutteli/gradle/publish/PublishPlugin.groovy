@@ -101,10 +101,6 @@ class PublishPlugin implements Plugin<Project> {
             requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgKeyRing, "envNameGpgSecretKeyRingFile")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgSigningKey, "envNameGpgSigningKey")
 
-            if (!extension.signWithGpg.present) {
-                extension.signWithGpg.set(!project.version.endsWith('-SNAPSHOT'))
-            }
-
             configurePublishing(project, extension)
             configureBintray(project, extension, bintrayExtension)
 
@@ -113,9 +109,14 @@ class PublishPlugin implements Plugin<Project> {
 
             def signingExtension = project.extensions.getByType(SigningExtension)
             def tutteliPublication = project.extensions.getByType(PublishingExtension).publications.findByName(PUBLICATION_NAME)
+            def version = String.valueOf(project.version)
+            if (version.endsWith("-SNAPSHOT")) {
+                project.version = version.substring(0, version.lastIndexOf("-SNAPSHOT"))
+            }
             signingExtension.sign(tutteliPublication)
+            project.version = version
+
             def signTask = project.tasks.getByName("sign${PUBLICATION_NAME.capitalize()}Publication")
-            signTask.onlyIf { extension.signWithGpg.get() }
             def pubToMaLo = project.tasks.getByName("publish${PUBLICATION_NAME.capitalize()}PublicationToMavenLocal")
             pubToMaLo.dependsOn(signTask)
 

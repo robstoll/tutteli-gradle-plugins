@@ -77,7 +77,12 @@ class PublishPluginExtension {
         bintrayRepo = project.objects.property(String)
         bintrayPkg = project.objects.property(String)
         bintrayOrganisation = project.objects.property(String)
+
         signWithGpg = project.objects.property(Boolean)
+        signWithGpg.set(true)
+//        if (!signWithGpg.present) {
+//            signWithGpg.set(!project.version.endsWith('-SNAPSHOT'))
+//        }
         manifestVendor = project.objects.property(String)
 
         if (isTutteliProject(project) || isTutteliProject(project.rootProject)) {

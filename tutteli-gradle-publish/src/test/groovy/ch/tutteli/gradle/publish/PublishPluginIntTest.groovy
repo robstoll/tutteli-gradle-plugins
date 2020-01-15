@@ -27,9 +27,19 @@ class PublishPluginIntTest {
     @Test
     void smokeTest(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
+        def version = '1.0.0'
+        checkSmokeTest(settingsSetup, version)
+    }
+    @Test
+    void smokeTestWithSnapshot(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        def version = '1.0.0-SNAPSHOT'
+        checkSmokeTest(settingsSetup, version)
+    }
+
+    private static void checkSmokeTest(SettingsExtensionObject settingsSetup, String version) {
         def projectName = 'test-project'
         settingsSetup.settings << "rootProject.name='$projectName'"
-        def version = '1.0.0'
         def githubUser = 'robstoll'
         def user = 'myUser'
         def apiKey = 'test'
@@ -221,106 +231,6 @@ class PublishPluginIntTest {
     }
 
     @Test
-    void snapshotSmokeTest(SettingsExtensionObject settingsSetup) throws IOException {
-        //arrange
-        def projectName = 'test-project'
-        settingsSetup.settings << "rootProject.name='$projectName'"
-        def version = '1.0.0-SNAPSHOT'
-        def githubUser = 'robstoll'
-        def user = 'myUser'
-        def apiKey = 'test'
-        def pkgName = "tutteli-gradle"
-        def organisation = "company"
-        def gpgPassphrase = 'bla'
-        def gpgKeyId = 'A5875B96'
-        def gpgKeyRing = 'keyring.gpg'
-
-        settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
-
-        settingsSetup.buildGradle << """
-        buildscript {
-            dependencies {
-                classpath files($settingsSetup.pluginClasspath)
-            }
-        }
-        buildscript {
-            ext {
-                // required since we don't set the System.env variables.
-                myGpgPassphrase = '$gpgPassphrase'
-                myGpgKeyRing = '$gpgKeyRing'
-                myGpgKeyId = '$gpgKeyId'
-            }
-        }
-
-        // has to be before ch.tutteli.publish
-        apply plugin: 'java'
-        apply plugin: 'ch.tutteli.publish'
-
-        project.with {
-            group = 'com.example'
-            version = '$version'
-            description = 'test project'
-        }
-
-        tutteliPublish {
-            githubUser = '$githubUser'
-            bintrayRepo = 'tutteli-jars'
-            resetLicenses 'EUPL-1.2'             // default distribution is 'repo'
-            license 'Apache-2.0'
-            developer {
-                id = 'robstoll'
-                name = 'Robert Stoll'
-                email = 'rstoll@tutteli.ch'
-                url = 'tutteli.ch'
-            }
-            manifestVendor = 'tutteli.ch'
-            bintrayPkg = '$pkgName'
-            bintrayOrganisation = '$organisation'
-
-            // you can customise the property and env variable names if they differ from the convention
-            propNameBintrayUser   = 'myBintrayUser'             // default is bintrayUser
-            propNameBintrayApiKey = 'myBintrayApiKey'           // default is bintrayApiKey
-            propNameGpgPassphrase = 'myGpgPassphrase'           // default is gpgPassphrase
-            propNameGpgKeyId      = 'myGpgKeyId'                // default is gpgKeyId
-            propNameGpgKeyRing     = 'myGpgKeyRing'             // default is gpgKeyRing
-            envNameBintrayUser    = 'MY_BINTRAY_USER'           // default is BINTRAY_USER
-            envNameBintrayApiKey  = 'MY_BINTRAY_API_KEY'        // default is BINTRAY_API_KEY
-            envNameGpgPassphrase  = 'MY_GPG_PASSPHRASE'         // default is GPG_PASSPHRASE
-            envNameGpgKeyId       = 'MY_GPG_KEY_ID'             // default is GPG_KEY_ID
-            envNameGpgKeyRing     = 'MY_GPG_KEY_RING'           // default is GPG_KEY_RING
-            envNameGpgSigningKey  = 'MY_GPG_SIGNING_KEY'        // default is GPG_SIGNING_KEY
-
-            // you could configure JFrog's bintray extension here if you like.
-            // There is no need for it though, everything can be configured via the above
-            bintray {
-                user = '$user' //usually provided by property or env variable
-            }
-        }
-
-         // you could also configure JFrog's bintray extension outside of publish
-         // but again, there is no need for it.
-        bintray {
-            key = '$apiKey'
-        }
-        project.afterEvaluate {
-            ${printBintray()}
-        }
-        """
-        //act
-        def result = GradleRunner.create()
-            .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishTutteliPublicationToMavenLocal", "--stacktrace")
-            .build()
-        //assert
-        Asserts.assertStatusOk(
-            result,
-            [':validateBeforePublish', ':includeBuildTimeInManifest', ':jar', ':generateMetadataFileForTutteliPublication', ':generatePomFileForTutteliPublication', ':sourcesJar', ':publishTutteliPublicationToMavenLocal'],
-            [':signTutteliPublication'],
-            [':classes']
-        )
-    }
-
-    @Test
     void smokeTest_GpgPassphraseMissing(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def projectName = 'test-project'
@@ -376,10 +286,21 @@ class PublishPluginIntTest {
     @Test
     void combinePlugins(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
+        def version = '1.0.0'
+        checkCombinePlugins(settingsSetup, version)
+    }
+
+    @Test
+    void combinePluginsWithSnapshot(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        def version = '1.0.0-SNAPSHOT'
+        checkCombinePlugins(settingsSetup, version)
+    }
+
+    private void checkCombinePlugins(SettingsExtensionObject settingsSetup, version) {
         def projectName = 'test-project'
         settingsSetup.settings << "rootProject.name='$projectName'"
         def groupId = 'com.example'
-        def version = '1.0.0'
         def githubUser = 'robstoll'
         def vendor = 'tutteli'
         def user = 'test-user'
