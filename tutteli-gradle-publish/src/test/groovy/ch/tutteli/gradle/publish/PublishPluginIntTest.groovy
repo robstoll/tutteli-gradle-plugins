@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(SettingsExtension)
 class PublishPluginIntTest {
+    def static final KOTLIN_VERSION = '1.3.61'
     def static final ATRIUM_VERSION = '0.8.0'
 
     @Test
@@ -220,11 +221,111 @@ class PublishPluginIntTest {
     }
 
     @Test
-    void smokeTest_GpgPassphraseMissing(SettingsExtensionObject settingsSetup) throws IOException {
+    void snapshotSmokeTest(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def projectName = 'test-project'
         settingsSetup.settings << "rootProject.name='$projectName'"
         def version = '1.0.0-SNAPSHOT'
+        def githubUser = 'robstoll'
+        def user = 'myUser'
+        def apiKey = 'test'
+        def pkgName = "tutteli-gradle"
+        def organisation = "company"
+        def gpgPassphrase = 'bla'
+        def gpgKeyId = 'A5875B96'
+        def gpgKeyRing = 'keyring.gpg'
+
+        settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
+
+        settingsSetup.buildGradle << """
+        buildscript {
+            dependencies {
+                classpath files($settingsSetup.pluginClasspath)
+            }
+        }
+        buildscript {
+            ext {
+                // required since we don't set the System.env variables.
+                myGpgPassphrase = '$gpgPassphrase'
+                myGpgKeyRing = '$gpgKeyRing'
+                myGpgKeyId = '$gpgKeyId'
+            }
+        }
+
+        // has to be before ch.tutteli.publish
+        apply plugin: 'java'
+        apply plugin: 'ch.tutteli.publish'
+
+        project.with {
+            group = 'com.example'
+            version = '$version'
+            description = 'test project'
+        }
+
+        tutteliPublish {
+            githubUser = '$githubUser'
+            bintrayRepo = 'tutteli-jars'
+            resetLicenses 'EUPL-1.2'             // default distribution is 'repo'
+            license 'Apache-2.0'
+            developer {
+                id = 'robstoll'
+                name = 'Robert Stoll'
+                email = 'rstoll@tutteli.ch'
+                url = 'tutteli.ch'
+            }
+            manifestVendor = 'tutteli.ch'
+            bintrayPkg = '$pkgName'
+            bintrayOrganisation = '$organisation'
+
+            // you can customise the property and env variable names if they differ from the convention
+            propNameBintrayUser   = 'myBintrayUser'             // default is bintrayUser
+            propNameBintrayApiKey = 'myBintrayApiKey'           // default is bintrayApiKey
+            propNameGpgPassphrase = 'myGpgPassphrase'           // default is gpgPassphrase
+            propNameGpgKeyId      = 'myGpgKeyId'                // default is gpgKeyId
+            propNameGpgKeyRing     = 'myGpgKeyRing'             // default is gpgKeyRing
+            envNameBintrayUser    = 'MY_BINTRAY_USER'           // default is BINTRAY_USER
+            envNameBintrayApiKey  = 'MY_BINTRAY_API_KEY'        // default is BINTRAY_API_KEY
+            envNameGpgPassphrase  = 'MY_GPG_PASSPHRASE'         // default is GPG_PASSPHRASE
+            envNameGpgKeyId       = 'MY_GPG_KEY_ID'             // default is GPG_KEY_ID
+            envNameGpgKeyRing     = 'MY_GPG_KEY_RING'           // default is GPG_KEY_RING
+            envNameGpgSigningKey  = 'MY_GPG_SIGNING_KEY'        // default is GPG_SIGNING_KEY
+
+            // you could configure JFrog's bintray extension here if you like.
+            // There is no need for it though, everything can be configured via the above
+            bintray {
+                user = '$user' //usually provided by property or env variable
+            }
+        }
+
+         // you could also configure JFrog's bintray extension outside of publish
+         // but again, there is no need for it.
+        bintray {
+            key = '$apiKey'
+        }
+        project.afterEvaluate {
+            ${printBintray()}
+        }
+        """
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("publishTutteliPublicationToMavenLocal", "--stacktrace")
+            .build()
+        //assert
+        Asserts.assertStatusOk(
+            result,
+            [':validateBeforePublish', ':includeBuildTimeInManifest', ':jar', ':generateMetadataFileForTutteliPublication', ':generatePomFileForTutteliPublication', ':sourcesJar', ':publishTutteliPublicationToMavenLocal'],
+            [':signTutteliPublication'],
+            [':classes']
+        )
+    }
+
+    @Test
+    void smokeTest_GpgPassphraseMissing(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        def projectName = 'test-project'
+        settingsSetup.settings << "rootProject.name='$projectName'"
+        def version = '1.0.0'
         def githubUser = 'robstoll'
         def user = 'myUser'
 
@@ -278,10 +379,9 @@ class PublishPluginIntTest {
         def projectName = 'test-project'
         settingsSetup.settings << "rootProject.name='$projectName'"
         def groupId = 'com.example'
-        def version = '1.0.0-SNAPSHOT'
+        def version = '1.0.0'
         def githubUser = 'robstoll'
         def vendor = 'tutteli'
-        def kotlinVersion = '1.2.71'
         def user = 'test-user'
         def apiKey = 'test-key'
         def gpgPassphrase = 'bla'
@@ -295,7 +395,7 @@ class PublishPluginIntTest {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
                 classpath 'ch.tutteli:tutteli-gradle-dokka:0.10.1'
-                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
                 classpath files($settingsSetup.pluginClasspath)
             }
 
@@ -391,9 +491,9 @@ class PublishPluginIntTest {
         assertTrue(output.contains("artifact: jar - javadoc"), "javadoc jar\n${output}")
         assertBintray(result, user, apiKey, projectName, projectName, repoUrl, version, "Apache-2.0", "null")
         assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, vendor, kotlinVersion)
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, vendor, kotlinVersion)
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-javadoc.jar", projectName, version, repoUrl, vendor, kotlinVersion)
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, vendor, KOTLIN_VERSION)
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, vendor, KOTLIN_VERSION)
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-javadoc.jar", projectName, version, repoUrl, vendor, KOTLIN_VERSION)
     }
 
     @Test
@@ -408,10 +508,9 @@ class PublishPluginIntTest {
         include '$dependentName'
         """
         def groupId = 'ch.tutteli'
-        def version = '1.0.0-SNAPSHOT'
+        def version = '1.0.0'
         def githubUser = 'robstoll'
         def vendor = 'tutteli.ch'
-        def kotlinVersion = '1.2.71'
         def gpgPassphrase = 'bla'
         def gpgKeyId = 'A5875B96'
         def gpgKeyRing = 'keyring.gpg'
@@ -423,7 +522,7 @@ class PublishPluginIntTest {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
                 classpath 'ch.tutteli:tutteli-gradle-dokka:0.10.1'
-                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
                 classpath files($settingsSetup.pluginClasspath)
             }
             ext {
@@ -544,26 +643,17 @@ class PublishPluginIntTest {
         assertSigning(result, gpgPassphrase, gpgKeyId, "${settingsSetup.tmpPath.toRealPath()}/$gpgKeyRing")
         assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + dependentName + " $version"), "bintrayExtension.pkg.version.desc " + dependentName + " $version\n$result.output")
 
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-sources.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-tests.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, kotlinVersion)
+        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, KOTLIN_VERSION)
+        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-sources.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, KOTLIN_VERSION)
+        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-tests.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, KOTLIN_VERSION)
 
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, dependentName, "$dependentName-${version}.jar", dependentName, version, repoUrl, vendor, kotlinVersion)
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, dependentName, "$dependentName-${version}-sources.jar", dependentName, version, repoUrl, vendor, kotlinVersion)
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, dependentName, "$dependentName-${version}-tests.jar", dependentName, version, repoUrl, vendor, kotlinVersion)
+        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, dependentName, "$dependentName-${version}.jar", dependentName, version, repoUrl, vendor, KOTLIN_VERSION)
+        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, dependentName, "$dependentName-${version}-sources.jar", dependentName, version, repoUrl, vendor, KOTLIN_VERSION)
+        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, dependentName, "$dependentName-${version}-tests.jar", dependentName, version, repoUrl, vendor, KOTLIN_VERSION)
     }
 
     @Test
-    void kotlinApplied1_2_71(SettingsExtensionObject settingsSetup) throws IOException {
-        kotlinApplied(settingsSetup, '1.2.71')
-    }
-
-    @Test
-    void kotlinApplied1_3_31(SettingsExtensionObject settingsSetup) throws IOException {
-        kotlinApplied(settingsSetup, '1.3.31')
-    }
-
-    private static void kotlinApplied(SettingsExtensionObject settingsSetup, String kotlinVersion) {
+    void withKotlinApplied(SettingsExtensionObject settingsSetup) throws IOException {
         def projectName = 'test-project'
         settingsSetup.settings << "rootProject.name='$projectName'"
         def version = '1.0.0'
@@ -575,7 +665,7 @@ class PublishPluginIntTest {
         settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
 
         settingsSetup.buildGradle << """
-        ${settingsSetup.buildscriptWithKotlin(kotlinVersion)}
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
         buildscript {
             ext {
                 // required since we don't set the System.env variables.
@@ -623,12 +713,13 @@ class PublishPluginIntTest {
             [
                 ":validateBeforePublish",
                 ":includeBuildTimeInManifest",
-                ":$PublishPlugin.TASK_GENERATE_POM".toString(),
                 ":compileKotlin",
                 ":processResources",
                 ":classes",
                 ":inspectClassesForKotlinIC",
                 ":jar",
+                ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA".toString(),
+                ":$PublishPlugin.TASK_GENERATE_POM".toString(),
                 ":sourcesJar",
                 ":signTutteliPublication",
                 ":publishTutteliPublicationToMavenLocal",
@@ -639,8 +730,8 @@ class PublishPluginIntTest {
         )
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, null, kotlinVersion)
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, null, kotlinVersion)
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, null, KOTLIN_VERSION)
+        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, null, KOTLIN_VERSION)
         def zipFile = new ZipFile(buildLib(settingsSetup).resolve("$projectName-${version}-sources.jar").toFile())
         zipFile.withCloseable {
             assertInZipFile(zipFile, 'main/resources/a.txt')

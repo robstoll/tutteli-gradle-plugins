@@ -270,7 +270,7 @@ class PublishPluginValidationTest {
         assertTrue(getPluginExtension(project).signWithGpg.get())
     }
 
-    //@Test
+    @Test
     void evaluate_dontSignIfSnapshot() {
         Project project = setUp()
         project.version = "1.0.0-SNAPSHOT"
