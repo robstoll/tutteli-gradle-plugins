@@ -18,12 +18,14 @@ import static ch.tutteli.gradle.publish.Validation.*
 class PublishPlugin implements Plugin<Project> {
     private static final Logger LOGGER = Logging.getLogger(PublishPlugin.class)
     static final String EXTENSION_NAME = 'tutteliPublish'
+    static final String PUBLICATION_NAME = 'tutteli'
     static final String TASK_NAME_INCLUDE_TIME = 'includeBuildTimeInManifest'
     static final String TASK_NAME_PUBLISH_TO_BINTRAY = 'publishToBintray'
     static final String TASK_NAME_SOURCES_JAR = 'sourcesJar'
     static final String TASK_NAME_VALIDATE_PUBLISH = 'validateBeforePublish'
     static final String TASK_NAME_VALIDATE_UPLOAD = 'validateBeforeUploadToBintray'
-    static final String TASK_GENERATE_POM = 'generatePomFileForTutteliPublication'
+    static final String TASK_GENERATE_POM = "generatePomFileFor${PUBLICATION_NAME.capitalize()}Publication"
+    static final String TASK_GENERATE_GRADLE_METADATA = "generateMetadataFileFor${PUBLICATION_NAME.capitalize()}Publication"
     static final String TASK_NAME_HELP_BINTRAY = 'addAllArtifactsToUpload'
 
     @Override
@@ -55,8 +57,6 @@ class PublishPlugin implements Plugin<Project> {
         def extension = project.extensions.create(EXTENSION_NAME, PublishPluginExtension, project)
 
         def validateBeforePublish = project.tasks.create(name: TASK_NAME_VALIDATE_PUBLISH, type: ValidateBeforePublishTask)
-        validateBeforePublish.project = project
-        validateBeforePublish.extension = extension
 
         def includeBuildTime = project.tasks.create(name: TASK_NAME_INCLUDE_TIME) {
             doLast {
@@ -70,8 +70,6 @@ class PublishPlugin implements Plugin<Project> {
         project.tasks.getByName('jar').mustRunAfter(includeBuildTime)
 
         def validateBeforeUpload = project.tasks.create(name: TASK_NAME_VALIDATE_UPLOAD, type: ValidateBeforeUploadTask)
-        validateBeforeUpload.project = project
-        validateBeforeUpload.extension = extension
 
         project.tasks.create(name: TASK_NAME_PUBLISH_TO_BINTRAY) {
             def bintrayUpload = project.tasks.getByName('bintrayUpload')
@@ -103,6 +101,10 @@ class PublishPlugin implements Plugin<Project> {
             requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgKeyRing, "envNameGpgSecretKeyRingFile")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgSigningKey, "envNameGpgSigningKey")
 
+            if (!extension.signWithGpg.present) {
+                extension.signWithGpg.set(!project.version.endsWith('-SNAPSHOT'))
+            }
+
             configurePublishing(project, extension)
             configureBintray(project, extension, bintrayExtension)
 
@@ -110,10 +112,11 @@ class PublishPlugin implements Plugin<Project> {
             generatePom.dependsOn(includeBuildTime)
 
             def signingExtension = project.extensions.getByType(SigningExtension)
-            def tutteliPublication = project.extensions.getByType(PublishingExtension).publications.findByName('tutteli')
+            def tutteliPublication = project.extensions.getByType(PublishingExtension).publications.findByName(PUBLICATION_NAME)
             signingExtension.sign(tutteliPublication)
-            def signTask = project.tasks.getByName("signTutteliPublication")
-            def pubToMaLo = project.tasks.getByName('publishTutteliPublicationToMavenLocal')
+            def signTask = project.tasks.getByName("sign${PUBLICATION_NAME.capitalize()}Publication")
+            signTask.onlyIf { extension.signWithGpg.get() }
+            def pubToMaLo = project.tasks.getByName("publish${PUBLICATION_NAME.capitalize()}PublicationToMavenLocal")
             pubToMaLo.dependsOn(signTask)
 
             def helpBintray = project.tasks.create(name: TASK_NAME_HELP_BINTRAY) {
@@ -268,7 +271,7 @@ class PublishPlugin implements Plugin<Project> {
         bintrayExtension.with {
             user = user ?: getPropertyOrSystemEnv(project, extension.propNameBintrayUser, extension.envNameBintrayUser)
             key = key ?: getPropertyOrSystemEnv(project, extension.propNameBintrayApiKey, extension.envNameBintrayApiKey)
-            publications = ['tutteli'] as String[]
+            publications = [PUBLICATION_NAME] as String[]
 
             pkg.with {
                 repo = repo ?: extension.bintrayRepo.get()

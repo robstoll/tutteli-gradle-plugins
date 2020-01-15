@@ -8,14 +8,14 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-import static ch.tutteli.gradle.test.Asserts.assertContainsNotRegex
-import static org.junit.jupiter.api.Assertions.*
+import static org.junit.jupiter.api.Assertions.assertThrows
+import static org.junit.jupiter.api.Assertions.assertTrue
 import static org.junit.jupiter.api.Assumptions.assumeFalse
 
 @ExtendWith(SettingsExtension)
 class ModuleInfoPluginIntTest {
-
-    private static final String KOTLIN_VERSION = '1.2.40'
+    private static final String KOTLIN_VERSION = '1.3.30'
+    private static final String ATRIUM_VERSION = '0.7.0'
 
     @Test
     void moduleInfoFails(SettingsExtensionObject settingsSetup) {
@@ -37,7 +37,7 @@ class ModuleInfoPluginIntTest {
         //act
         def result = moduleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
         //assert
-        Asserts.assertStatusOk(result, [':compileKotlin', ':compileModuleKotlin', ':compileModuleJava', ':jar'], [], [':classes'])
+        Asserts.assertStatusOk(result, [':compileKotlin', ':compileModuleKotlin', ':compileModuleJava', ':inspectClassesForKotlinIC', ':jar'], [], [':classes'])
         assertTrue(result.output.contains("source set 'module'"), "should contain source set 'module':\n$result.output")
     }
 
@@ -47,7 +47,7 @@ class ModuleInfoPluginIntTest {
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //act
         def exception = assertThrows(UnexpectedBuildFailure) {
-            moduleInfoInSubproject(settingsSetup, "requires kotlin.stdlib")
+            moduleInfoInSubproject(settingsSetup, "requires kotlin.stdlib;")
         }
         //assert
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':sub1:compileKotlin'"), ":sub1:compileKotlin did not fail.\n$exception.message")
@@ -61,10 +61,21 @@ class ModuleInfoPluginIntTest {
         //act
         def result = moduleInfoInSubproject(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
         //assert
-        Asserts.assertStatusOk(result, [':sub1:compileKotlin', ':sub1:compileModuleKotlin', ':sub1:compileModuleJava', ':sub1:jar'], [], [':sub1:classes'])
+        Asserts.assertStatusOk(result, [':sub1:compileKotlin', ':sub1:compileModuleKotlin', ':sub1:compileModuleJava', ':sub1:inspectClassesForKotlinIC', ':sub1:jar'], [], [':sub1:classes'])
         assertTrue(result.output.contains("root has no sourceSets"), "root should not have sourceSets:\n$result.output")
         assertTrue(result.output.contains("sub1: source set 'module'"), "should contain sub1 source set 'module':\n$result.output")
     }
+
+    static final def GRADLE_PROJECT_DEPENDENCIES = """
+        dependencies {
+            implementation "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:$ATRIUM_VERSION"
+
+            constraints {
+                implementation "org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"
+                implementation "org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"
+            }
+        }
+    """
 
     static def moduleInfo(SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
         //arrange
@@ -95,9 +106,7 @@ class ModuleInfoPluginIntTest {
                 jcenter()
             }
 
-            dependencies {
-                implementation "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0"
-            }
+            $GRADLE_PROJECT_DEPENDENCIES
 
             project.afterEvaluate {
                 project.sourceSets.each{
@@ -146,9 +155,7 @@ class ModuleInfoPluginIntTest {
                     maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
                     jcenter()
                 }
-                dependencies {
-                    compile "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0"
-                }
+                $GRADLE_PROJECT_DEPENDENCIES
             }
 
             project.afterEvaluate {

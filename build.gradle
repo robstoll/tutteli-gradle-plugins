@@ -126,13 +126,13 @@ configure(pluginProjects) { subproject ->
     test.dependsOn(createClasspathManifest)
 
     dependencies {
-        testCompile(project(':test-utils')) {
+        testImplementation(project(':test-utils')) {
             exclude group: 'org.codehaus.groovy'
         }
-        testCompile("org.junit.jupiter:junit-jupiter-api:$junit_version")
-        testRuntime("org.junit.jupiter:junit-jupiter-engine:$junit_version")
-        testRuntime files(createClasspathManifest) //required for settings.gradle test
-        testCompile("org.mockito:mockito-core:3.2.4")
+        testImplementation("org.junit.jupiter:junit-jupiter-api:$junit_version")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit_version")
+        testRuntimeOnly(files(createClasspathManifest)) //required for settings.gradle test
+        testImplementation("org.mockito:mockito-core:3.2.4")
     }
 
     afterEvaluate {

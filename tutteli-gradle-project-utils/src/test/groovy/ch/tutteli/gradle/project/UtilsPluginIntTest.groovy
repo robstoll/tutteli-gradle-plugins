@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
 class UtilsPluginIntTest {
+    def static final KOTLIN_VERSION = '1.3.61'
 
     @Test
     void smokeTest(SettingsExtensionObject settingsSetup) throws IOException {
@@ -22,12 +23,12 @@ class UtilsPluginIntTest {
         include 'test-project-one'
         """
         settingsSetup.buildGradle << """
-            ${settingsSetup.buildscriptWithKotlin('1.2.71')}
+            ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
             apply plugin: 'ch.tutteli.project.utils'
-            
+
             println("here we are: \${prefixedProject('one').name}")
             println("another one: \${prefixedProjectName('one')}")
-            
+
             subprojects {
                 apply plugin: 'kotlin'
                 createTestJarTask(it)
@@ -36,7 +37,7 @@ class UtilsPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("projects")
+            .withArguments("projects", "--stacktrace")
             .build()
         //assert
         assertProjectInOutput(result, ':test-project-one')

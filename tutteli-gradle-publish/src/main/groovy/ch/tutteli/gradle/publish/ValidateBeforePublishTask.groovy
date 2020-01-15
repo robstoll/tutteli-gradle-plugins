@@ -1,8 +1,6 @@
 package ch.tutteli.gradle.publish
 
-
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
 import org.gradle.plugins.signing.SigningExtension
 
@@ -10,14 +8,12 @@ import static ch.tutteli.gradle.publish.Validation.newIllegalState
 import static ch.tutteli.gradle.publish.Validation.throwIllegalPropertyNorSystemEnvSet
 
 class ValidateBeforePublishTask extends DefaultTask {
-    Project project
-    PublishPluginExtension extension
-
     @TaskAction
     def validate() {
-        if (extension.signWithGpg.get()) {
+        def extension = project.extensions.getByName(PublishPlugin.EXTENSION_NAME)
 
-            configureSigning(project, extension)
+        if (extension.signWithGpg.get()) {
+            configureSigning(extension)
 
             def signingPassword = (project.ext."signing.password")?.trim()
             if (!signingPassword) throw throwIllegalPropertyNorSystemEnvSet(extension.propNameGpgPassphrase, extension.envNameGpgPassphrase)
@@ -44,7 +40,7 @@ class ValidateBeforePublishTask extends DefaultTask {
         }
     }
 
-    private static void configureSigning(Project project, PublishPluginExtension extension) {
+    private void configureSigning(PublishPluginExtension extension) {
         project.ext."signing.password" = PublishPlugin.getPropertyOrSystemEnv(project, extension.propNameGpgPassphrase, extension.envNameGpgPassphrase)
         project.ext."signing.keyId" = PublishPlugin.getPropertyOrSystemEnv(project, extension.propNameGpgKeyId, extension.envNameGpgKeyId)
         project.ext."signing.secretKeyRingFile" = PublishPlugin.getPropertyOrSystemEnv(project, extension.propNameGpgKeyRing, extension.envNameGpgKeyRing)
