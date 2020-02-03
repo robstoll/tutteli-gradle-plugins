@@ -26,7 +26,7 @@ class SettingsExtensionObject {
 
         URL pluginClasspathResource = getClass().classLoader.getResource('plugin-classpath.txt')
         if (pluginClasspathResource == null) {
-            throw new IllegalStateException('Did not find plugin classpath resource, run `testClasses` build task.')
+            throw new IllegalStateException('Did not find plugin classpath resource, run `createClasspathManifest` build task.')
         }
 
         pluginClasspath = pluginClasspathResource.readLines()
@@ -38,7 +38,7 @@ class SettingsExtensionObject {
         return """
         import org.gradle.api.tasks.testing.logging.TestLogEvent
         buildscript {
-            repositories { 
+            repositories {
                 maven { url "https://plugins.gradle.org/m2/" }
             }
             dependencies {

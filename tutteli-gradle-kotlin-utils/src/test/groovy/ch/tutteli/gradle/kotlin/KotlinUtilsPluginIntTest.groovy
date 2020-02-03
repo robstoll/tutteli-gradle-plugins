@@ -12,6 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import static ch.tutteli.gradle.test.Asserts.assertContainsNotRegex
 import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertTrue
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.core.Every.everyItem
+import static org.hamcrest.core.IsEqual.equalTo
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.*;
 
 @ExtendWith(SettingsExtension)
 class KotlinUtilsPluginIntTest {
@@ -90,29 +94,30 @@ class KotlinUtilsPluginIntTest {
     }
 
     @Test
-    void configureCommonProjectsOnly(SettingsExtensionObject settingsSetup) throws IOException {
+    void commonProjectsHaveSourceTargetJdk8(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << settingsFileContent
-        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + "configureCommonProjects() " +
-            "println(\"name: \" + getProjectNameWithoutSuffix(project(':test1-js')))"
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + """
+            configureCommonProjects()
+            println("name: " + getProjectNameWithoutSuffix(project(':test1-js')))
+            configure(project(':test1-common')) {
+                apply plugin: 'maven-publish'
+                publishing {
+                    publications {
+                        maven(MavenPublication) {
+                            from components.java
+                        }
+                    }
+                }
+            }"""
         //act
-        def gradleRunner = GradleRunner.create()
+        def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-
-        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test1-common")
-        executeDependenciesAndAssertOnlyCommon(gradleRunner, ":test2-common")
-
-        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-js")
-        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
-        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-jvm")
-        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-jvm")
-        executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
-        executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
-
-        def result = gradleRunner
-            .withArguments("help")
+            .withArguments(":test1-common:generateMetadataFileForMavenPublication")
             .build()
         assertTrue(result.output.contains("name: test1"), "getProjectNameWithoutSuffix(test1-js) == test1:\n" + result.output)
+        def gradleMetadataFile = settingsSetup.tmpPath.resolve("test1-common/build/publications/maven/module.json").toFile()
+        assertThat(gradleMetadataFile, hasJsonPath("\$.variants[*].attributes['org.gradle.jvm.version']", everyItem(equalTo(8))))
     }
 
     @Test
@@ -153,6 +158,33 @@ class KotlinUtilsPluginIntTest {
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-js")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test1-android")
         executeDependenciesAndAssertNotExisting(gradleRunner, ":test2-android")
+    }
+
+
+    @Test
+    void jvmProjectsHaveSourceTargetJdk8(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << settingsFileContent
+        settingsSetup.buildGradle << headerBuildFile(settingsSetup) + """
+            configureCommonProjects()
+            configureJvmProjects()
+            configure(project(':test1-jvm')) {
+                apply plugin: 'maven-publish'
+                publishing {
+                    publications {
+                        maven(MavenPublication) {
+                            from components.java
+                        }
+                    }
+                }
+            }"""
+        //act
+        GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments(":test1-jvm:generateMetadataFileForMavenPublication")
+            .build()
+        def gradleMetadataFile = settingsSetup.tmpPath.resolve("test1-jvm/build/publications/maven/module.json").toFile()
+        assertThat(gradleMetadataFile, hasJsonPath("\$.variants[*].attributes['org.gradle.jvm.version']", everyItem(equalTo(8))))
     }
 
     @Test
