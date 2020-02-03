@@ -8,9 +8,14 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.core.Every.everyItem
+import static org.hamcrest.core.IsEqual.equalTo
 import static org.junit.jupiter.api.Assertions.assertThrows
 import static org.junit.jupiter.api.Assertions.assertTrue
 import static org.junit.jupiter.api.Assumptions.assumeFalse
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue
 
 @ExtendWith(SettingsExtension)
 class ModuleInfoPluginIntTest {
@@ -22,8 +27,9 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //act
+        setupModuleInfo(settingsSetup, "requires kotlin.stdlib;")
         def exception = assertThrows(UnexpectedBuildFailure) {
-            moduleInfo(settingsSetup, "requires kotlin.stdlib;")
+            runGradleModuleBuild(settingsSetup, "jar")
         }
         //assert
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':compileKotlin'"), ":compileKotlin did not fail.\n$exception.message")
@@ -35,7 +41,8 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //act
-        def result = moduleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        def result = runGradleModuleBuild(settingsSetup, "jar")
         //assert
         Asserts.assertStatusOk(result, [':compileKotlin', ':compileModuleKotlin', ':compileModuleJava', ':inspectClassesForKotlinIC', ':jar'], [], [':classes'])
         assertTrue(result.output.contains("source set 'module'"), "should contain source set 'module':\n$result.output")
@@ -46,8 +53,9 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //act
+        setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib;")
         def exception = assertThrows(UnexpectedBuildFailure) {
-            moduleInfoInSubproject(settingsSetup, "requires kotlin.stdlib;")
+            runGradleModuleBuild(settingsSetup, "sub1:jar")
         }
         //assert
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':sub1:compileKotlin'"), ":sub1:compileKotlin did not fail.\n$exception.message")
@@ -59,11 +67,38 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //act
-        def result = moduleInfoInSubproject(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        def result = runGradleModuleBuild(settingsSetup, "sub1:jar")
         //assert
         Asserts.assertStatusOk(result, [':sub1:compileKotlin', ':sub1:compileModuleKotlin', ':sub1:compileModuleJava', ':sub1:inspectClassesForKotlinIC', ':sub1:jar'], [], [':sub1:classes'])
         assertTrue(result.output.contains("root has no sourceSets"), "root should not have sourceSets:\n$result.output")
         assertTrue(result.output.contains("sub1: source set 'module'"), "should contain sub1 source set 'module':\n$result.output")
+    }
+
+    @Test
+    void compatibleToJava8(SettingsExtensionObject settingsSetup) {
+        //only for jdk8
+        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
+        setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        settingsSetup.buildGradle << """
+            sourceCompatibility = 8
+            targetCompatibility = 8
+
+            apply plugin: 'maven-publish'
+
+            publishing {
+                publications {
+                    maven(MavenPublication) {
+                        from components.java
+                    }
+                }
+            }
+        """.stripIndent()
+        def result = runGradleModuleBuild(settingsSetup, "jar", "generateMetadataFileForMavenPublication")
+        //assert
+        Asserts.assertStatusOk(result, [':compileKotlin', ':compileModuleKotlin', ':compileModuleJava', ':inspectClassesForKotlinIC', ':jar', ':generateMetadataFileForMavenPublication'], [], [':classes'])
+        def gradleMetadataFile = settingsSetup.tmpPath.resolve("build/publications/maven/module.json").toFile()
+        assertThat(gradleMetadataFile, hasJsonPath("\$.variants[*].attributes['org.gradle.jvm.version']", everyItem(equalTo(8))))
     }
 
     static final def GRADLE_PROJECT_DEPENDENCIES = """
@@ -77,7 +112,7 @@ class ModuleInfoPluginIntTest {
         }
     """
 
-    static def moduleInfo(SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
+    static def setupModuleInfo(SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
         //arrange
         settingsSetup.settings << "rootProject.name='test-project'"
         def module = new File(settingsSetup.tmp, 'src/module/')
@@ -114,14 +149,16 @@ class ModuleInfoPluginIntTest {
                 }
             }
             """
-        //act
+    }
+
+    static def runGradleModuleBuild(SettingsExtensionObject settingsSetup, String... tasks) {
         return GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("jar", "--stacktrace")
+            .withArguments(tasks.toList() + "--stacktrace")
             .build()
     }
 
-    static def moduleInfoInSubproject(SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
+    static def setupModuleInfoInSubproject(SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
@@ -173,10 +210,5 @@ class ModuleInfoPluginIntTest {
                 }
             }
             """
-        //act
-        return GradleRunner.create()
-            .withProjectDir(settingsSetup.tmp)
-            .withArguments(":sub1:jar", "--stacktrace")
-            .build()
     }
 }
