@@ -8,8 +8,6 @@ jdk:
   - openjdk12
   - openjdk13
 
-before_install:
- - chmod +x gradlew
 install: true
 
 script:
