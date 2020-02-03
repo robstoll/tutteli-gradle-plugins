@@ -55,6 +55,9 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             project.configure(getCommonProjects()) {
                 apply plugin: 'kotlin-platform-common'
 
+                sourceCompatibility = 8
+                targetCompatibility = 8
+
                 compileKotlinCommon {
                     if (treatWarningsAsErrors()) {
                         kotlinOptions.allWarningsAsErrors = true
@@ -116,6 +119,9 @@ class KotlinUtilsPlugin implements Plugin<Project> {
     private static void configureJvmLikeProjects(Project rootProject, Set<Project> projects){
         rootProject.configure(projects) { Project subproject ->
             apply plugin: 'kotlin-platform-jvm'
+
+            sourceCompatibility = 8
+            targetCompatibility = 8
 
             compileKotlin {
                 if (treatWarningsAsErrors()) {
