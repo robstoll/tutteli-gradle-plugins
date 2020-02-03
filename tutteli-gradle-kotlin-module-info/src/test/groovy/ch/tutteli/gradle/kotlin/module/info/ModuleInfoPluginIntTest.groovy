@@ -8,14 +8,13 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.Every.everyItem
 import static org.hamcrest.core.IsEqual.equalTo
 import static org.junit.jupiter.api.Assertions.assertThrows
 import static org.junit.jupiter.api.Assertions.assertTrue
 import static org.junit.jupiter.api.Assumptions.assumeFalse
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue
 
 @ExtendWith(SettingsExtension)
 class ModuleInfoPluginIntTest {
@@ -26,8 +25,9 @@ class ModuleInfoPluginIntTest {
     void moduleInfoFails(SettingsExtensionObject settingsSetup) {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
-        //act
+        //arrange
         setupModuleInfo(settingsSetup, "requires kotlin.stdlib;")
+        //act
         def exception = assertThrows(UnexpectedBuildFailure) {
             runGradleModuleBuild(settingsSetup, "jar")
         }
@@ -40,8 +40,9 @@ class ModuleInfoPluginIntTest {
     void moduleInfoSucceeds(SettingsExtensionObject settingsSetup) {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
-        //act
+        //arrange
         setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        //act
         def result = runGradleModuleBuild(settingsSetup, "jar")
         //assert
         Asserts.assertStatusOk(result, [':compileKotlin', ':compileModuleKotlin', ':compileModuleJava', ':inspectClassesForKotlinIC', ':jar'], [], [':classes'])
@@ -52,8 +53,9 @@ class ModuleInfoPluginIntTest {
     void moduleInfoInSubprojectFails(SettingsExtensionObject settingsSetup) throws IOException {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
-        //act
+        //arrange
         setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib;")
+        //act
         def exception = assertThrows(UnexpectedBuildFailure) {
             runGradleModuleBuild(settingsSetup, "sub1:jar")
         }
@@ -66,8 +68,9 @@ class ModuleInfoPluginIntTest {
     void moduleInfoInSubprojectSucceeds(SettingsExtensionObject settingsSetup) {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
-        //act
+        //arrange
         setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        //act
         def result = runGradleModuleBuild(settingsSetup, "sub1:jar")
         //assert
         Asserts.assertStatusOk(result, [':sub1:compileKotlin', ':sub1:compileModuleKotlin', ':sub1:compileModuleJava', ':sub1:inspectClassesForKotlinIC', ':sub1:jar'], [], [':sub1:classes'])
@@ -77,8 +80,7 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void compatibleToJava8(SettingsExtensionObject settingsSetup) {
-        //only for jdk8
-        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
+        //arrange
         setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
         settingsSetup.buildGradle << """
             sourceCompatibility = 8
@@ -94,9 +96,14 @@ class ModuleInfoPluginIntTest {
                 }
             }
         """.stripIndent()
+        //act
         def result = runGradleModuleBuild(settingsSetup, "jar", "generateMetadataFileForMavenPublication")
         //assert
-        Asserts.assertStatusOk(result, [':compileKotlin', ':compileModuleKotlin', ':compileModuleJava', ':inspectClassesForKotlinIC', ':jar', ':generateMetadataFileForMavenPublication'], [], [':classes'])
+        if (System.getProperty("java.version").startsWith("1.8")) {
+            Asserts.assertStatusOk(result, [':compileKotlin', ':inspectClassesForKotlinIC', ':jar', ':generateMetadataFileForMavenPublication'], [], [':classes'])
+        } else {
+            Asserts.assertStatusOk(result, [':compileKotlin', ':compileModuleKotlin', ':compileModuleJava', ':inspectClassesForKotlinIC', ':jar', ':generateMetadataFileForMavenPublication'], [], [':classes'])
+        }
         def gradleMetadataFile = settingsSetup.tmpPath.resolve("build/publications/maven/module.json").toFile()
         assertThat(gradleMetadataFile, hasJsonPath("\$.variants[*].attributes['org.gradle.jvm.version']", everyItem(equalTo(8))))
     }
@@ -113,7 +120,6 @@ class ModuleInfoPluginIntTest {
     """
 
     static def setupModuleInfo(SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
-        //arrange
         settingsSetup.settings << "rootProject.name='test-project'"
         def module = new File(settingsSetup.tmp, 'src/module/')
         module.mkdirs()
@@ -159,9 +165,6 @@ class ModuleInfoPluginIntTest {
     }
 
     static def setupModuleInfoInSubproject(SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
-        //not for jdk8
-        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
-        //arrange
         settingsSetup.settings << """
         rootProject.name='test-project'
         include 'sub1'
