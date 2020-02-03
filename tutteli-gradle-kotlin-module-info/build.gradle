@@ -7,3 +7,7 @@ buildscript {
         plugin_tags = ['kotlin', 'module-info', 'jigsaw']
     }
 }
+
+dependencies {
+    testImplementation "com.jayway.jsonpath:json-path-assert:2.2.0"
+}

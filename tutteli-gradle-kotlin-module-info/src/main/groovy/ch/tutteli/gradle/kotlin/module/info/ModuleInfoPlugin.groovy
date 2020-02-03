@@ -37,6 +37,8 @@ class ModuleInfoPlugin implements Plugin<Project> {
             project.compileModuleJava.configure {
                 dependsOn project.compileKotlin
                 destinationDir = project.compileKotlin.destinationDir
+                sourceCompatibility = 9
+                targetCompatibility = 9
                 doFirst {
                     options.compilerArgs = ['--module-path', classpath.asPath]
                     classpath = project.files()
