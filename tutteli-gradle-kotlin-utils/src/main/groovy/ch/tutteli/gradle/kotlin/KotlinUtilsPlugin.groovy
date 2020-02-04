@@ -81,6 +81,9 @@ class KotlinUtilsPlugin implements Plugin<Project> {
             project.configure(getJsProjects()) { Project subproject ->
                 apply plugin: 'kotlin-platform-js'
 
+                sourceCompatibility = 8
+                targetCompatibility = 8
+
                 compileKotlin2Js {
                     if (treatWarningsAsErrors()) {
                         kotlinOptions.allWarningsAsErrors = true
