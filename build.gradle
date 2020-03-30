@@ -6,7 +6,7 @@ buildscript {
         bintray_version = '1.8.4'
         spek_version = '2.0.10'
 
-        publish_version = '0.10.1'
+        publish_version = '0.11.0'
         jacoco_toolVersion = '0.8.5'
     }
 
