@@ -20,19 +20,6 @@ buildscript {
     }
 }
 
-configurations {
-    dependABot
-}
-
-dependencies {
-    dependABot "org.junit:junit5-engine:$junit_version"
-    dependABot "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    dependABot "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
-    dependABot "com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintray_version"
-    dependABot "org.spekframework.spek2:spek-dsl-jvm:$spek_version"
-    dependABot "org.jacoco:jacoco:$jacoco_toolVersion"
-}
-
 buildscript {
     ext.error = false
     if (!ext.error) {
