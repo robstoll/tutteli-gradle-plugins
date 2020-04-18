@@ -1,5 +1,5 @@
 dependencies {
     implementation gradleApi()
     implementation gradleTestKit()
-    implementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
+    compile "org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version"
 }

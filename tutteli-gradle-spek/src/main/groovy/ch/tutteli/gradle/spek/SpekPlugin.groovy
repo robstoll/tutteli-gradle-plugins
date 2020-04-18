@@ -53,7 +53,7 @@ class SpekPlugin implements Plugin<Project> {
                     }
 
                     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-                    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$Dependencies.junit_version"
+                    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$Dependencies.junit_jupiter_version"
                     testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion" //spek requires reflect
 
                 } else {
@@ -63,6 +63,10 @@ class SpekPlugin implements Plugin<Project> {
                     testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
                         exclude group: 'org.jetbrains.kotlin'
                     }
+                    // seems like running test from Intellij sometimes fails with:
+                    // java.lang.NoSuchMethodError: 'org.junit.platform.commons.function.Try org.junit.platform.commons.util.ReflectionUtils.tryToLoadClass(java.lang.String)'
+                    // adding the following dependency fixes the problem
+                    testRuntimeOnly "org.junit.platform:junit-platform-commons:$Dependencies.junit_platform_version"
 
                     testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
                     testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion" //spek requires reflect
