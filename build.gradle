@@ -197,7 +197,7 @@ task removeRepo(type: Delete) {
 /*
 Release & deploy
 ----------------
-(assumes you have an alias named gr pointing to gradlew)
+(assumes you have an alias named gr pointing to ./gradlew)
 1. gr removeRepo
 2. Update master:
     a) point to the tag
