@@ -6,7 +6,7 @@ buildscript {
         dokka_version = '0.9.18'
         bintray_version = '1.8.5'
         spek_version = '2.0.10'
-        mockito_version = '3.8.20'
+        mockito_version = '3.9.0'
         json_path_assert_version = '2.5.0'
 
         publish_version = '0.14.0'
