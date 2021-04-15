@@ -9,7 +9,7 @@ buildscript {
         mockito_version = '3.9.3'
         json_path_assert_version = '2.5.0'
 
-        publish_version = '0.14.0'
+        publish_version = '0.15.0'
         jacoco_toolVersion = '0.8.5'
     }
 
