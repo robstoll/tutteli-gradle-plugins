@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        junit_jupiter_version = '5.7.1'
+        junit_jupiter_version = '5.7.2'
         junit_platform_version = '1.6.0'
         kotlin_version = '1.4.32'
         dokka_version = '0.9.18'
