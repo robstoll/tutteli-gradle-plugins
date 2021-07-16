@@ -57,8 +57,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
-        maven { url "https://dl.bintray.com/mockito/maven" }
     }
 }
 
@@ -120,6 +118,8 @@ configure(pluginProjects) { subproject ->
             exclude group: 'org.codehaus.groovy'
         }
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit_jupiter_version")
+        implementation "org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version"
+
         testRuntimeOnly(files(createClasspathManifest)) //required for settings.gradle test
         testImplementation "org.mockito:mockito-core:$mockito_version"
         testImplementation "com.jayway.jsonpath:json-path-assert:$json_path_assert_version"

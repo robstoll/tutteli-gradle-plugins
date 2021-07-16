@@ -18,8 +18,8 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse
 
 @ExtendWith(SettingsExtension)
 class ModuleInfoPluginIntTest {
-    private static final String KOTLIN_VERSION = '1.3.30'
-    private static final String ATRIUM_VERSION = '0.14.0'
+    private static final String KOTLIN_VERSION = '1.5.21'
+    private static final String ATRIUM_VERSION = '0.16.0'
 
     @Test
     void moduleInfoFails(SettingsExtensionObject settingsSetup) {
@@ -33,8 +33,8 @@ class ModuleInfoPluginIntTest {
         }
         //assert
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':compileKotlin'"), ":compileKotlin did not fail.\n$exception.message")
-        assertTrue(exception.message.contains('Unresolved reference: toBe'), "not atrium was the problem.\n$exception.message")
-        assertTrue(exception.message.contains('Unresolved reference: expect'), "not atrium was the problem.\n$exception.message")
+        assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.verbs'"), "not atrium was the problem.\n$exception.message")
+        assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.api.fluent.en_GB'"), "not atrium-verbs was the problem.\n$exception.message")
     }
 
     @Test
@@ -62,8 +62,8 @@ class ModuleInfoPluginIntTest {
         }
         //assert
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':sub1:compileKotlin'"), ":sub1:compileKotlin did not fail.\n$exception.message")
-        assertTrue(exception.message.contains('Unresolved reference: toBe'), "not atrium was the problem.\n$exception.message")
-        assertTrue(exception.message.contains('Unresolved reference: expect'), "not atrium was the problem.\n$exception.message")
+        assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.verbs'"), "not atrium was the problem.\n$exception.message")
+        assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.api.fluent.en_GB'"), "not atrium-verbs was the problem.\n$exception.message")
     }
 
     @Test
