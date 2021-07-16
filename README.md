@@ -75,7 +75,7 @@ Requires that `kotlinutils.kotlinVersion` (property on the extension) is configu
 
 Following a list of functions it supports:
 - declare dependencies on libs: `kotlinStdlib()`, `kotlinStdlibJs()`, `kotlinStdlibCommon()`, `kotlinReflect()`, `kotlinTestJs()`, `kotlinTestCommon()`, , `kotlinTestAnotationsCommon()`  
-- exclude dependencies: `excludeKotlin`, `excludeKbox`, `excludeAtriumVerbs`, `excluding {...}` (see example)
+- exclude dependencies: `excludeKotlin`, `excludeKbox`, `excludeAtriumVerbs` (see example)
 - configure projects: `configureCommonProjects`, `configureJsProjects`, `configureJvmProjects`
 - `getCommonProjects()`, `getJsProjects()`, `getJvmProjects()`, `getProjectNameWithoutSuffix(project)`   
 

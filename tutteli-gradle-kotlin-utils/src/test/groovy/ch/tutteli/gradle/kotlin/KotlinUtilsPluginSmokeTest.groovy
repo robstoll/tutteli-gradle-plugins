@@ -35,20 +35,6 @@ class KotlinUtilsPluginSmokeTest {
         assertThrowsIllegalStateKotlinVersionNotDefined { project.ext.kotlinReflect() }
     }
 
-    @Test
-    void checkIfExcludingWorks() {
-        Project project = ProjectBuilder.builder().build()
-        project.plugins.apply('java')
-        project.plugins.apply(KotlinUtilsPlugin)
-        project.dependencies {
-            testImplementation "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.16.0", project.excluding {
-                kotlin()
-                kbox()
-                atriumVerbs()
-            }
-        }
-    }
-
     private static void assertThrowsIllegalStateKotlinVersionNotDefined(Executable executable) {
         //act
         def ex = assertThrows(IllegalStateException, executable)

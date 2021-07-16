@@ -32,65 +32,65 @@ class KotlinUtilsPluginIntTest {
         include 'test1-android'
         include 'test2-android'
         """
-
-    @Test
-    void compileAndExcludeXy(SettingsExtensionObject settingsSetup) throws IOException {
-        //arrange
-        settingsSetup.settings << "rootProject.name='test-project'"
-        settingsSetup.buildGradle << """
-        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
-
-        apply plugin: 'kotlin-platform-js'
-        apply plugin: 'ch.tutteli.kotlin.utils'
-        kotlinutils.kotlinVersion = '$KOTLIN_VERSION'
-
-        repositories{
-            mavenCentral()
-        }
-
-        dependencies {
-            implementation kotlinStdlib(), excludeKbox
-            implementation kotlinStdlibJs(), excludeAtriumVerbs
-            implementation kotlinStdlibCommon(), excludeKotlin
-            implementation kotlinReflect(), excluding {
-                kotlin()
-                kbox()
-                atriumVerbs()
-            }
-            testImplementation "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0", excluding {
-                kotlin()
-                atriumVerbs()
-                kbox()
-            }
-            testRuntimeOnly "org.jetbrains.spek:spek-junit-platform-engine:1.1.5", excluding {
-                kotlin()
-                exclude group: 'org.jetbrains.spek', module: 'spek-api'
-            }
-            testImplementation kotlinTest()
-            testImplementation kotlinTestJunit5()
-            testImplementation kotlinTestJs()
-            testImplementation kotlinTestCommon()
-            testImplementation kotlinTestAnnotationsCommon()
-        }
-        """
-        //act
-        def result = GradleRunner.create()
-            .withProjectDir(settingsSetup.tmp)
-            .withArguments("dependencies", "--stacktrace")
-            .build()
-        //assert
-        Asserts.assertStatusOk(result, ":dependencies")
-
-        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"), "should contain stdlib:\n" + result.output)
-        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-js:$KOTLIN_VERSION"), "should contain stdlib-js:\n" + result.output)
-        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + result.output)
-        assertTrue(result.output.contains("\n\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"), "should contain reflect:\n" + result.output)
-
-        assertContainsNotRegex(result.output, "stdlib", /(compile|default|runtime)[\S\s]+?\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION\r?\n\s*\\--- org.jetbrains.kotlin:kotlin-stdlib:/)
-        assertContainsNotRegex(result.output, "atrium-verbs", /ch.tutteli.atrium:atrium-verbs/)
-        assertContainsNotRegex(result.output, "kbox", /ch.tutteli.kbox/)
-        assertContainsNotRegex(result.output, "kbox", /org.jetbrains.spek:spek-api/)
-    }
+//
+//    @Test
+//    void compileAndExcludeXy(SettingsExtensionObject settingsSetup) throws IOException {
+//        //arrange
+//        settingsSetup.settings << "rootProject.name='test-project'"
+//        settingsSetup.buildGradle << """
+//        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+//
+//        apply plugin: 'kotlin-platform-js'
+//        apply plugin: 'ch.tutteli.kotlin.utils'
+//        kotlinutils.kotlinVersion = '$KOTLIN_VERSION'
+//
+//        repositories{
+//            mavenCentral()
+//        }
+//
+//        dependencies {
+//            implementation kotlinStdlib(), excludeKbox
+//            implementation kotlinStdlibJs(), excludeAtriumVerbs
+//            implementation kotlinStdlibCommon(), excludeKotlin
+//            implementation kotlinReflect(), excluding {
+//                kotlin()
+//                kbox()
+//                atriumVerbs()
+//            }
+//            testImplementation "ch.tutteli.atrium:atrium-fluent-en_GB:0.16.0", excluding {
+//                kotlin()
+//                atriumVerbs()
+//                kbox()
+//            }
+//            testRuntimeOnly "org.jetbrains.spek:spek-junit-platform-engine:1.1.5", excluding {
+//                kotlin()
+//                exclude group: 'org.jetbrains.spek', module: 'spek-api'
+//            }
+//            testImplementation kotlinTest()
+//            testImplementation kotlinTestJunit5()
+//            testImplementation kotlinTestJs()
+//            testImplementation kotlinTestCommon()
+//            testImplementation kotlinTestAnnotationsCommon()
+//        }
+//        """
+//        //act
+//        def result = GradleRunner.create()
+//            .withProjectDir(settingsSetup.tmp)
+//            .withArguments("dependencies", "--stacktrace")
+//            .build()
+//        //assert
+//        Asserts.assertStatusOk(result, ":dependencies")
+//
+//        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"), "should contain stdlib:\n" + result.output)
+//        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-js:$KOTLIN_VERSION"), "should contain stdlib-js:\n" + result.output)
+//        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + result.output)
+//        assertTrue(result.output.contains("\n\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"), "should contain reflect:\n" + result.output)
+//
+//        assertContainsNotRegex(result.output, "stdlib", /(compile|default|runtime)[\S\s]+?\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION\r?\n\s*\\--- org.jetbrains.kotlin:kotlin-stdlib:/)
+//        assertContainsNotRegex(result.output, "atrium-verbs", /ch.tutteli.atrium:atrium-verbs/)
+//        assertContainsNotRegex(result.output, "kbox", /ch.tutteli.kbox/)
+//        assertContainsNotRegex(result.output, "kbox", /org.jetbrains.spek:spek-api/)
+//    }
 
     @Test
     void commonProjectsHaveSourceTargetJdk8(SettingsExtensionObject settingsSetup) throws IOException {

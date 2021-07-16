@@ -30,14 +30,6 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         project.ext.excludeKbox = { ExcludeExtension.excludeKbox(owner as ExternalModuleDependency) }
         project.ext.excludeKotlin = { ExcludeExtension.excludeKotlin(owner as ExternalModuleDependency) }
         project.ext.excludeAtriumVerbs = { ExcludeExtension.excludeAtriumVerbs(owner as ExternalModuleDependency) }
-        project.ext.excluding = { Closure<ExcludeExtension> closure ->
-            return {
-                def excludes = closure.clone()
-                excludes.resolveStrategy = DELEGATE_FIRST
-                excludes.delegate = new ExcludeExtension(owner as ExternalModuleDependency)
-                excludes.call()
-            }
-        }
 
         def getCommonProjects = { getSubprojectsWithSuffix(project, "-common") }
         def getJsProjects = { getSubprojectsWithSuffix(project, "-js") }
