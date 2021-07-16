@@ -23,8 +23,6 @@ class SpekPlugin implements Plugin<Project> {
         def kotlinVersion = getKotlinVersion(project)
 
         project.repositories {
-            maven { url "https://dl.bintray.com/jetbrains/spek" }
-            maven { url "https://dl.bintray.com/spekframework/spek" }
             mavenCentral()
         }
 

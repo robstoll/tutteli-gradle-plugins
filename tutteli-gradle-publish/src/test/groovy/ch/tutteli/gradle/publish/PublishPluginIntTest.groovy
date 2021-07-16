@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*
 @ExtendWith(SettingsExtension)
 class PublishPluginIntTest {
     def static final KOTLIN_VERSION = '1.3.61'
-    def static final ATRIUM_VERSION = '0.8.0'
+    def static final ATRIUM_VERSION = '0.14.0'
 
     @Test
     void smokeTest(SettingsExtensionObject settingsSetup) throws IOException {
@@ -596,7 +596,7 @@ class PublishPluginIntTest {
             }
         }
         repositories {
-            jcenter()
+            mavenCentral()
         }
 
         apply plugin: 'kotlin'

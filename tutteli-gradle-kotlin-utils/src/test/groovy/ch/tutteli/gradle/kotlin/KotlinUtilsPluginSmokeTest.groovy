@@ -40,11 +40,8 @@ class KotlinUtilsPluginSmokeTest {
         Project project = ProjectBuilder.builder().build()
         project.plugins.apply('java')
         project.plugins.apply(KotlinUtilsPlugin)
-        project.repositories {
-            maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
-        }
         project.dependencies {
-            testImplementation "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.7.0", project.excluding {
+            testImplementation "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:0.16.0", project.excluding {
                 kotlin()
                 kbox()
                 atriumVerbs()

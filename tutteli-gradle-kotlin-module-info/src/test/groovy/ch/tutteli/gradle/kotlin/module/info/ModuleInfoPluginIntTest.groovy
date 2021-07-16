@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse
 @ExtendWith(SettingsExtension)
 class ModuleInfoPluginIntTest {
     private static final String KOTLIN_VERSION = '1.3.30'
-    private static final String ATRIUM_VERSION = '0.7.0'
+    private static final String ATRIUM_VERSION = '0.14.0'
 
     @Test
     void moduleInfoFails(SettingsExtensionObject settingsSetup) {
@@ -33,7 +33,8 @@ class ModuleInfoPluginIntTest {
         }
         //assert
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':compileKotlin'"), ":compileKotlin did not fail.\n$exception.message")
-        assertTrue(exception.message.contains('Unresolved reference: atrium'), "not atrium was the problem.\n$exception.message")
+        assertTrue(exception.message.contains('Unresolved reference: toBe'), "not atrium was the problem.\n$exception.message")
+        assertTrue(exception.message.contains('Unresolved reference: expect'), "not atrium was the problem.\n$exception.message")
     }
 
     @Test
@@ -41,7 +42,7 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
         //act
         def result = runGradleModuleBuild(settingsSetup, "jar")
         //assert
@@ -61,7 +62,8 @@ class ModuleInfoPluginIntTest {
         }
         //assert
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':sub1:compileKotlin'"), ":sub1:compileKotlin did not fail.\n$exception.message")
-        assertTrue(exception.message.contains('Unresolved reference: atrium'), "not atrium was the problem.\n$exception.message")
+        assertTrue(exception.message.contains('Unresolved reference: toBe'), "not atrium was the problem.\n$exception.message")
+        assertTrue(exception.message.contains('Unresolved reference: expect'), "not atrium was the problem.\n$exception.message")
     }
 
     @Test
@@ -69,7 +71,7 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
         //act
         def result = runGradleModuleBuild(settingsSetup, "sub1:jar")
         //assert
@@ -81,7 +83,7 @@ class ModuleInfoPluginIntTest {
     @Test
     void compatibleToJava8(SettingsExtensionObject settingsSetup) {
         //arrange
-        setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.bundle.cc.en_GB.robstoll;")
+        setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
         settingsSetup.buildGradle << """
             sourceCompatibility = 8
             targetCompatibility = 8
@@ -110,7 +112,7 @@ class ModuleInfoPluginIntTest {
 
     static final def GRADLE_PROJECT_DEPENDENCIES = """
         dependencies {
-            implementation "ch.tutteli.atrium:atrium-cc-en_GB-robstoll:$ATRIUM_VERSION"
+            implementation "ch.tutteli.atrium:atrium-fluent-en_GB:$ATRIUM_VERSION"
 
             constraints {
                 implementation "org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"
@@ -129,11 +131,11 @@ class ModuleInfoPluginIntTest {
         kotlin.mkdirs()
         def test = new File(kotlin, 'test.kt')
         test << """
-            import ch.tutteli.atrium.api.cc.en_GB.toBe
-            import ch.tutteli.atrium.verbs.assert
+            import ch.tutteli.atrium.api.fluent.en_GB.toBe
+            import ch.tutteli.atrium.api.verbs.expect
 
             fun foo() {
-                assert(1).toBe(1)
+                expect(1).toBe(1)
             }
             """
         settingsSetup.buildGradle << """
@@ -143,8 +145,7 @@ class ModuleInfoPluginIntTest {
             apply plugin: 'ch.tutteli.kotlin.module.info'
 
             repositories {
-                maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
-                jcenter()
+                mavenCentral()
             }
 
             $GRADLE_PROJECT_DEPENDENCIES
@@ -177,11 +178,11 @@ class ModuleInfoPluginIntTest {
         kotlin.mkdirs()
         def test = new File(kotlin, 'test.kt')
         test << """
-            import ch.tutteli.atrium.api.cc.en_GB.toBe
-            import ch.tutteli.atrium.verbs.assert
+            import ch.tutteli.atrium.api.fluent.en_GB.toBe
+            import ch.tutteli.atrium.api.verbs.expect
 
             fun foo() {
-                assert(1).toBe(1)
+                expect(1).toBe(1)
             }
             """
         settingsSetup.buildGradle << """
@@ -192,8 +193,7 @@ class ModuleInfoPluginIntTest {
                 apply plugin: 'kotlin-platform-jvm'
                 apply plugin: 'ch.tutteli.kotlin.module.info'
                 repositories {
-                    maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
-                    jcenter()
+                    mavenCentral()
                 }
                 $GRADLE_PROJECT_DEPENDENCIES
             }

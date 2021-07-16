@@ -46,7 +46,6 @@ class KotlinUtilsPluginIntTest {
 
         repositories{
             mavenCentral()
-            maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
         }
 
         dependencies {

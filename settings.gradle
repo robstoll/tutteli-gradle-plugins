@@ -29,12 +29,12 @@ apply plugin: 'ch.tutteli.settings'
 include {
     settings
     _ 'project-utils'
-    dokka
-    junitjacoco
+//    _ 'dokka'
+    _ 'junitjacoco'
     _ 'kotlin-module-info'
     _ 'kotlin-utils'
-    publish
-    spek
+//    _ 'publish'
+    _ 'spek'
 
     project 'test-utils'
 }

@@ -1,16 +1,16 @@
 buildscript {
     ext {
-        junit_jupiter_version = '5.7.1'
+        junit_jupiter_version = '5.7.2'
         junit_platform_version = '1.6.0'
-        kotlin_version = '1.4.32'
+        kotlin_version = '1.5.21'
         dokka_version = '0.9.18'
         bintray_version = '1.8.5'
-        spek_version = '2.0.10'
-        mockito_version = '3.9.7'
-        json_path_assert_version = '2.5.0'
+        spek_version = '2.0.15'
+        mockito_version = '3.11.2'
+        json_path_assert_version = '2.6.0'
 
-        publish_version = '0.14.0'
-        jacoco_toolVersion = '0.8.5'
+        publish_version = '0.15.0'
+        jacoco_toolVersion = '0.8.7'
     }
 
     repositories {
