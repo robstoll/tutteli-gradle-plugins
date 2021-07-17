@@ -27,14 +27,14 @@ class DokkaPluginIntTest {
             }
         }
         repositories {
-            maven { url 'https://dl.bintray.com/kotlin/dokka' } 
+            maven { url 'https://dl.bintray.com/kotlin/dokka' }
         }
-        
+
         apply plugin: 'ch.tutteli.dokka'
-        
+
         tutteliDokka {
             repoUrl = '$url'
-            
+
             //delegates to the Dokka task (just for your convenience, everything in one place)
             dokka {
                 outputFormat = '$outputFormat'
@@ -67,19 +67,19 @@ class DokkaPluginIntTest {
             }
         }
         repositories {
-            maven { url 'https://dl.bintray.com/kotlin/dokka' } 
+            maven { url 'https://dl.bintray.com/kotlin/dokka' }
         }
-        
+
         apply plugin: 'ch.tutteli.dokka'
-        
+
         tutteliDokka {
             //uses the githubUser to create the repo url as well as the externalDocumentationLink if one enables ghPages
             githubUser = 'robstoll'
-            
+
             //adds an externalDocumentationLink based on the given githubUser as follows:
             //https://\$githubUser.github.io/\$rootProject.name/\$rootProject.version/doc/
             ghPages = true
-            
+
             //delegates to the Dokka task (just for your convenience, everything in one place)
             dokka {
                 outputFormat = '$outputFormat'
@@ -113,19 +113,19 @@ class DokkaPluginIntTest {
             }
         }
         repositories {
-            maven { url 'https://dl.bintray.com/kotlin/dokka' } 
+            maven { url 'https://dl.bintray.com/kotlin/dokka' }
         }
-        
+
         apply plugin: 'ch.tutteli.dokka'
-        
+
         tutteliDokka {
             //uses the githubUser to create the repo url as well as the externalDocumentationLink if one enables ghPages
             githubUser = 'robstoll'
-            
+
             //adds an externalDocumentationLink based on the given githubUser as follows:
             //https://\$githubUser.github.io/\$rootProject.name/\$rootProject.version/doc/
             ghPages = true
-            
+
             //delegates to the Dokka task (just for your convenience, everything in one place)
             dokka {
                 outputFormat = '$outputFormat'
@@ -147,7 +147,7 @@ class DokkaPluginIntTest {
     private static String printInfos() {
         """
         project.afterEvaluate {
-            dokka.linkMappings.each{ println("was here url: \$it.url") } 
+            dokka.linkMappings.each{ println("was here url: \$it.url") }
             dokka.externalDocumentationLinks.each{ println("was here extLink: \$it.url") }
             println("outputFormat: \${dokka.outputFormat}")
         }
