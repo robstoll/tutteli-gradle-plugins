@@ -23,9 +23,9 @@ Provides utility functions to include projects (in a project setup where you hav
 Is especially useful if you apply the naming convention that all modules start with the name of the `rootProject`.
 
 It supports three styles:
-- [Extension Object paired with property/methodMissing](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L29)
-- [Extension Object with method calls](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L94)
-- [simply functions](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L175)
+- [Extension Object paired with property/methodMissing](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L29)
+- [Extension Object with method calls](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L94)
+- [simply functions](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-settings/src/test/groovy/ch/tutteli/gradle/settings/SettingsUtilPluginIntTest.groovy#L175)
 
 It also provides the helper function `kotlinJvmJs` to ease the inclusion of kotlin multi-platform projects.
 
@@ -36,7 +36,7 @@ Yet, you apply it in your `build.gradle` instead of the `settings.gradle` and ac
 
 Currently, it provides the following functions:
 - `prefixedProject(name)` which is a shortcut for `project("${rootProject.name}-$name")`.
-   You find an example in the [build.gradle of the spek plugin](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/tutteli-gradle-spek/build.gradle#L20).
+   You find an example in the [build.gradle of the spek plugin](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-spek/build.gradle#L20).
 - `createTestJarTask` creates a task named `testJar` which creates a jar containing your test binaries
 - `createTestSourcesJarTask` creates a task named `testSourcesJar` which creates a jar containing your test sources
 
@@ -46,11 +46,11 @@ Currently, it provides the following functions:
 **Currently** no longer maintained
 
 Applies the [dokka-plugin](https://github.com/Kotlin/dokka) and creates a `javadocJar` task which can be used for publishing.
-Moreover it applies a [default configuration to dokka](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/tutteli-gradle-dokka/src/main/groovy/ch/tutteli/gradle/dokka/DokkaPluginExtension.groovy#L22)
+Moreover it applies a [default configuration to dokka](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-dokka/src/main/groovy/ch/tutteli/gradle/dokka/DokkaPluginExtension.groovy#L22)
 and allows to add an `externalDocumentationLink` based on the given `githubUser` with the `ghPages` flag.
 It exposes the `tutteliDokka` extension where you can define i.a. the `githubUser`.
  
-See [DokkaPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/tutteli-gradle-dokka/src/test/groovy/ch/tutteli/gradle/dokka/DokkaPluginIntTest.groovy#L112)
+See [DokkaPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-dokka/src/test/groovy/ch/tutteli/gradle/dokka/DokkaPluginIntTest.groovy#L112)
 for an example.
 
 # ch.tutteli.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/1.0.0)
@@ -59,7 +59,7 @@ as well as the [jacoco-plugin](https://docs.gradle.org/current/userguide/jacoco_
 and binds jacoco to the `junitPlatformTest` task.
 
 This plugin does not set up a junit engine and you need to define it yourself. 
-Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/build.gradle#L61)
+Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/build.gradle#L61)
 for an example.
 In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin below.
 
@@ -79,9 +79,9 @@ Following a list of functions it supports:
 - configure projects: `configureCommonProjects`, `configureJsProjects`, `configureJvmProjects`
 - `getCommonProjects()`, `getJsProjects()`, `getJvmProjects()`, `getProjectNameWithoutSuffix(project)`   
 
-Moreover it turns warnings into errors if one of the env variables `CI` or `WARN_AS_ERROR` is set to `true`.
+Moreover, it turns warnings into errors if one of the env variables `CI` or `WARN_AS_ERROR` is set to `true`.
 
-You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
+You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
 
 # ch.tutteli.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.publish/1.0.0)
 
@@ -90,7 +90,7 @@ You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tu
 Applies the `maven-publish` plugin as well as JFrog's `bintray` plugin and 
 configures them based on given license(s), a github user and a few other information.
 It exposes the `tutteliPublish` extension which lets you specify those information and refine default conventions.
-Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
+Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
 for more information.
 
 If not set, it automatically propagates `version` and `group` from `rootProject` to subprojects 
@@ -98,14 +98,14 @@ If not set, it automatically propagates `version` and `group` from `rootProject`
 
 It provides a `sourcesJar` task which includes all sources and adds them to the artifacts which shall be published.
 It automatically uses `project.components.java` if available -- apply the `java` or `kotlin` plugin (or similar) first.   
-Likewise it uses the `javadocJar` as additional artifact if available. 
+Likewise, it uses the `javadocJar` as additional artifact if available. 
 In case you use the `ch.tutteli.dokka` plugin (which provides the `javadocJar`) then make sure you apply it before you apply this plugin.
 It basically uses all jars defined at the time the plugin is applied.
 
 The plugin also creates a manifest file for all jars mentioning the kotlin version if the kotlin plugin is available.
-See the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/v1.0.0/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L310)
+See the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L310)
 for more information.
-Furthermore it adds the `License.txt` or `LICENSE` file to the jar if such a file exists in the root of the rootProject.
+Furthermore, it adds the `License.txt` or `LICENSE` file to the jar if such a file exists in the root of the rootProject.
 Publishing artifacts (either to local or to bintray) will include the build-time of the artifact and the artifacts are
 signed using the gradle signing plugin.
 Last but not least it provides a `publishToBintray` which pushes the artifacts to bintray

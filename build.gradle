@@ -218,8 +218,7 @@ Prepare next dev cycle
 1. change version in settings.gradle to X.Y.Z-SNAPSHOT
 2. change previous_version in settings.gradle
 3. point to master
-   a) search for `tag=vX.Y.Z` and replace it with `branch=master`
-   b) search for `tree/vX.Y.Z` and replace it with `tree/master`
+   a) search for `tree/vX.Y.Z` in README and replace it with `tree/master`
 4. commit & push changes
 
 */
