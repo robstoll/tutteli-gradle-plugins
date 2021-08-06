@@ -10,7 +10,7 @@ import static ch.tutteli.gradle.publish.Validation.throwIllegalPropertyNorSystem
 class ValidateBeforePublishTask extends DefaultTask {
     @TaskAction
     def validate() {
-        def extension = project.extensions.getByName(PublishPlugin.EXTENSION_NAME)
+        def extension = project.extensions.getByType(PublishPluginExtension)
 
         if (extension.signWithGpg.get()) {
             configureSigning(extension)

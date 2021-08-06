@@ -1,7 +1,5 @@
 package ch.tutteli.gradle.publish
 
-
-import com.jfrog.bintray.gradle.BintrayExtension
 import org.apache.maven.model.Developer
 import org.apache.maven.model.Model
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer
@@ -28,20 +26,23 @@ class PublishPluginSmokeTest {
         //assert
         assertExtensionAndTaskDefined(project)
         project.evaluate()
-        assertNotNull(project.extensions.getByType(BintrayExtension).user, "bintrayExtension.user")
-        assertFalse(project.extensions.getByType(BintrayExtension).pkg.version.gpg.sign, "bintrayExtension.pkg.version.gpg.sign")
     }
 
     @Test
     void kotlin_TasksAndExtensionPresent() {
-
         //arrange & act
         Project project = setUp { project ->
             project.plugins.apply('kotlin')
         }
         project.evaluate()
         //assert
+        assertExtensionAndTaskDefinedAfterEvaluate(project)
+    }
+
+    private static void assertExtensionAndTaskDefinedAfterEvaluate(Project project) {
         assertExtensionAndTaskDefined(project)
+        project.tasks.getByName(PublishPlugin.TASK_GENERATE_POM)
+        project.tasks.getByName(PublishPlugin.TASK_GENERATE_GRADLE_METADATA)
     }
 
     @Test
@@ -52,40 +53,79 @@ class PublishPluginSmokeTest {
         }
         project.evaluate()
         //assert
-        assertExtensionAndTaskDefined(project)
+        assertExtensionAndTaskDefinedAfterEvaluate(project)
     }
 
     @Test
     void kotlinPlatformJvm_TasksAndExtensionPresent() {
         //arrange & act
         Project project = setUp { project ->
+            project.plugins.apply('org.jetbrains.kotlin.jvm')
+        }
+        project.evaluate()
+        //assert
+        assertExtensionAndTaskDefinedAfterEvaluate(project)
+    }
+
+    @Test
+    void kotlinOldPlatformJvm_TasksAndExtensionPresent() {
+        //arrange & act
+        Project project = setUp { project ->
             project.plugins.apply('kotlin-platform-jvm')
         }
         project.evaluate()
         //assert
-        assertExtensionAndTaskDefined(project)
+        assertExtensionAndTaskDefinedAfterEvaluate(project)
     }
 
     @Test
     void kotlinPlatformJs_TasksAndExtensionPresent() {
         //arrange & act
         Project project = setUp { project ->
+            project.plugins.apply('org.jetbrains.kotlin.js')
+            project.extensions.configure('kotlin') {
+                it.js {
+                    nodejs()
+                }
+            }
+        }
+        project.evaluate()
+        //assert
+        assertExtensionAndTaskDefinedAfterEvaluate(project)
+    }
+
+    @Test
+    void kotlinOldPlatformJs_TasksAndExtensionPresent() {
+        //arrange & act
+        Project project = setUp { project ->
             project.plugins.apply('kotlin-platform-js')
         }
         project.evaluate()
         //assert
-        assertExtensionAndTaskDefined(project)
+        assertExtensionAndTaskDefinedAfterEvaluate(project)
     }
 
     @Test
-    void kotlinPlatformCommon_TasksAndExtensionPresent() {
+    void kotlinOldPlatformCommon_TasksAndExtensionPresent() {
         //arrange & act
         Project project = setUp { project ->
             project.plugins.apply('kotlin-platform-common')
         }
         project.evaluate()
         //assert
+        assertExtensionAndTaskDefinedAfterEvaluate(project)
+    }
+
+    @Test
+    void kotlinMultiplatform_TasksAndExtensionPresent() {
+        //arrange & act
+        Project project = setUp { project ->
+            project.plugins.apply('org.jetbrains.kotlin.multiplatform')
+        }
+        project.evaluate()
+        //assert
         assertExtensionAndTaskDefined(project)
+        assertNull(project.tasks.findByName(PublishPlugin.TASK_GENERATE_POM), "task ${PublishPlugin.TASK_GENERATE_POM} exists even though we use the new MPP plugin")
     }
 
     @Test
@@ -163,14 +203,11 @@ class PublishPluginSmokeTest {
     private static void assertExtensionAndTaskDefined(Project project) {
         project.extensions.getByName(PublishPlugin.EXTENSION_NAME)
         project.tasks.getByName(PublishPlugin.TASK_NAME_INCLUDE_TIME)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_PUBLISH_TO_BINTRAY)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_SOURCES_JAR)
         project.tasks.getByName(PublishPlugin.TASK_NAME_VALIDATE_PUBLISH)
     }
 
     private static PublishPluginExtension getPluginExtension(Project project) {
-        return project.extensions.getByName(PublishPlugin.EXTENSION_NAME) as PublishPluginExtension
+        return project.extensions.getByType(PublishPluginExtension)
     }
 
     private static String getPomAsString(MavenPublication pub) {

@@ -64,47 +64,6 @@ class PublishPluginValidationTest {
         assertThrowsProjectConfigWithCauseIllegalStateNotDefined('project.description', project)
     }
 
-
-    @Test
-    void evaluate_artifactAndComponentNull_throwsIllegalStateException() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).component.set(null)
-        getPluginExtension(project).artifacts.set(null as Iterable)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("either ${PublishPlugin.EXTENSION_NAME}.component or ${PublishPlugin.EXTENSION_NAME}.artifacts", project)
-    }
-
-    @Test
-    void evaluate_artifactsEmptyAndComponentNull_throwsIllegalStateException() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).component.set(null)
-        getPluginExtension(project).artifacts.set(new ArrayList<>())
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("either ${PublishPlugin.EXTENSION_NAME}.component or ${PublishPlugin.EXTENSION_NAME}.artifacts", project)
-    }
-
-    @Test
-    void evaluate_artifactsNullButComponentSet_NoError() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).component.set(project.components.getByName('java'))
-        getPluginExtension(project).artifacts.set(null as Iterable)
-        //act && assert no exception
-        project.evaluate()
-    }
-
-    @Test
-    void evaluate_componentNullButArtifactsSet_NoError() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).component.set(null)
-        getPluginExtension(project).artifacts.add(project.tasks.getByName('jar'))
-        //act && assert no exception
-        project.evaluate()
-    }
-
     @Test
     void evaluate_githubUserNotDefined_throwsIllegalStateException() {
         //arrange
@@ -170,24 +129,6 @@ class PublishPluginValidationTest {
     }
 
     @Test
-    void evaluate_envNameBintrayUserUnset_throwsIllegalStateException() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).envNameBintrayUser.set(null)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameBintrayUser", project)
-    }
-
-    @Test
-    void evaluate_envNameBintrayApiKeyUnset_throwsIllegalStateException() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).envNameBintrayApiKey.set(null)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameBintrayApiKey", project)
-    }
-
-    @Test
     void evaluate_envNameGpgPassphrase_throwsIllegalStateException() {
         //arrange
         Project project = setUp()
@@ -218,46 +159,6 @@ class PublishPluginValidationTest {
         getPluginExtension(project).envNameGpgSigningKey.set(null)
         //act && assert
         assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameGpgSigningKey", project)
-    }
-
-    @Test
-    void evaluate_repoNullAndAlsoNotSetOnBintray_throwsIllegalStateException() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).bintrayRepo.set(null)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.bintrayRepo", project)
-    }
-
-    @Test
-    void evaluate_repoBlankButSetOnBintray_noError() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).bintrayRepo.set("  ")
-        getBintrayExtension(project).pkg.repo = 'test'
-        //act && assert no exception
-        project.evaluate()
-    }
-
-    @Test
-    void evaluate_pkgNullAndAlsoNotSetOnBintray_noErrorCorrespondsToProjectName() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).bintrayPkg.set(null)
-        //act && assert no exception
-        project.evaluate()
-        //assert
-        assertEquals(project.name, getBintrayExtension(project).pkg.name)
-    }
-
-    @Test
-    void evaluate_pkgEmptyButSetOnBintray_noError() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).bintrayPkg.set("")
-        getBintrayExtension(project).pkg.name = 'test'
-        //act && assert no exception
-        project.evaluate()
     }
 
     @Test

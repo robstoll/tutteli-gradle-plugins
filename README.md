@@ -40,7 +40,7 @@ Currently, it provides the following functions:
 - `createTestJarTask` creates a task named `testJar` which creates a jar containing your test binaries
 - `createTestSourcesJarTask` creates a task named `testSourcesJar` which creates a jar containing your test sources
 
-
+<!--
 # ch.tutteli.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/1.0.0)
 
 **Currently** no longer maintained
@@ -52,6 +52,7 @@ It exposes the `tutteliDokka` extension where you can define i.a. the `githubUse
  
 See [DokkaPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-dokka/src/test/groovy/ch/tutteli/gradle/dokka/DokkaPluginIntTest.groovy#L112)
 for an example.
+-->
 
 # ch.tutteli.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/1.0.0)
 Applies the [junit-platform-gradle-plugin](https://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle)
@@ -87,7 +88,7 @@ You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tu
 
 **Currently** no longer maintained
 
-Applies the `maven-publish` plugin as well as JFrog's `bintray` plugin and 
+Applies the `maven-publish` and `signing` plugin and 
 configures them based on given license(s), a github user and a few other information.
 It exposes the `tutteliPublish` extension which lets you specify those information and refine default conventions.
 Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)

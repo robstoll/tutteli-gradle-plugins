@@ -1,7 +1,5 @@
 package ch.tutteli.gradle.publish
 
-import com.jfrog.bintray.gradle.BintrayExtension
-import com.jfrog.bintray.gradle.BintrayPlugin
 import org.gradle.api.*
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
@@ -9,7 +7,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
-import org.gradle.api.tasks.bundling.Jar
+import org.gradle.jvm.tasks.Jar
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
 
@@ -20,18 +18,13 @@ class PublishPlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = 'tutteliPublish'
     static final String PUBLICATION_NAME = 'tutteli'
     static final String TASK_NAME_INCLUDE_TIME = 'includeBuildTimeInManifest'
-    static final String TASK_NAME_PUBLISH_TO_BINTRAY = 'publishToBintray'
-    static final String TASK_NAME_SOURCES_JAR = 'sourcesJar'
     static final String TASK_NAME_VALIDATE_PUBLISH = 'validateBeforePublish'
-    static final String TASK_NAME_VALIDATE_UPLOAD = 'validateBeforeUploadToBintray'
     static final String TASK_GENERATE_POM = "generatePomFileFor${PUBLICATION_NAME.capitalize()}Publication"
     static final String TASK_GENERATE_GRADLE_METADATA = "generateMetadataFileFor${PUBLICATION_NAME.capitalize()}Publication"
-    static final String TASK_NAME_HELP_BINTRAY = 'addAllArtifactsToUpload'
 
     @Override
     void apply(Project project) {
         project.plugins.apply(MavenPublishPlugin)
-        project.plugins.apply(BintrayPlugin)
         project.plugins.apply(SigningPlugin)
 
         if (!project.hasProperty('sourceSets')) throw new IllegalStateException(
@@ -40,99 +33,77 @@ class PublishPlugin implements Plugin<Project> {
                 "\nPlease open an issue if you would like to publish projects without sources: https://github.com/robstoll/tutteli-gradle-plugins/issues/new"
         )
 
-        project.tasks.create(name: TASK_NAME_SOURCES_JAR, type: Jar) {
-            from("${project.projectDir}/src/main") {
-                into "main"
-            }
-
-            def modulesDir = project.file("$project.projectDir/src/module")
-            if (modulesDir.exists()) {
-                from(modulesDir) {
-                    into("module")
-                }
-            }
-            archiveClassifier.set('sources')
-        }
-
         def extension = project.extensions.create(EXTENSION_NAME, PublishPluginExtension, project)
 
         def validateBeforePublish = project.tasks.create(name: TASK_NAME_VALIDATE_PUBLISH, type: ValidateBeforePublishTask)
 
         def includeBuildTime = project.tasks.create(name: TASK_NAME_INCLUDE_TIME) {
             doLast {
-                extension.artifacts.getOrElse(Collections.emptySet())
-                    .findAll { it instanceof org.gradle.jvm.tasks.Jar }
-                    .collect { it as org.gradle.jvm.tasks.Jar }
-                    .each { augmentManifest(it, project, extension) }
+                jarTasks(project, extension).each {
+                    augmentManifest(it, project, extension)
+                }
             }
         }
+
         includeBuildTime.dependsOn validateBeforePublish
-        project.tasks.getByName('jar').mustRunAfter(includeBuildTime)
-
-        def validateBeforeUpload = project.tasks.create(name: TASK_NAME_VALIDATE_UPLOAD, type: ValidateBeforeUploadTask)
-
-        project.tasks.create(name: TASK_NAME_PUBLISH_TO_BINTRAY) {
-            def bintrayUpload = project.tasks.getByName('bintrayUpload')
-            dependsOn includeBuildTime
-            dependsOn validateBeforeUpload
-            dependsOn bintrayUpload
-            bintrayUpload.mustRunAfter(includeBuildTime)
-            bintrayUpload.mustRunAfter(validateBeforeUpload)
-        }
 
         project.afterEvaluate {
+            jarTasks(project, extension).each {
+                it.mustRunAfter(includeBuildTime)
+            }
             project.version = determineVersion(project) ?: determineVersion(project.rootProject) ?: ""
             project.group = project.group ?: project.rootProject.group
             requireNotNullNorBlank(project.name, "project.name")
             requireNotNullNorBlank(project.version, "project.version or rootProject.version")
             requireNotNullNorBlank(project.group, "project.group or rootProject.group")
             requireNotNullNorBlank(project.description, "project.description")
-            requireComponentOrArtifactsPresent(extension)
             requireExtensionPropertyPresentAndNotBlank(extension.githubUser, "githubUser")
             requireExtensionPropertyPresentNotEmpty(extension.licenses, "licenses")
-
-            def bintrayExtension = project.extensions.getByType(BintrayExtension)
-            requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayUser, "envNameBintrayUser")
-            requireExtensionPropertyPresentAndNotBlank(extension.envNameBintrayApiKey, "envNameBintrayApiKey")
-            requireSetOnBintrayExtensionOrProperty(bintrayExtension.pkg.repo, extension.bintrayRepo, "bintrayRepo")
-
             requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgPassphrase, "envNameGpgPassphrase")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgKeyId, "envNameGpgKeyId")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgKeyRing, "envNameGpgSecretKeyRingFile")
             requireExtensionPropertyPresentAndNotBlank(extension.envNameGpgSigningKey, "envNameGpgSigningKey")
 
-            configurePublishing(project, extension)
-            configureBintray(project, extension, bintrayExtension)
-
-            def generatePom = project.tasks.getByName(TASK_GENERATE_POM)
-            generatePom.dependsOn(includeBuildTime)
-
             def signingExtension = project.extensions.getByType(SigningExtension)
-            def tutteliPublication = project.extensions.getByType(PublishingExtension).publications.findByName(PUBLICATION_NAME)
-            def version = String.valueOf(project.version)
-            if (version.endsWith("-SNAPSHOT")) {
-                project.version = version.substring(0, version.lastIndexOf("-SNAPSHOT"))
+            def publications = getMavenPublications(project)
+            if (publications.isEmpty()) {
+                // we only create the tutteli publication in case there is not already one (e.g. MPP creates own publications)
+                configurePublishing(project, extension)
+                publications = getMavenPublications(project)
             }
-            signingExtension.sign(tutteliPublication)
-            project.version = version
+            publications
+                .forEach { publication ->
+                    publication.pom.withXml(pomConfig(project, extension))
 
-            def signTask = project.tasks.getByName("sign${PUBLICATION_NAME.capitalize()}Publication")
-            def pubToMaLo = project.tasks.getByName("publish${PUBLICATION_NAME.capitalize()}PublicationToMavenLocal")
-            pubToMaLo.dependsOn(signTask)
+                    // was a workaround for signing SNAPSHOTs, looks like this is no longer a problem,
+                    // I keep it here in case it re-appears. Can be removed after some time I guess
+//                    def version = String.valueOf(project.version)
+//                    // change version for signing only, we change it back afterwards
+//                    if (version.endsWith("-SNAPSHOT")) {
+//                        project.version = version.substring(0, version.lastIndexOf("-SNAPSHOT"))
+//                    }
+                    signingExtension.sign(publication)
+//                    project.version = version
 
-            def helpBintray = project.tasks.create(name: TASK_NAME_HELP_BINTRAY) {
-                dependsOn(pubToMaLo)
-                doLast {
-                    // for whatever reason, bintray only includes artifacts in the upload but not all publishable artifacts.
-                    // things like the following are thus missing:
-                    // - signatures
-                    // - gradle metadata module etc.
-                    (tutteliPublication.getPublishableArtifacts() - tutteliPublication.artifacts).forEach {
-                        tutteliPublication.artifact(it)
-                    }
+                    def taskSuffix = "${publication.name.capitalize()}Publication"
+                    def generatePom = project.tasks.getByName("generatePomFileFor$taskSuffix")
+                    generatePom.dependsOn(includeBuildTime)
+                    def signTask = project.tasks.getByName("sign$taskSuffix")
+                    def pubToMaLo = project.tasks.getByName("publish${taskSuffix}ToMavenLocal")
+                    pubToMaLo.dependsOn(signTask)
                 }
-            }
-            project.tasks.getByName('bintrayUpload').dependsOn(helpBintray)
+        }
+    }
+
+    private static List<MavenPublication> getMavenPublications(Project project) {
+        project.extensions.getByType(PublishingExtension).publications
+            .findAll { it instanceof MavenPublication }
+            .collect { it as MavenPublication }
+    }
+
+    private static Set<Jar> jarTasks(Project project, PublishPluginExtension extension) {
+        return project.tasks.withType(Jar).findAll {
+            !extension.artifactFilter.isPresent() || extension.artifactFilter.get()(it)
         }
     }
 
@@ -144,72 +115,32 @@ class PublishPlugin implements Plugin<Project> {
         return project.version == "unspecified" ? null : project.version
     }
 
-
-    private static void requireComponentOrArtifactsPresent(PublishPluginExtension extension) {
-        if (!extension.component.isPresent() && extension.artifacts.map { it.isEmpty() }.getOrElse(true)) {
-            throw newIllegalState("either ${EXTENSION_NAME}.component or ${EXTENSION_NAME}.artifacts")
-        }
-    }
-
-    private static void configurePublishing(Project project, PublishPluginExtension extension) {
-        def aId = determineArtifactId(project)
+    private void configurePublishing(Project project, PublishPluginExtension extension) {
         project.publishing {
             publications {
-                tutteli(MavenPublication) {
+                tutteli(MavenPublication) { MavenPublication publication ->
                     groupId project.group
-                    artifactId aId
+                    artifactId project.name
                     version project.version
 
-                    //set to empty in case it was not set at all or reset to null
-                    extension.artifacts.set(extension.artifacts.getOrElse(Collections.emptySet()))
-
-                    MavenPublication publication = it
                     if (extension.component.isPresent()) {
                         def component = extension.component.get()
                         publication.from(component)
-
-                        // it could be we rename the archiveBaseName, thus we remove the jarTask from the publication
-                        // and re-add it again as artifact (for which the name adjustment takes place)
-                        def jarPub = publication.artifacts.find {
-                            it.file.name.endsWith(project.name + "-" + project.version + ".jar")
-                        }
-                        if (jarPub != null) {
-                            publication.artifacts.remove(jarPub)
-                            def jarTask = project.tasks.getByName('jar')
-                            if (!extension.artifacts.get().contains(jarTask)) {
-                                extension.artifacts.add(jarTask)
+                        publication.artifacts.forEach {
+                            if (it.file.name.endsWith("jar")) {
+                                // we remove all jars added by the component as we are going to re-add all jars
+                                // further below
+                                publication.artifacts.remove(it)
                             }
                         }
                     }
-                    def artifacts = removeKotlinSourcesIfSources(project, extension.artifacts.get())
 
-                    artifacts.each {
-                        if (it instanceof org.gradle.jvm.tasks.Jar) {
-                            it.archiveBaseName.set(aId)
-                        }
+                    jarTasks(project, extension).each {
                         publication.artifact it
                     }
-                    pom.withXml(pomConfig(project, extension))
                 }
             }
         }
-    }
-
-    private static Set<Task> removeKotlinSourcesIfSources(Project project, Set<Task> artifacts) {
-        def kotlinSourcesJar = project.tasks.findByName('kotlinSourcesJar')
-        return (
-            artifacts.contains(kotlinSourcesJar) &&
-                artifacts.contains(project.tasks.findByName(TASK_NAME_SOURCES_JAR))
-        ) ? artifacts.findAll { it != kotlinSourcesJar }
-            : artifacts
-
-    }
-
-    private static String determineArtifactId(Project project) {
-        def name = project.name
-        return name.endsWith("-jvm") ?
-            name.substring(0, name.lastIndexOf("-jvm")) :
-            name
     }
 
     private static Action<? extends XmlProvider> pomConfig(Project project, PublishPluginExtension extension) {
@@ -261,39 +192,6 @@ class PublishPlugin implements Plugin<Project> {
         }
     }
 
-    private static void configureBintray(
-        Project project,
-        PublishPluginExtension extension,
-        BintrayExtension bintrayExtension
-    ) {
-        def uniqueShortNames = extension.licenses.get().collect { it.shortName }.toSet().toSorted() as String[]
-        def repoUrl = "https://" + determineRepoDomainAndPath(project, extension)
-
-        bintrayExtension.with {
-            user = user ?: getPropertyOrSystemEnv(project, extension.propNameBintrayUser, extension.envNameBintrayUser)
-            key = key ?: getPropertyOrSystemEnv(project, extension.propNameBintrayApiKey, extension.envNameBintrayApiKey)
-            publications = [PUBLICATION_NAME] as String[]
-
-            pkg.with {
-                repo = repo ?: extension.bintrayRepo.get()
-                def pkgName = name ?: extension.bintrayPkg.getOrElse(project.rootProject.name)
-                name = pkgName
-                userOrg = userOrg ?: extension.bintrayOrganisation.getOrElse(null)
-                licenses = licenses ?: uniqueShortNames
-                vcsUrl = vcsUrl ?: repoUrl
-                version.with {
-                    name = name ?: project.version as String
-                    desc = desc ?: "${determineArtifactId(project)} $project.version"
-                    released = released ?: new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ')
-                    vcsTag = vcsTag ?: "v$project.version"
-                    gpg.with {
-                        sign = false // we sign the files locally, store private key @ bintray is discouraged
-                    }
-                }
-            }
-        }
-    }
-
     static String getPropertyOrSystemEnv(Project project, Property<String> propName, Property<String> envName) {
         def value = project.findProperty(propName.get())
         if (!value?.trim()) {
@@ -303,13 +201,13 @@ class PublishPlugin implements Plugin<Project> {
     }
 
     private static void augmentManifest(
-        org.gradle.jvm.tasks.Jar task,
+        Jar task,
         Project project,
         PublishPluginExtension extension
     ) {
         String repoUrl = determineRepoDomainAndPath(project, extension)
         task.manifest {
-            attributes(['Implementation-Title'  : determineArtifactId(project),
+            attributes(['Implementation-Title'  : project.name,
                         'Implementation-Version': project.version,
                         'Implementation-URL'    : "https://" + repoUrl,
                         'Build-Time'            : new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ')
@@ -328,7 +226,7 @@ class PublishPlugin implements Plugin<Project> {
 
     private static Map<String, String> getImplementationKotlinVersionIfAvailable(Project project) {
         def kotlinVersion = getKotlinVersion(project)
-        //we use if instead of ternary operator because type inference fails otherwise
+        // we use if instead of ternary operator because type inference fails otherwise
         if (kotlinVersion != null) return ['Implementation-Kotlin-Version': kotlinVersion]
         else return Collections.emptyMap()
     }
@@ -340,6 +238,9 @@ class PublishPlugin implements Plugin<Project> {
             ?: plugins.findPlugin('kotlin-platform-jvm')
             ?: plugins.findPlugin('kotlin-platform-js')
             ?: plugins.findPlugin('kotlin-common')
+            ?: plugins.findPlugin('org.jetbrains.kotlin.multiplatform')
+            ?: plugins.findPlugin('org.jetbrains.kotlin.jvm')
+            ?: plugins.findPlugin('org.jetbrains.kotlin.js')
         return kotlinPlugin?.getKotlinPluginVersion()
     }
 }
