@@ -40,7 +40,7 @@ Currently, it provides the following functions:
 - `createTestJarTask` creates a task named `testJar` which creates a jar containing your test binaries
 - `createTestSourcesJarTask` creates a task named `testSourcesJar` which creates a jar containing your test sources
 
-
+<!--
 # ch.tutteli.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/1.0.0)
 
 **Currently** no longer maintained
@@ -52,6 +52,7 @@ It exposes the `tutteliDokka` extension where you can define i.a. the `githubUse
  
 See [DokkaPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-dokka/src/test/groovy/ch/tutteli/gradle/dokka/DokkaPluginIntTest.groovy#L112)
 for an example.
+-->
 
 # ch.tutteli.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/1.0.0)
 Applies the [junit-platform-gradle-plugin](https://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle)
@@ -85,9 +86,7 @@ You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tu
 
 # ch.tutteli.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.publish/1.0.0)
 
-**Currently** no longer maintained
-
-Applies the `maven-publish` plugin as well as JFrog's `bintray` plugin and 
+Applies the `maven-publish` and `signing` plugin and 
 configures them based on given license(s), a github user and a few other information.
 It exposes the `tutteliPublish` extension which lets you specify those information and refine default conventions.
 Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
@@ -96,30 +95,23 @@ for more information.
 If not set, it automatically propagates `version` and `group` from `rootProject` to subprojects 
 (`group` of subprojects are set to "" when plugin is applied, would default to `rootProject.name`).
 
-It provides a `sourcesJar` task which includes all sources and adds them to the artifacts which shall be published.
-It automatically uses `project.components.java` if available -- apply the `java` or `kotlin` plugin (or similar) first.   
-Likewise, it uses the `javadocJar` as additional artifact if available. 
-In case you use the `ch.tutteli.dokka` plugin (which provides the `javadocJar`) then make sure you apply it before you apply this plugin.
-It basically uses all jars defined at the time the plugin is applied.
+If no MavenPublication is defined, then it creates one which:
+- automatically uses `project.components.java` if available -- apply the `java` or `kotlin` plugin (or similar) first.
+- includes all Jar Tasks into the publication
 
-The plugin also creates a manifest file for all jars mentioning the kotlin version if the kotlin plugin is available.
-See the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L310)
-for more information.
-Furthermore, it adds the `License.txt` or `LICENSE` file to the jar if such a file exists in the root of the rootProject.
-Publishing artifacts (either to local or to bintray) will include the build-time of the artifact and the artifacts are
-signed using the gradle signing plugin.
-Last but not least it provides a `publishToBintray` which pushes the artifacts to bintray
+Regardless if there was one or several existing MavenPublications or one was created by the plugin.
+All Jar Tasks are modified in a way that they include the LICENSE(.txt) file located in the root of the rootProject
+and augments the manifest file with information such as Build-Time, Kotlin-version used etc.
+
+Last but not least, it augments the pom-file with license, developer and scm information (can be configured via tge `tutteliPublish` extension)
 
 The conventions:
-- uses `version` for `artifactId` and removes `-jvm` if the name ends with it
 - Apache 2.0 is used as default license
 - project.group, project.description and project.version is used in publishing
-- bintray user, api key, as well as gpg passphrase/keyRing and keyId can either be provided by a property (if you do, gradle.properties make sense) or by System.env with the following names:
+- gpg passphrase/keyRing and keyId can either be provided by a property (if you do, gradle.properties make sense) or by System.env with the following names:
 
     |       prop      |         env        |
     |-----------------|--------------------|
-    | bintrayUser     | BINTRAY_USER       |
-    | bintrayApiKey   | BINTRAY_API_KEY    |
     | gpgPassphrase   | GPG_PASSPHRASE     |
     | gpgKeyRing      | GPG_KEY_RING       | 
     | gpgKeyId        | GPG_KEY_ID         | 

@@ -15,39 +15,38 @@ import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
+import static ch.tutteli.gradle.test.Asserts.NL_INDENT
 import static ch.tutteli.gradle.test.Asserts.assertContainsRegex
-import static ch.tutteli.gradle.test.Asserts.getNL_INDENT
 import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(SettingsExtension)
 class PublishPluginIntTest {
-    def static final KOTLIN_VERSION = '1.3.61'
+    //TODO remove once we drop support for old MPP plugins
+    def static final OLD_KOTLIN_VERSION = '1.3.71'
+    def static final KOTLIN_VERSION = '1.5.21'
     def static final ATRIUM_VERSION = '0.14.0'
 
     @Test
     void smokeTest(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def version = '1.0.0'
-        checkSmokeTest(settingsSetup, version)
+        checkSmokeTest("smoke1", settingsSetup, version)
     }
+
     @Test
     void smokeTestWithSnapshot(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def version = '1.0.0-SNAPSHOT'
-        checkSmokeTest(settingsSetup, version)
+        checkSmokeTest("smoke2", settingsSetup, version)
     }
 
-    private static void checkSmokeTest(SettingsExtensionObject settingsSetup, String version) {
-        def projectName = 'test-project'
+    private static void checkSmokeTest(String projectName, SettingsExtensionObject settingsSetup, String version) {
         settingsSetup.settings << "rootProject.name='$projectName'"
         def githubUser = 'robstoll'
-        def user = 'myUser'
-        def apiKey = 'test'
-        def pkgName = "tutteli-gradle"
-        def organisation = "company"
         def gpgPassphrase = 'bla'
         def gpgKeyId = 'A5875B96'
         def gpgKeyRing = 'keyring.gpg'
+        def groupId = 'com.example'
 
         settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
 
@@ -71,7 +70,7 @@ class PublishPluginIntTest {
         apply plugin: 'ch.tutteli.publish'
 
         project.with {
-            group = 'com.example'
+            group = '$groupId'
             version = '$version'
             description = 'test project'
         }
@@ -79,7 +78,6 @@ class PublishPluginIntTest {
         tutteliPublish {
             //minimal setup required for publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
-            bintrayRepo = 'tutteli-jars'
 
             //different ways to override the default license
             resetLicenses 'EUPL-1.2'             // default distribution is 'repo'
@@ -129,20 +127,10 @@ class PublishPluginIntTest {
             // will add Implementation-Vendor to all manifest files.
             manifestVendor = 'tutteli.ch'
 
-            // you can change the pkg name if it does not correspond to `project.name`
-            bintrayPkg = '$pkgName'
-
-            // you can define the organisation if you don't publish to a repo of the user
-            bintrayOrganisation = '$organisation'
-
             // you can customise the property and env variable names if they differ from the convention
-            propNameBintrayUser   = 'myBintrayUser'             // default is bintrayUser
-            propNameBintrayApiKey = 'myBintrayApiKey'           // default is bintrayApiKey
             propNameGpgPassphrase = 'myGpgPassphrase'           // default is gpgPassphrase
             propNameGpgKeyId      = 'myGpgKeyId'                // default is gpgKeyId
             propNameGpgKeyRing     = 'myGpgKeyRing'             // default is gpgKeyRing
-            envNameBintrayUser    = 'MY_BINTRAY_USER'           // default is BINTRAY_USER
-            envNameBintrayApiKey  = 'MY_BINTRAY_API_KEY'        // default is BINTRAY_API_KEY
             envNameGpgPassphrase  = 'MY_GPG_PASSPHRASE'         // default is GPG_PASSPHRASE
             envNameGpgKeyId       = 'MY_GPG_KEY_ID'             // default is GPG_KEY_ID
             envNameGpgKeyRing     = 'MY_GPG_KEY_RING'           // default is GPG_KEY_RING
@@ -152,34 +140,22 @@ class PublishPluginIntTest {
             signWithGpg = false
             // yet, we will re-activate it for this test
             signWithGpg = true
-
-            // you could configure JFrog's bintray extension here if you like.
-            // There is no need for it though, everything can be configured via the above
-            bintray {
-                user = '$user' //usually provided by property or env variable
-            }
         }
 
-         // you could also configure JFrog's bintray extension outside of publish
-         // but again, there is no need for it.
-        bintray {
-            key = '$apiKey'
-        }
-        project.afterEvaluate {
-            ${printBintray()}
-        }
+        ${publishingRepo()}
         ${taskPrintSigning()}
         """
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishTutteliPublicationToMavenLocal", "printSigning", "--stacktrace")
+            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
         //assert
         assertTrue(result.output.contains("Some licenses were duplicated. Please check if you made a mistake."), "should contain warning about duplicated licenses:\n$result.output")
-        String pom = Paths.get(settingsSetup.tmp.absolutePath, 'build', 'publications', 'tutteli', 'pom-default.xml').toFile().getText('UTF-8')
-        assertContainsRegex(pom, "name", "<name>$projectName</name>")
-        assertContainsRegex(pom, "description", "<description>test project</description>")
+
+        def releasePath = getReleasePath(settingsSetup, projectName, groupId, version)
+        def (pom, _) = getPomInclFileNameAndAssertBasicPomProperties(releasePath, projectName, groupId, version, githubUser)
+
         assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
             "<license>$NL_INDENT" +
             "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
@@ -220,20 +196,14 @@ class PublishPluginIntTest {
             "</developers>"
         )
 
-        def domainAndPath = "github.com/$githubUser/$projectName"
-        assertContainsRegex(pom, "scm", "<scm>$NL_INDENT" +
-            "<connection>scm:git:git://${domainAndPath}.git</connection>$NL_INDENT" +
-            "<developerConnection>scm:git:ssh://${domainAndPath}.git</developerConnection>$NL_INDENT" +
-            "<url>https://$domainAndPath</url>$NL_INDENT" +
-            "</scm>")
-        assertBintray(result, user, apiKey, pkgName, projectName, "https://" + domainAndPath, version, "Apache-2.0,Lic-1.2", organisation)
+        assertModuleExists(releasePath, projectName, version)
         assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
     }
 
     @Test
     void smokeTest_GpgPassphraseMissing(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
-        def projectName = 'test-project'
+        def projectName = 'smoke-gpg'
         settingsSetup.settings << "rootProject.name='$projectName'"
         def version = '1.0.0'
         def githubUser = 'robstoll'
@@ -258,13 +228,7 @@ class PublishPluginIntTest {
         tutteliPublish {
             //minimal setup required for publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
-            bintrayRepo = 'tutteli-jars'
             //gpg passphrase not defined via property or something
-
-            bintray {
-                user = '$user'
-                key = 'apiKey'
-            }
         }
         """
         //act
@@ -272,7 +236,7 @@ class PublishPluginIntTest {
             .withProjectDir(settingsSetup.tmp)
             .withArguments("tasks", "--stacktrace")
             .build()
-        //assert no exception
+        //assert
         def exception = assertThrows(UnexpectedBuildFailure) {
             GradleRunner.create()
                 .withProjectDir(settingsSetup.tmp)
@@ -287,24 +251,21 @@ class PublishPluginIntTest {
     void combinePlugins(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def version = '1.0.0'
-        checkCombinePlugins(settingsSetup, version)
+        checkCombinePlugins('combine1', settingsSetup, version)
     }
 
     @Test
     void combinePluginsWithSnapshot(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def version = '1.0.0-SNAPSHOT'
-        checkCombinePlugins(settingsSetup, version)
+        checkCombinePlugins('combine2', settingsSetup, version)
     }
 
-    private void checkCombinePlugins(SettingsExtensionObject settingsSetup, version) {
-        def projectName = 'test-project'
+    private static void checkCombinePlugins(String projectName, SettingsExtensionObject settingsSetup, String version) {
         settingsSetup.settings << "rootProject.name='$projectName'"
         def groupId = 'com.example'
         def githubUser = 'robstoll'
         def vendor = 'tutteli'
-        def user = 'test-user'
-        def apiKey = 'test-key'
         def gpgPassphrase = 'bla'
         def gpgKeyId = 'A5875B96'
         def gpgKeyRing = 'keyring.gpg'
@@ -316,7 +277,7 @@ class PublishPluginIntTest {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
                 classpath 'ch.tutteli:tutteli-gradle-dokka:0.10.1'
-                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$OLD_KOTLIN_VERSION'
                 classpath files($settingsSetup.pluginClasspath)
             }
 
@@ -328,8 +289,7 @@ class PublishPluginIntTest {
             }
         }
         repositories {
-            mavenCentral();
-            maven { url "http://dl.bintray.com/robstoll/tutteli-jars" }
+            mavenCentral()
         }
         apply plugin: 'kotlin'
         apply plugin: 'ch.tutteli.dokka'
@@ -350,26 +310,12 @@ class PublishPluginIntTest {
 
             // Optional, in case you want to mention the vendor in the manifest file of all jars
             manifestVendor = '$vendor'
-
-            // minimal setup required for bintray extension
-            bintrayRepo = 'tutteli-jars'
-
-            // required since we don't set the System.env variables.
-            bintray {
-                user = '$user'
-                key = '$apiKey'
-            }
         }
 
         dependencies {
-            implementation 'ch.tutteli.atrium:atrium-cc-en_GB-robstoll:$ATRIUM_VERSION'
+            implementation 'ch.tutteli.atrium:atrium-fluent-en_GB:$ATRIUM_VERSION'
         }
-
-        project.afterEvaluate {
-            ${printArtifactsAndManifest()}
-            ${printBintray()}
-        }
-
+        ${publishingRepo()}
         ${taskPrintSigning()}
         """
         File license = new File(settingsSetup.tmp, 'LICENSE.txt')
@@ -379,10 +325,13 @@ class PublishPluginIntTest {
 
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("pubToMaLo", "printSigning", "--stacktrace")
+            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
         //assert
-        String pom = Paths.get(settingsSetup.tmp.absolutePath, 'build', 'publications', 'tutteli', 'pom-default.xml').toFile().getText('UTF-8')
+
+        def releasePath = getReleasePath(settingsSetup, projectName, groupId, version)
+
+        def (pom, pomName) = getPomInclFileNameAndAssertBasicPomProperties(releasePath, projectName, groupId, version, githubUser)
         assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
             "<license>$NL_INDENT" +
             "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
@@ -395,7 +344,7 @@ class PublishPluginIntTest {
         assertContainsRegex(pom, "dependencies", "<dependencies>$NL_INDENT" +
             "<dependency>$NL_INDENT" +
             "<groupId>ch.tutteli.atrium</groupId>$NL_INDENT" +
-            "<artifactId>atrium-cc-en_GB-robstoll</artifactId>$NL_INDENT" +
+            "<artifactId>atrium-fluent-en_GB</artifactId>$NL_INDENT" +
             "<version>$ATRIUM_VERSION</version>$NL_INDENT" +
             "<scope>runtime</scope>$NL_INDENT" +
             "</dependency>$NL_INDENT" +
@@ -403,26 +352,20 @@ class PublishPluginIntTest {
         )
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
-        def output = result.output
-        assertTrue(output.contains("groupId: $groupId"), "groupId $groupId\n${output}")
-        assertTrue(output.contains("artifactId: $projectName"), "artifactId: $projectName\n${output}")
-        assertTrue(output.contains("version: $version"), "version: $version\n${output}")
-        assertTrue(output.contains("artifact: jar - null"), "java jar\n${output}")
-        assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
-        assertTrue(output.contains("artifact: jar - javadoc"), "javadoc jar\n${output}")
-        assertBintray(result, user, apiKey, projectName, projectName, repoUrl, version, "Apache-2.0", "null")
         assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, vendor, KOTLIN_VERSION)
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, vendor, KOTLIN_VERSION)
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-javadoc.jar", projectName, version, repoUrl, vendor, KOTLIN_VERSION)
+        assertModuleExists(releasePath, projectName, version)
+        assertJarsWithLicenseAndManifest(releasePath, projectName, version, repoUrl, vendor, OLD_KOTLIN_VERSION, pomName,
+            ".jar",
+            "-sources.jar",
+            "-javadoc.jar",
+        )
     }
 
     @Test
     void subproject(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
-        def rootProjectName = 'test-project'
-        def subprojectNameWithoutJvm = 'test-sub'
-        def subprojectName = "$subprojectNameWithoutJvm-jvm"
+        def rootProjectName = 'rootProject'
+        def subprojectName = "test-sub-jvm"
         def dependentName = 'dependent'
         settingsSetup.settings << """rootProject.name='$rootProjectName'
         include '$subprojectName'
@@ -443,7 +386,7 @@ class PublishPluginIntTest {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
                 classpath 'ch.tutteli:tutteli-gradle-dokka:0.10.1'
-                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$OLD_KOTLIN_VERSION'
                 classpath files($settingsSetup.pluginClasspath)
             }
             ext {
@@ -460,23 +403,27 @@ class PublishPluginIntTest {
         }
 
         subprojects {
-            it.description = 'sub description'
+            it.description = 'test project'
 
             repositories {  mavenCentral(); }
             apply plugin: 'kotlin'
 
-            def testJar = task('testJar', type: Jar) {
+            task('testJar', type: Jar) {
                 from sourceSets.test.output
                 classifier = 'tests'
             }
 
             apply plugin: 'ch.tutteli.publish'
 
-            // not included in publish as it was defined after the publish plugin was applied
-
-            def testSourcesJar = task('testSourcesJar', type: Jar) {
+            // still included in publish, use the artifactFilter to exclude a jar as artifact
+            task('testSourcesJar', type: Jar) {
                 from sourceSets.test.allSource
                 classifier = 'testsources'
+            }
+
+            task('testSourcesJarFiltered', type: Jar) {
+                from sourceSets.test.allSource
+                classifier = 'testsources-filtered'
             }
 
             tutteliPublish {
@@ -484,21 +431,11 @@ class PublishPluginIntTest {
 
                 //already defined because it is a ch.tutteli project
                 //githubUser = '$githubUser'
-                //bintrayRepo = 'tutteli-jars' is default no need to set it
                 //manifestVendor = $vendor // we don't have a manifestVendor, thus we reset it to null
 
-                /* would be required if we used task publishToBintray, we don't so we don't have to define it
-                bintray {
-                    user = 'test'
-                    key = 'api-key'
-                }
-                */
+                artifactFilter = { jar -> jar.name != 'testSourcesJarFiltered' }
             }
-
-            afterEvaluate {
-                ${printArtifactsAndManifest()}
-                ${printBintray()}
-            }
+            ${publishingRepo()}
             ${taskPrintSigning()}
         }
 
@@ -513,13 +450,14 @@ class PublishPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("pubToMaLo", "printSigning", "--stacktrace")
+            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
         //assert
-        String pom = Paths.get(settingsSetup.tmp.absolutePath, dependentName, 'build', 'publications', 'tutteli', 'pom-default.xml').toFile().getText('UTF-8')
-        assertContainsRegex(pom, "name", "<name>$dependentName</name>")
-        assertContainsRegex(pom, "description", "<description>sub description</description>")
-        assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
+        assertSigning(result, gpgPassphrase, gpgKeyId, "${settingsSetup.tmpPath.toRealPath()}/$gpgKeyRing")
+
+        def dependentReleasePath = getReleasePath(settingsSetup, dependentName, groupId, version, dependentName)
+        def (dependentPom, dependentPomName) = getPomInclFileNameAndAssertBasicPomProperties(dependentReleasePath, dependentName, groupId, version, githubUser, rootProjectName)
+        assertContainsRegex(dependentPom, "licenses", "<licenses>$NL_INDENT" +
             "<license>$NL_INDENT" +
             "<name>${StandardLicenses.EUPL_1_2.longName}</name>$NL_INDENT" +
             "<url>${StandardLicenses.EUPL_1_2.url}</url>$NL_INDENT" +
@@ -527,7 +465,7 @@ class PublishPluginIntTest {
             "</license>$NL_INDENT" +
             "</licenses"
         )
-        assertContainsRegex(pom, "developers", "<developers>$NL_INDENT" +
+        assertContainsRegex(dependentPom, "developers", "<developers>$NL_INDENT" +
             "<developer>$NL_INDENT" +
             "<id>robstoll</id>$NL_INDENT" +
             "<name>Robert Stoll</name>$NL_INDENT" +
@@ -535,16 +473,16 @@ class PublishPluginIntTest {
             "<url>https://tutteli.ch</url>$NL_INDENT" +
             "</developer>$NL_INDENT" +
             "</developers>")
-        assertContainsRegex(pom, "dependencies", "<dependencies>$NL_INDENT" +
+        assertContainsRegex(dependentPom, "dependencies", "<dependencies>$NL_INDENT" +
             "<dependency>$NL_INDENT" +
             "<groupId>$groupId</groupId>$NL_INDENT" +
-            "<artifactId>$subprojectNameWithoutJvm</artifactId>$NL_INDENT" +
+            "<artifactId>$subprojectName</artifactId>$NL_INDENT" +
             "<version>$version</version>$NL_INDENT" +
             "<scope>compile</scope>$NL_INDENT" +
             "</dependency>$NL_INDENT" +
             "<dependency>$NL_INDENT" +
             "<groupId>$groupId</groupId>$NL_INDENT" +
-            "<artifactId>$subprojectNameWithoutJvm</artifactId>$NL_INDENT" +
+            "<artifactId>$subprojectName</artifactId>$NL_INDENT" +
             "<version>$version</version>$NL_INDENT" +
             "<scope>runtime</scope>$NL_INDENT" +
             "</dependency>$NL_INDENT" +
@@ -552,31 +490,113 @@ class PublishPluginIntTest {
         )
 
         def repoUrl = "https://github.com/$githubUser/$rootProjectName"
-        def output = result.output
-        assertTrue(output.contains("groupId: $groupId"), "groupId $groupId\n${output}")
-        assertTrue(output.contains("artifactId: $subprojectNameWithoutJvm"), "artifactId: $subprojectNameWithoutJvm\n${output}")
-        assertTrue(output.contains("version: $version"), "version: $version\n${output}")
-        assertTrue(output.contains("artifact: jar - null"), "java jar\n${output}")
-        assertTrue(output.contains("artifact: jar - sources"), "sources jar\n${output}")
-        assertTrue(output.contains("artifact: jar - tests"), "test jar \n${output}")
-        assertFalse(output.contains("artifact: jar - testsources"), "testsources jar should not be in output, was defined after plugin apply\n${output}")
-        assertBintray(result, "null", "null", rootProjectName, subprojectNameWithoutJvm, repoUrl, version, "EUPL-1.2", "null")
-        assertSigning(result, gpgPassphrase, gpgKeyId, "${settingsSetup.tmpPath.toRealPath()}/$gpgKeyRing")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + dependentName + " $version"), "bintrayExtension.pkg.version.desc " + dependentName + " $version\n$result.output")
 
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, KOTLIN_VERSION)
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-sources.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, KOTLIN_VERSION)
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, subprojectName, "$subprojectNameWithoutJvm-${version}-tests.jar", subprojectNameWithoutJvm, version, repoUrl, vendor, KOTLIN_VERSION)
 
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, dependentName, "$dependentName-${version}.jar", dependentName, version, repoUrl, vendor, KOTLIN_VERSION)
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, dependentName, "$dependentName-${version}-sources.jar", dependentName, version, repoUrl, vendor, KOTLIN_VERSION)
-        assertJarOfSubProjectWithLicenseAndManifest(settingsSetup, dependentName, "$dependentName-${version}-tests.jar", dependentName, version, repoUrl, vendor, KOTLIN_VERSION)
+        assertJarsWithLicenseAndManifest(dependentReleasePath, dependentName, version, repoUrl, vendor, OLD_KOTLIN_VERSION, dependentPomName,
+            ".jar",
+            "-sources.jar",
+            "-tests.jar"
+        )
+        assertModuleExists(dependentReleasePath, dependentName, version)
+
+        def subReleasePath = getReleasePath(settingsSetup, subprojectName, groupId, version, subprojectName)
+        def (_, subPomName) = getPomInclFileNameAndAssertBasicPomProperties(subReleasePath, subprojectName, groupId, version, githubUser, rootProjectName)
+        assertJarsWithLicenseAndManifest(subReleasePath, subprojectName, version, repoUrl, vendor, OLD_KOTLIN_VERSION, subPomName,
+            ".jar",
+            "-sources.jar",
+            "-tests.jar"
+        )
+        assertModuleExists(subReleasePath, subprojectName, version)
     }
 
     @Test
-    void withKotlinApplied(SettingsExtensionObject settingsSetup) throws IOException {
-        def projectName = 'test-project'
+    void withOldKotlinApplied(SettingsExtensionObject settingsSetup) throws IOException {
+        def projectName = 'kotlin-jvm-old'
         settingsSetup.settings << "rootProject.name='$projectName'"
+        def groupId = 'com.example'
+        def version = '1.0.0'
+        def githubUser = 'robstoll'
+        def gpgPassphrase = 'bla'
+        def gpgKeyId = 'A5875B96'
+        def gpgKeyRing = 'keyring.gpg'
+
+        settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
+
+        settingsSetup.buildGradle << """
+        ${settingsSetup.buildscriptWithKotlin(OLD_KOTLIN_VERSION)}
+        buildscript {
+            ext {
+                // required since we don't set the System.env variables.
+                gpgPassphrase = '$gpgPassphrase'
+                gpgKeyRing = '$gpgKeyRing'
+                gpgKeyId = '$gpgKeyId'
+            }
+        }
+        repositories {
+            mavenCentral()
+        }
+
+        apply plugin: 'kotlin'
+        apply plugin: 'ch.tutteli.publish'
+
+        project.with {
+            group = '$groupId'
+            version = '$version'
+            description = 'test project'
+        }
+        tutteliPublish {
+            //minimal setup required for local publish, all other things are only needed if not the default is used
+            githubUser = '$githubUser'
+        }
+        ${publishingRepo()}
+        ${taskPrintSigning()}
+        """
+        File license = new File(settingsSetup.tmp, 'LICENSE.txt')
+        license << 'Copyright...'
+        Path main = Files.createDirectories(settingsSetup.tmpPath.resolve('src').resolve('main'))
+        Path resources = Files.createDirectory(main.resolve('resources'))
+        File txt = new File(resources.toFile(), 'a.txt')
+        txt << 'dummy'
+        Path tutteli = Files.createDirectories(main.resolve('kotlin').resolve('ch').resolve('tutteli').resolve('atrium'))
+        File kt = new File(tutteli.toFile(), 'a.kt')
+        kt << 'package ch.tutteli.atrium'
+
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("publishAllPublicationsToMavenRepository", "printSigning")
+            .build()
+
+        assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
+
+        Asserts.assertTaskRunSuccessfully(result, PublishPlugin.TASK_GENERATE_GRADLE_METADATA)
+        Asserts.assertTaskRunSuccessfully(result, PublishPlugin.TASK_GENERATE_POM)
+        Asserts.assertTaskRunSuccessfully(result, "signTutteliPublication")
+        Asserts.assertTaskRunSuccessfully(result, "publishTutteliPublicationToMavenRepository")
+
+        def repoUrl = "https://github.com/$githubUser/$projectName"
+
+        def releasePath = getReleasePath(settingsSetup, projectName, groupId, version)
+        def (_, pomFileName) = getPomInclFileNameAndAssertBasicPomProperties(releasePath, projectName, groupId, version, githubUser)
+
+        assertModuleExists(releasePath, projectName, version)
+        assertJarsWithLicenseAndManifest(releasePath, projectName, version, repoUrl, null, OLD_KOTLIN_VERSION, pomFileName,
+            ".jar",
+            "-sources.jar",
+        )
+        new ZipFile(releasePath.resolve("$projectName-${version}.jar").toFile()).withCloseable { zipFile ->
+            assertInZipFile(zipFile, 'a.txt')
+        }
+        new ZipFile(releasePath.resolve("$projectName-${version}-sources.jar").toFile()).withCloseable { zipFile ->
+            assertInZipFile(zipFile, 'main/ch/tutteli/atrium/a.kt')
+        }
+    }
+
+    @Test
+    void withKotlinJvmApplied(SettingsExtensionObject settingsSetup) throws IOException {
+        def projectName = 'kotlin-jvm'
+        settingsSetup.settings << "rootProject.name='$projectName'"
+        def groupId = 'com.example'
         def version = '1.0.0'
         def githubUser = 'robstoll'
         def gpgPassphrase = 'bla'
@@ -599,19 +619,23 @@ class PublishPluginIntTest {
             mavenCentral()
         }
 
-        apply plugin: 'kotlin'
+        apply plugin: 'org.jetbrains.kotlin.jvm'
         apply plugin: 'ch.tutteli.publish'
 
         project.with {
-            group = 'com.example'
+            group = '$groupId'
             version = '$version'
             description = 'test project'
         }
         tutteliPublish {
-            //minimal setup required for local publish, all other things are only needed if not the default is used
+            // minimal setup required for local publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
-            bintrayRepo = 'tutteli-jars'
         }
+        dependencies {
+            implementation 'ch.tutteli.atrium:atrium-fluent-en_GB:$ATRIUM_VERSION'
+        }
+
+        ${publishingRepo()}
         ${taskPrintSigning()}
         """
         File license = new File(settingsSetup.tmp, 'LICENSE.txt')
@@ -627,38 +651,231 @@ class PublishPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishTutteliPublicationToMavenLocal", "printSigning")
+            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
 
-        Asserts.assertStatusOk(result,
-            [
-                ":validateBeforePublish",
-                ":includeBuildTimeInManifest",
-                ":compileKotlin",
-                ":processResources",
-                ":classes",
-                ":inspectClassesForKotlinIC",
-                ":jar",
-                ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA".toString(),
-                ":$PublishPlugin.TASK_GENERATE_POM".toString(),
-                ":sourcesJar",
-                ":signTutteliPublication",
-                ":publishTutteliPublicationToMavenLocal",
-                ":printSigning"
-            ],
-            [],
-            []
+        Asserts.assertTaskRunSuccessfully(result, PublishPlugin.TASK_GENERATE_GRADLE_METADATA)
+        Asserts.assertTaskRunSuccessfully(result, PublishPlugin.TASK_GENERATE_POM)
+        Asserts.assertTaskRunSuccessfully(result, "signTutteliPublication")
+        Asserts.assertTaskRunSuccessfully(result, "publishTutteliPublicationToMavenRepository")
+
+        def releasePath = getReleasePath(settingsSetup, projectName, groupId, version)
+        def (pom, pomName) = getPomInclFileNameAndAssertBasicPomProperties(releasePath, projectName, groupId, version, githubUser)
+        assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
+            "<license>$NL_INDENT" +
+            "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
+            "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
+            "<distribution>repo</distribution>$NL_INDENT" +
+            "</license>$NL_INDENT" +
+            "</licenses"
+        )
+        assertContainsRegex(pom, "developers", "<developers/>")
+        assertContainsRegex(pom, "dependencies", "<dependencies>$NL_INDENT" +
+            "<dependency>$NL_INDENT" +
+            "<groupId>org.jetbrains.kotlin</groupId>$NL_INDENT" +
+            "<artifactId>kotlin-stdlib-jdk8</artifactId>$NL_INDENT" +
+            "<version>$KOTLIN_VERSION</version>$NL_INDENT" +
+            "<scope>compile</scope>$NL_INDENT" +
+            "</dependency>$NL_INDENT" +
+            "<dependency>$NL_INDENT" +
+            "<groupId>ch.tutteli.atrium</groupId>$NL_INDENT" +
+            "<artifactId>atrium-fluent-en_GB</artifactId>$NL_INDENT" +
+            "<version>$ATRIUM_VERSION</version>$NL_INDENT" +
+            "<scope>runtime</scope>$NL_INDENT" +
+            "</dependency>$NL_INDENT" +
+            "</dependencies>"
         )
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}.jar", projectName, version, repoUrl, null, KOTLIN_VERSION)
-        assertJarWithLicenseAndManifest(settingsSetup, "$projectName-${version}-sources.jar", projectName, version, repoUrl, null, KOTLIN_VERSION)
-        def zipFile = new ZipFile(buildLib(settingsSetup).resolve("$projectName-${version}-sources.jar").toFile())
-        zipFile.withCloseable {
-            assertInZipFile(zipFile, 'main/resources/a.txt')
-            assertInZipFile(zipFile, 'main/kotlin/ch/tutteli/atrium/a.kt')
+        assertModuleExists(releasePath, projectName, version)
+        assertJarsWithLicenseAndManifest(releasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, pomName,
+            ".jar",
+            "-sources.jar",
+        )
+        new ZipFile(releasePath.resolve("$projectName-${version}.jar").toFile()).withCloseable { zipFile ->
+            assertInZipFile(zipFile, 'a.txt')
+        }
+        new ZipFile(releasePath.resolve("$projectName-${version}-sources.jar").toFile()).withCloseable { zipFile ->
+            assertInZipFile(zipFile, 'main/ch/tutteli/atrium/a.kt')
         }
         assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
+    }
+
+    @Test
+    void withKotlinMultiplatformApplied_enableGranularSourceSetsMetadataIsTrue(SettingsExtensionObject settingsSetup) throws IOException {
+        checkKotlinMultiplatform('kotlin-mpp-enabled', settingsSetup, true)
+    }
+
+    @Test
+    void withKotlinMultiplatformApplied_enableGranularSourceSetsMetadataIsFalse(SettingsExtensionObject settingsSetup) throws IOException {
+        checkKotlinMultiplatform('kotlin-mpp-enabled', settingsSetup, false)
+    }
+
+    static void checkKotlinMultiplatform(String projectName, SettingsExtensionObject settingsSetup, boolean enableGranularSourceSetsMetadata) {
+
+        settingsSetup.settings << "rootProject.name='$projectName'"
+        def groupId = 'com.example'
+        def version = '1.0.0'
+        def githubUser = 'robstoll'
+        def gpgPassphrase = 'bla'
+        def gpgKeyId = 'A5875B96'
+        def gpgKeyRing = 'keyring.gpg'
+
+        settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
+
+        settingsSetup.buildGradle << """
+        import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
+
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+        buildscript {
+            ext {
+                // required since we don't set the System.env variables.
+                gpgPassphrase = '$gpgPassphrase'
+                gpgKeyRing = '$gpgKeyRing'
+                gpgKeyId = '$gpgKeyId'
+            }
+        }
+        repositories {
+            mavenCentral()
+        }
+
+        apply plugin: 'org.jetbrains.kotlin.multiplatform'
+        apply plugin: 'ch.tutteli.publish'
+
+        project.with {
+            group = '$groupId'
+            version = '$version'
+            description = 'test project'
+        }
+        tutteliPublish {
+            //minimal setup required for local publish, all other things are only needed if not the default is used
+            githubUser = '$githubUser'
+        }
+
+        kotlin {
+           jvm { }
+           js { browser { } }
+           def hostOs = System.getProperty("os.name")
+           def isMingwX64 = hostOs.startsWith("Windows")
+           KotlinNativeTargetWithTests nativeTarget
+           if (hostOs == "Mac OS X") nativeTarget = macosX64('native')
+           else if (hostOs == "Linux") nativeTarget = linuxX64("native")
+           else if (isMingwX64) nativeTarget = mingwX64("native")
+           else throw new GradleException("Host OS is not supported in Kotlin/Native.")
+
+
+           sourceSets {
+               commonMain { }
+               commonTest { }
+               jvmMain { }
+               jvmTest { }
+               jsMain { }
+               jsTest { }
+               nativeMain { }
+               nativeTest { }
+           }
+        }
+        ${publishingRepo()}
+        ${taskPrintSigning()}
+        """
+        File license = new File(settingsSetup.tmp, 'LICENSE.txt')
+        license << 'Copyright...'
+        Path commonMain = Files.createDirectories(settingsSetup.tmpPath.resolve('src').resolve('commonMain'))
+        Path commonTutteli = Files.createDirectories(commonMain.resolve("kotlin").resolve('ch').resolve('tutteli').resolve('atrium'))
+        File commonKt = new File(commonTutteli.toFile(), 'common.kt')
+        commonKt << """package ch.tutteli.atrium
+                    val a = 1"""
+
+        Path jvmMain = Files.createDirectories(settingsSetup.tmpPath.resolve('src').resolve('jvmMain'))
+        Path resources = Files.createDirectory(jvmMain.resolve('resources'))
+        File txt = new File(resources.toFile(), 'a.txt')
+        txt << 'dummy'
+        Path tutteli = Files.createDirectories(jvmMain.resolve('kotlin').resolve('ch').resolve('tutteli').resolve('atrium'))
+        File kt = new File(tutteli.toFile(), 'a.kt')
+        kt << 'package ch.tutteli.atrium'
+
+        if (enableGranularSourceSetsMetadata) {
+            File gradleProperties = new File(settingsSetup.tmpPath.toFile(), 'gradle.properties')
+            gradleProperties << """
+            kotlin.mpp.enableGranularSourceSetsMetadata=true
+            """
+        }
+
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("publishAllPublicationsToMavenRepository", "printSigning")
+            .build()
+
+        assertNull(result.task(":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA"), "$PublishPlugin.TASK_GENERATE_GRADLE_METADATA should not run but did")
+        assertNull(result.task(":$PublishPlugin.TASK_GENERATE_POM"), "$PublishPlugin.TASK_GENERATE_POM should not run but did")
+        if(enableGranularSourceSetsMetadata){
+            Asserts.assertTaskRunSuccessfully(result,"allMetadataJar")
+        }
+        assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
+
+
+        def repoUrl = "https://github.com/$githubUser/$projectName"
+
+        def rootReleasePath = getReleasePath(settingsSetup, projectName, groupId, version)
+        def (_, rootPomName) = getPomInclFileNameAndAssertBasicPomProperties(rootReleasePath, projectName, groupId, version, githubUser)
+        assertModuleExists(rootReleasePath, projectName, version)
+        assertJarsWithLicenseAndManifest(rootReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, rootPomName,
+            ".jar",
+            "-sources.jar",
+        )
+        if (enableGranularSourceSetsMetadata) {
+            assertJarsWithLicenseAndManifest(rootReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, rootPomName,
+                "-all.jar",
+            )
+        } else {
+            Path path = rootReleasePath.resolve("$projectName-${version}-all.jar")
+            assertFalse(Files.exists(path), "${path} found even though enableGranularSourceSetsMetadata is set to false")
+        }
+
+        def jsReleasePath = getReleasePath(settingsSetup, projectName + "-js", groupId, version)
+        def (_2, jsPomName) = getPomInclFileNameAndAssertBasicPomProperties(jsReleasePath, projectName + "-js", groupId, version, githubUser, projectName)
+        assertModuleExists(jsReleasePath, projectName + "-js", version)
+        assertJarsWithLicenseAndManifest(
+            jsReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, jsPomName,
+            ".jar",
+            "-sources.jar",
+        )
+
+        def jvmReleasePath = getReleasePath(settingsSetup, projectName + "-jvm", groupId, version)
+        def (_3, jvmPomName) = getPomInclFileNameAndAssertBasicPomProperties(jvmReleasePath, projectName + "-jvm", groupId, version, githubUser, projectName)
+        assertModuleExists(jvmReleasePath, projectName + "-jvm", version)
+        assertJarsWithLicenseAndManifest(
+            jvmReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, jvmPomName,
+            ".jar",
+            "-sources.jar",
+        )
+        new ZipFile(jvmReleasePath.resolve("$projectName-jvm-${version}-sources.jar").toFile()).withCloseable { zipFile ->
+            assertInZipFile(zipFile, 'commonMain/ch/tutteli/atrium/common.kt')
+            assertInZipFile(zipFile, 'jvmMain/ch/tutteli/atrium/a.kt')
+        }
+
+
+        def nativeReleasePath = getReleasePath(settingsSetup, projectName + "-native", groupId, version)
+        def (_4, nativePomName) = getPomInclFileNameAndAssertBasicPomProperties(nativeReleasePath, projectName + "-native", groupId, version, githubUser, projectName)
+        assertModuleExists(nativeReleasePath, projectName + "-native", version)
+        assertJarsWithLicenseAndManifest(
+            nativeReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, nativePomName,
+            "-sources.jar",
+        )
+        def klibName = "$projectName-native-${version}.klib"
+        Path path = nativeReleasePath.resolve(klibName)
+        assertTrue(Files.exists(path), "${path} not found")
+        assertAscWithHashesExistForFile(nativeReleasePath, klibName)
+
+    }
+
+    private static Path getReleasePath(SettingsExtensionObject settingsSetup, String projectName, String groupId, String version, String subDir = '') {
+        def build = Paths.get(settingsSetup.tmp.absolutePath, subDir, 'build', 'repo')
+        def group = groupId.split("\\.").inject(build) {
+            path, part -> path.resolve(part)
+        }
+        return group.resolve(projectName).resolve(version)
     }
 
     private static String taskPrintSigning() {
@@ -668,6 +885,19 @@ class PublishPluginIntTest {
                     ${printSigning()}
                 }
             }
+        """
+    }
+
+    private static String publishingRepo() {
+        return """
+        // only here for testing purposes, not needed for the plugin
+        publishing {
+            repositories {
+                maven {
+                    url = layout.buildDirectory.dir('repo')
+                }
+            }
+        }
         """
     }
 
@@ -681,97 +911,32 @@ class PublishPluginIntTest {
         """
     }
 
-
     private static void assertSigning(BuildResult result, String gpgPassphrase, String gpgKeyId, String gpgKeyRing) {
         assertTrue(result.output.contains("signing.password: $gpgPassphrase"), "project.ext.\"signing.password\" $gpgPassphrase\n$result.output")
         assertTrue(result.output.contains("signing.keyId: $gpgKeyId"), "project.ext.\"signing.keyId\" $gpgKeyId\n$result.output")
         assertTrue(result.output.contains("signing.secretKeyRingFile: $gpgKeyRing"), "project.ext.\"signing.secretKeyRingFile\" $gpgKeyRing\n$result.output")
     }
 
-
-    private static String printBintray() {
-        return """def bintrayExtension = project.extensions.getByName('bintray')
-            println("bintrayExtension.user: \$bintrayExtension.user")
-            println("bintrayExtension.key: \$bintrayExtension.key")
-            println("bintrayExtension.publications: \$bintrayExtension.publications")
-            println("bintrayExtension.pkg.repo: \$bintrayExtension.pkg.repo")
-            println("bintrayExtension.pkg.name: \$bintrayExtension.pkg.name")
-            println("bintrayExtension.pkg.userOrg: \$bintrayExtension.pkg.userOrg")
-            println("bintrayExtension.pkg.licenses: \${bintrayExtension.pkg.licenses.join(',')}")
-            println("bintrayExtension.pkg.vcsUrl: \$bintrayExtension.pkg.vcsUrl")
-            println("bintrayExtension.pkg.version.name: \$bintrayExtension.pkg.version.name")
-            println("bintrayExtension.pkg.version.desc: \$bintrayExtension.pkg.version.desc")
-            println("bintrayExtension.pkg.version.released: \$bintrayExtension.pkg.version.released")
-            println("bintrayExtension.pkg.version.vcsTag: \$bintrayExtension.pkg.version.vcsTag")
-            println("bintrayExtension.pkg.version.gpg.sign: \$bintrayExtension.pkg.version.gpg.sign")
-            println("bintrayExtension.pkg.version.gpg.passphrase: \$bintrayExtension.pkg.version.gpg.passphrase")
-        """
-    }
-
-    private static String printArtifactsAndManifest() {
-        return """
-        project.publishing.publications.withType(MavenPublication) {
-            println("groupId: \$it.groupId")
-            println("artifactId: \$it.artifactId")
-            println("version: \$it.version")
-            it.artifacts.each {
-                println("artifact: \$it.extension - \$it.classifier")
-            }
+    private static void assertJarsWithLicenseAndManifest(Path releasePath, String projectName, String version, String repoUrl, String vendor, String kotlinVersion, String pomName, String... jarNameEndings) {
+        def prefix = pomName.substring(0, pomName.length() - 4)
+        jarNameEndings.each { jarNameEnding ->
+            assertJarWithLicenseAndManifest(releasePath, prefix + jarNameEnding, projectName, version, repoUrl, vendor, kotlinVersion)
+            assertAscWithHashesExistForFile(releasePath, prefix + jarNameEnding)
         }
-        """
-    }
-
-    private static void assertBintray(
-        BuildResult result,
-        String user,
-        String key,
-        String pkgName,
-        String projectName,
-        String repoUrl,
-        String version,
-        String licenses,
-        String organisation
-    ) {
-        assertTrue(result.output.contains("bintrayExtension.user: $user"), "bintrayExtension.user $user\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.key: $key"), "bintrayExtension.key $key\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.publications: [tutteli]"), "bintrayExtension.publications [tutteli]\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.repo: tutteli-jars"), "bintrayExtension.pkg.repo tutteli-jars\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.name: $pkgName"), "bintrayExtension.pkg.name $pkgName\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.userOrg: $organisation"), "bintrayExtension.pkg.userOrg $organisation\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.licenses: $licenses"), "bintrayExtension.pkg.licenses $licenses\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.vcsUrl: $repoUrl"), "bintrayExtension.pkg.vcsUrl $repoUrl\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.name: $version"), "bintrayExtension.pkg.version.name $version\n$result.output")
-
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.desc: " + projectName + " $version"), "bintrayExtension.pkg.version.desc " + pkgName + " $version\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.released: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "bintrayExtension.pkg.version.released\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.vcsTag: v$version"), "bintrayExtension.pkg.version.vcsTag v$version\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.sign: false"), "bintrayExtension.pkg.version.gpg.sign false\n$result.output")
-        assertTrue(result.output.contains("bintrayExtension.pkg.version.gpg.passphrase: null"), "bintrayExtension.pkg.version.gpg.passphrase null\n$result.output")
-    }
-
-    private static void assertJarWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
-        assertJarWithLicenseAndManifest(buildLib(settingsSetup), jarName, projectName, version, repoUrl, vendor, kotlinVersion)
     }
 
     private static Path buildLib(SettingsExtensionObject settingsSetup) {
         return Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs')
     }
 
-    private static void assertJarOfSubProjectWithLicenseAndManifest(SettingsExtensionObject settingsSetup, String dirName, String jarName, String subprojectName, String version, String repoUrl, String vendor, String kotlinVersion) {
-        assertJarWithLicenseAndManifest(Paths.get(settingsSetup.tmp.absolutePath, dirName, 'build', 'libs'), jarName, subprojectName, version, repoUrl, vendor, kotlinVersion)
-    }
-
-    private static void assertJarWithLicenseAndManifest(Path jarPath, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
-        def zip = jarPath.resolve(jarName)
-        def zipFile = new ZipFile(jarPath.resolve(jarName).toFile())
+    private static void assertJarWithLicenseAndManifest(Path releasePath, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
+        def zipFile = new ZipFile(releasePath.resolve(jarName).toFile())
         zipFile.withCloseable {
             def manifest = zipFile.getInputStream(findInZipFile(zipFile, 'META-INF/MANIFEST.MF')).text
             assertManifest(manifest, ': ', projectName, version, repoUrl, vendor, kotlinVersion)
             assertTrue(manifest.contains("Build-Time: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "manifest build time was not ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}\n${manifest}")
             assertInZipFile(zipFile, 'LICENSE.txt')
         }
-        def zipAsc = Paths.get(zip.toAbsolutePath().toString() + ".asc")
-        assertTrue(zipAsc.toFile().exists(), "${zipAsc.toAbsolutePath()} does not exist")
     }
 
     private static void assertInZipFile(ZipFile zipFile, String path) {
@@ -784,15 +949,61 @@ class PublishPluginIntTest {
         } as ZipEntry
     }
 
+
     private static void assertManifest(String output, String separator, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
-        assertTrue(output.contains("Implementation-Title$separator$projectName"), "Implementation-Title$separator$projectName\n${output}")
-        assertTrue(output.contains("Implementation-Version$separator$version"), "Implementation-Version$separator$version\n${output}")
-        assertTrue(output.contains("Implementation-URL$separator$repoUrl"), "Implementatison-URL$separator$repoUrl\n${output}")
+        assertTrue(output.contains("Implementation-Title$separator$projectName"), "contains: Implementation-Title$separator$projectName\nbut was:\n${output}")
+        assertTrue(output.contains("Implementation-Version$separator$version"), "contains: Implementation-Version$separator$version\nbut was:\n${output}")
+        assertTrue(output.contains("Implementation-URL$separator$repoUrl"), "contains: Implementatison-URL$separator$repoUrl\nbut was:\n${output}")
         if (vendor != null) {
-            assertTrue(output.contains("Implementation-Vendor$separator$vendor"), "Implementation-Vendor$separator$vendor\n${output}")
+            assertTrue(output.contains("Implementation-Vendor$separator$vendor"), "contains: Implementation-Vendor$separator$vendor\nbut was:\n${output}")
         } else {
             assertFalse(output.contains("Implementation-Vendor"), "should not contain Implementation-Vendor")
         }
-        assertTrue(output.contains("Implementation-Kotlin-Version$separator$kotlinVersion"), "Implementation-Kotlin-Version$separator$kotlinVersion\n${output}")
+        assertTrue(output.contains("Implementation-Kotlin-Version$separator$kotlinVersion"), "contains: Implementation-Kotlin-Version$separator$kotlinVersion\nbut was:\n${output}")
+    }
+
+    private static void assertModuleExists(Path releasePath, String projectName, String version) {
+        def moduleFileName = getArtifactName(releasePath, projectName, version, "module")
+        assertTrue(Files.exists(releasePath.resolve(moduleFileName)))
+        assertAscWithHashesExistForFile(releasePath, moduleFileName)
+    }
+
+
+    private static List<String> getPomInclFileNameAndAssertBasicPomProperties(Path releasePath, String projectName, String groupId, String version, String githubUser, String rootProjectName = '') {
+        String pomFileName = getArtifactName(releasePath, projectName, version, "pom")
+        String pom = releasePath.resolve(pomFileName).toFile().getText('UTF-8')
+        assertAscWithHashesExistForFile(releasePath, pomFileName)
+        assertContainsRegex(pom, "published-with-gradle-metadata", "published-with-gradle-metadata")
+        assertContainsRegex(pom, "groupId", "<groupId>$groupId</groupId>")
+        assertContainsRegex(pom, "artifactId", "<artifactId>$projectName</artifactId>")
+        assertContainsRegex(pom, "description", "<description>test project</description>")
+
+        def domainAndPath = "github.com/$githubUser/${rootProjectName != '' ? rootProjectName : projectName}"
+        assertContainsRegex(pom, "scm", "<scm>$NL_INDENT" +
+            "<connection>scm:git:git://${domainAndPath}.git</connection>$NL_INDENT" +
+            "<developerConnection>scm:git:ssh://${domainAndPath}.git</developerConnection>$NL_INDENT" +
+            "<url>https://$domainAndPath</url>$NL_INDENT" +
+            "</scm>")
+        return [pom, pomFileName]
+    }
+
+    private static String getArtifactName(Path releasePath, String projectName, String version, String extension) {
+        return version.contains("-SNAPSHOT") ? findArtifact(releasePath, extension) : "$projectName-${version}.$extension"
+    }
+
+    private static String findArtifact(Path releasePath, String extension) {
+        return Paths.get(new FileNameFinder().getFileNames(releasePath.toAbsolutePath().toString(), "*.$extension").head()).fileName.toString()
+    }
+
+    private static void assertAscWithHashesExistForFile(Path releasePath, String fileName) {
+        assertHashesExistForFile(releasePath, fileName)
+        assertTrue(Files.exists(releasePath.resolve(fileName + ".asc")), "asc for $fileName not found")
+        assertHashesExistForFile(releasePath, fileName + ".asc")
+    }
+
+    private static void assertHashesExistForFile(Path releasePath, String fileName) {
+        ['md5', 'sha1', 'sha256', 'sha512'].forEach {
+            assertTrue(Files.exists(releasePath.resolve(fileName + "." + it)), "$it for $fileName not found")
+        }
     }
 }

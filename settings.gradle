@@ -33,7 +33,7 @@ include {
     _ 'junitjacoco'
     _ 'kotlin-module-info'
     _ 'kotlin-utils'
-//    _ 'publish'
+    _ 'publish'
     _ 'spek'
 
     project 'test-utils'
