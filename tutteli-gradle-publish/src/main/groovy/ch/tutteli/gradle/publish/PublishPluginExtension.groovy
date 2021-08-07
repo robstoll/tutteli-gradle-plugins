@@ -3,12 +3,9 @@ package ch.tutteli.gradle.publish
 import org.apache.maven.model.Developer
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-
-import java.util.function.Predicate
 
 import static Validation.requireNotNullNorBlank
 
@@ -21,8 +18,6 @@ class PublishPluginExtension {
     final Property<Closure<Boolean>> artifactFilter
     final ListProperty<License> licenses
     final ListProperty<Developer> developers
-    final Property<String> propNameSonatypeUserKey
-    final Property<String> propNameSonatypeApiKey
     final Property<String> propNameGpgKeyId
     final Property<String> propNameGpgKeyRing
     final Property<String> propNameGpgPassphrase
@@ -41,10 +36,6 @@ class PublishPluginExtension {
         licenses = project.objects.listProperty(License)
         resetLicenses(StandardLicenses.APACHE_2_0, 'repo')
         developers = project.objects.listProperty(Developer)
-        propNameSonatypeUserKey = project.objects.property(String)
-        propNameSonatypeUserKey.set('sonatypeUserKey')
-        propNameSonatypeApiKey = project.objects.property(String)
-        propNameSonatypeApiKey.set('sonatypeApiKey')
         propNameGpgPassphrase = project.objects.property(String)
         propNameGpgPassphrase.set('gpgPassphrase')
         propNameGpgKeyId = project.objects.property(String)
