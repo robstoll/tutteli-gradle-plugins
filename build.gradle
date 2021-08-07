@@ -178,10 +178,10 @@ task removeRepo(type: Delete) {
     Project project = project(":tutteli-gradle-$projectName")
     def generateHardCodedDependencies = project.task('generateHardCodedDependencies', group: 'build') {
         doLast {
-            def folder = new File("${project.projectDir}/src/main/groovy/ch/tutteli/gradle/$projectName/generated")
+            def folder = new File("${project.projectDir}/src/main/groovy/ch/tutteli/gradle/plugins/$projectName/generated")
             mkdir folder
             new File(folder, "Dependencies.groovy").text =
-                """package ch.tutteli.gradle.${projectName}.generated
+                """package ch.tutteli.gradle.plugins.${projectName}.generated
                 |
                 |class Dependencies {
                 |   public static final jacoco_toolsVersion = '$project.jacoco_toolVersion'

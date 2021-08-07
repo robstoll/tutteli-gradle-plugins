@@ -1,7 +1,7 @@
 buildscript {
     ext {
-        plugin_id = 'ch.tutteli.gradle.publish'
-        plugin_class = 'ch.tutteli.gradle.publish.PublishPlugin'
+        plugin_id = 'ch.tutteli.gradle.plugins.publish'
+        plugin_class = 'ch.tutteli.gradle.plugins.publish.PublishPlugin'
         plugin_name = 'Tutteli Publish Plugin'
         plugin_description = 'Applies maven-publish as well as io.github.gradle-nexus.publish-plugin and configures them according to tutteli\'s publish conventions.'
         plugin_tags = ['publish',  'kotlin']
