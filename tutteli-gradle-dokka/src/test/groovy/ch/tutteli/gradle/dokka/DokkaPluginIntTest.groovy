@@ -30,7 +30,7 @@ class DokkaPluginIntTest {
             maven { url 'https://dl.bintray.com/kotlin/dokka' }
         }
 
-        apply plugin: 'ch.tutteli.dokka'
+       apply plugin: 'ch.tutteli.gradle.dokka'
 
         tutteliDokka {
             repoUrl = '$url'
@@ -70,7 +70,7 @@ class DokkaPluginIntTest {
             maven { url 'https://dl.bintray.com/kotlin/dokka' }
         }
 
-        apply plugin: 'ch.tutteli.dokka'
+       apply plugin: 'ch.tutteli.gradle.dokka'
 
         tutteliDokka {
             //uses the githubUser to create the repo url as well as the externalDocumentationLink if one enables ghPages
@@ -116,7 +116,7 @@ class DokkaPluginIntTest {
             maven { url 'https://dl.bintray.com/kotlin/dokka' }
         }
 
-        apply plugin: 'ch.tutteli.dokka'
+       apply plugin: 'ch.tutteli.gradle.dokka'
 
         tutteliDokka {
             //uses the githubUser to create the repo url as well as the externalDocumentationLink if one enables ghPages

@@ -41,7 +41,7 @@ class KotlinUtilsPluginIntTest {
 //        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
 //
 //        apply plugin: 'kotlin-platform-js'
-//        apply plugin: 'ch.tutteli.kotlin.utils'
+//       apply plugin: 'ch.tutteli.gradle.kotlin.utils'
 //        kotlinutils.kotlinVersion = '$KOTLIN_VERSION'
 //
 //        repositories{
@@ -416,7 +416,7 @@ class KotlinUtilsPluginIntTest {
             }
         }
 
-        apply plugin: 'ch.tutteli.kotlin.utils'
+       apply plugin: 'ch.tutteli.gradle.kotlin.utils'
         kotlinutils {
             kotlinVersion = '$KOTLIN_VERSION'
         }

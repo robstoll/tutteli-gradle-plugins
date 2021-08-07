@@ -142,7 +142,7 @@ class ModuleInfoPluginIntTest {
             ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
 
             apply plugin: 'kotlin'
-            apply plugin: 'ch.tutteli.kotlin.module.info'
+           apply plugin: 'ch.tutteli.gradle.kotlin.module.info'
 
             repositories {
                 mavenCentral()
@@ -191,7 +191,7 @@ class ModuleInfoPluginIntTest {
             def sub1 = project(':sub1')
             configure(sub1) {
                 apply plugin: 'kotlin-platform-jvm'
-                apply plugin: 'ch.tutteli.kotlin.module.info'
+               apply plugin: 'ch.tutteli.gradle.kotlin.module.info'
                 repositories {
                     mavenCentral()
                 }

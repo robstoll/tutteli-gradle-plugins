@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        plugin_id = 'ch.tutteli.kotlin.utils'
+        plugin_id = 'ch.tutteli.gradle.kotlin.utils'
         plugin_class = 'ch.tutteli.gradle.kotlin.KotlinUtilsPlugin'
         plugin_name = 'Tutteli Kotlin Utils Plugin'
         plugin_description = 'Provides a few utility functions which makes it easier to manage kotlin projects.'

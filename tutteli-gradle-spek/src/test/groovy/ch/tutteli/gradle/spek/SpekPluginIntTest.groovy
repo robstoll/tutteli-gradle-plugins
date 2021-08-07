@@ -22,7 +22,7 @@ class SpekPluginIntTest {
         settingsSetup.buildGradle << """
         ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
         apply plugin: 'kotlin'
-        apply plugin: 'ch.tutteli.spek'
+       apply plugin: 'ch.tutteli.gradle.spek'
         spek.version = '1.1.5'
         ${settingsSetup.configureTestLogging()}
         """
@@ -71,7 +71,7 @@ class SpekPluginIntTest {
         settingsSetup.buildGradle << """
         ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
         apply plugin: 'kotlin'
-        apply plugin: 'ch.tutteli.spek'
+       apply plugin: 'ch.tutteli.gradle.spek'
         spek.version = '2.0.15'
         ${settingsSetup.configureTestLogging()}
         """

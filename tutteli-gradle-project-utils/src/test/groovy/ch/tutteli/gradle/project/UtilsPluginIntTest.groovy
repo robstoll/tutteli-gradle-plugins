@@ -24,7 +24,7 @@ class UtilsPluginIntTest {
         """
         settingsSetup.buildGradle << """
             ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
-            apply plugin: 'ch.tutteli.project.utils'
+           apply plugin: 'ch.tutteli.gradle.project.utils'
 
             println("here we are: \${prefixedProject('one').name}")
             println("another one: \${prefixedProjectName('one')}")

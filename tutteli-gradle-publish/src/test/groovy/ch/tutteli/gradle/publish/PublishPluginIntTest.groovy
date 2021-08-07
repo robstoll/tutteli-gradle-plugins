@@ -67,7 +67,7 @@ class PublishPluginIntTest {
 
         // has to be before ch.tutteli.publish
         apply plugin: 'java'
-        apply plugin: 'ch.tutteli.publish'
+       apply plugin: 'ch.tutteli.gradle.publish'
 
         project.with {
             group = '$groupId'
@@ -217,7 +217,7 @@ class PublishPluginIntTest {
         }
         // has to be before ch.tutteli.publish
         apply plugin: 'java'
-        apply plugin: 'ch.tutteli.publish'
+       apply plugin: 'ch.tutteli.gradle.publish'
 
         project.with {
             group = 'com.example'
@@ -292,10 +292,10 @@ class PublishPluginIntTest {
             mavenCentral()
         }
         apply plugin: 'kotlin'
-        apply plugin: 'ch.tutteli.dokka'
+       apply plugin: 'ch.tutteli.gradle.dokka'
         tutteliDokka.githubUser = '$githubUser'
 
-        apply plugin: 'ch.tutteli.publish'
+       apply plugin: 'ch.tutteli.gradle.publish'
 
         project.with {
             group = '$groupId'
@@ -413,7 +413,7 @@ class PublishPluginIntTest {
                 classifier = 'tests'
             }
 
-            apply plugin: 'ch.tutteli.publish'
+           apply plugin: 'ch.tutteli.gradle.publish'
 
             // still included in publish, use the artifactFilter to exclude a jar as artifact
             task('testSourcesJar', type: Jar) {
@@ -537,7 +537,7 @@ class PublishPluginIntTest {
         }
 
         apply plugin: 'kotlin'
-        apply plugin: 'ch.tutteli.publish'
+       apply plugin: 'ch.tutteli.gradle.publish'
 
         project.with {
             group = '$groupId'
@@ -620,7 +620,7 @@ class PublishPluginIntTest {
         }
 
         apply plugin: 'org.jetbrains.kotlin.jvm'
-        apply plugin: 'ch.tutteli.publish'
+       apply plugin: 'ch.tutteli.gradle.publish'
 
         project.with {
             group = '$groupId'
@@ -740,7 +740,7 @@ class PublishPluginIntTest {
         }
 
         apply plugin: 'org.jetbrains.kotlin.multiplatform'
-        apply plugin: 'ch.tutteli.publish'
+       apply plugin: 'ch.tutteli.gradle.publish'
 
         project.with {
             group = '$groupId'

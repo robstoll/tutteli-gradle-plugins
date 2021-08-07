@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        plugin_id = 'ch.tutteli.spek'
+        plugin_id = 'ch.tutteli.gradle.spek'
         plugin_class = 'ch.tutteli.gradle.spek.SpekPlugin'
         plugin_name = 'Tutteli Spek Plugin'
         plugin_description = 'Applies the junitjacoco plugin and defines Spek as engine. Applies the kotlin plugin and sets up compile and test dependencies.'

@@ -18,7 +18,7 @@ if you find a bug or need some help.
 
 The following sections give a brief information what the different plugins offer.
 
-# ch.tutteli.settings [🔗](https://plugins.gradle.org/plugin/ch.tutteli.settings/1.0.0)
+# ch.tutteli.gradle.settings [🔗](https://plugins.gradle.org/plugin/ch.tutteli.settings/1.0.0)
 Provides utility functions to include projects (in a project setup where you have multiple subprojects).
 Is especially useful if you apply the naming convention that all modules start with the name of the `rootProject`.
 
@@ -30,7 +30,7 @@ It supports three styles:
 It also provides the helper function `kotlinJvmJs` to ease the inclusion of kotlin multi-platform projects.
 
 
-# ch.tutteli.project.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.project.utils/1.0.0)
+# ch.tutteli.gradle.project.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.project.utils/1.0.0)
 This plugin is the complement of the settings plugin and you will typically use it together. 
 Yet, you apply it in your `build.gradle` instead of the `settings.gradle` and accordingly this plugin adds utility functions to `Project`.
 
@@ -41,7 +41,7 @@ Currently, it provides the following functions:
 - `createTestSourcesJarTask` creates a task named `testSourcesJar` which creates a jar containing your test sources
 
 <!--
-# ch.tutteli.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/1.0.0)
+# ch.tutteli.gradle.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/1.0.0)
 
 **Currently** no longer maintained
 
@@ -54,7 +54,7 @@ See [DokkaPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree
 for an example.
 -->
 
-# ch.tutteli.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/1.0.0)
+# ch.tutteli.gradle.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/1.0.0)
 Applies the [junit-platform-gradle-plugin](https://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle)
 as well as the [jacoco-plugin](https://docs.gradle.org/current/userguide/jacoco_plugin.html)
 and binds jacoco to the `junitPlatformTest` task.
@@ -64,13 +64,13 @@ Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins
 for an example.
 In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin below.
 
-# ch.tutteli.kotlin.module.info [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.module.info/1.0.0)
+# ch.tutteli.gradle.kotlin.module.info [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.module.info/1.0.0)
 
 In case the used jdk for gradle is JDK9 or newer and the user has defined `module-info.java` under `src/module` 
 then it compiles it add adds it to the kotlin target classes.
 This way the kotlin compiler verifies `requires` and the like and the `module-info.class` gets included in the jar when it is built.
 
-# ch.tutteli.kotlin.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.utils/1.0.0)
+# ch.tutteli.gradle.kotlin.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.utils/1.0.0)
 Provides some utility functions to declare dependencies on kotlin projects, to configure projects as well as utility functions to exclude kotlin.
 Requires that `kotlinutils.kotlinVersion` (property on the extension) is configured.
 
@@ -84,7 +84,7 @@ Moreover, it turns warnings into errors if one of the env variables `CI` or `WAR
 
 You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
 
-# ch.tutteli.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.publish/1.0.0)
+# ch.tutteli.gradle.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.publish/1.0.0)
 
 Applies the `maven-publish` and `signing` plugin and 
 configures them based on given license(s), a github user and a few other information.
@@ -117,7 +117,7 @@ The conventions:
     | gpgKeyId        | GPG_KEY_ID         | 
 - The private gpg key can also be provided via GPG_SIGNING_KEY instead of pointing to a file via gpgKeyRing    
 
-# ch.tutteli.spek [🔗](https://plugins.gradle.org/plugin/ch.tutteli.spek/1.0.0)
+# ch.tutteli.gradle.spek [🔗](https://plugins.gradle.org/plugin/ch.tutteli.spek/1.0.0)
 Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 
 and sets up [Spek](http://spekframework.org/) as junit engine.
 Requires that a JVM compliant kotlin plugin is applied first.

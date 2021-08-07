@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        plugin_id = 'ch.tutteli.project.utils'
+        plugin_id = 'ch.tutteli.gradle.project.utils'
         plugin_class = 'ch.tutteli.gradle.project.UtilsPlugin'
         plugin_name = 'Tutteli Project Utilities'
         plugin_description = 'Adds some utility functions to project.ext such as prefixedProject.'

@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        plugin_id = 'ch.tutteli.dokka'
+        plugin_id = 'ch.tutteli.gradle.dokka'
         plugin_class = 'ch.tutteli.gradle.dokka.DokkaPlugin'
         plugin_name = 'Tutteli Dokka Plugin'
         plugin_description = 'Applies JetBrain\'s dokka plugin, configures it by conventions and provides a javadocJar task.'

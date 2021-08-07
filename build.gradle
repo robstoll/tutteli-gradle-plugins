@@ -68,8 +68,8 @@ configure(pluginProjects) {
 }
 
 configure(pluginProjects) {
-    apply plugin: 'ch.tutteli.project.utils'
-    apply plugin: 'ch.tutteli.junitjacoco'
+   apply plugin: 'ch.tutteli.project.utils'
+   apply plugin: 'ch.tutteli.junitjacoco'
 
     junitjacoco {
         //enable or disable junit xml (disabled by default, enable it as follows)

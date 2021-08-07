@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        plugin_id = 'ch.tutteli.junitjacoco'
+        plugin_id = 'ch.tutteli.gradle.junitjacoco'
         plugin_class = 'ch.tutteli.gradle.junitjacoco.JunitJacocoPlugin'
         plugin_name = 'Tutteli Jacoco Plugin'
         plugin_description = 'Sets up JaCoCo for the JUnit 5 Platform'
@@ -8,7 +8,5 @@ buildscript {
     }
 }
 dependencies {
-//    implementation gradleApi()
-//    implementation gradleTestKit()
     implementation "org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version"
 }

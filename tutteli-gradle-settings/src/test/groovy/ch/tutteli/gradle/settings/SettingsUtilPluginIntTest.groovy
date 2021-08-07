@@ -27,10 +27,10 @@ class SettingsUtilPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        apply plugin: 'ch.tutteli.settings'
+       apply plugin: 'ch.tutteli.gradle.settings'
 
         // The most consice style, Extension object paired with propertyMissing/methodMissing voodoo
-        
+
         include {
             one                              // short for `include ":\${rootProject.name}-one"`
             _ 'two-with-slash'               // short for `include ":\${rootProject.name}-two-with-slash"`
@@ -38,52 +38,52 @@ class SettingsUtilPluginIntTest {
             test {                           // defines that the following projects are in folder test
 
                 three                        // short for `include ":\${rootProject.name}-three"`
-                                             // and it sets `project.projectDir` to: 
-                                             // "\${rootProject.projectDir}/test/\${rootProject.name}-three"                                
-            }     
+                                             // and it sets `project.projectDir` to:
+                                             // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
+            }
 
-            apis('api-') {                   // defines that the following projects are in folder `apis` 
+            apis('api-') {                   // defines that the following projects are in folder `apis`
                                              // and all prefixed projects are additionally prefixed with `api-`
 
                 four                         // short for `include ":\${rootProject.name}-api-four"`
-                                             // and it sets `project.projectDir` to: 
+                                             // and it sets `project.projectDir` to:
                                              // "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
 
                 subfolder {                  // defines that the following projects are in folder apis/subfolder
                     five                     // same as four but projectDir base path is \${rootProject.projectDir}/apis/subfolder
-                
-                    dsl('dsl-') {            // defines that the following projects are in folder `dsl` 
-                                             // and all prefixed projects are additionally prefixed with `dsl-` 
+
+                    dsl('dsl-') {            // defines that the following projects are in folder `dsl`
+                                             // and all prefixed projects are additionally prefixed with `dsl-`
                                              // (resulting in a prefix of `api-dsl-`)
-                                             
-                        six                  // same as five but projectDir base path is 
-                                             // \${rootProject.projectDir}/apis/subfolder/dsl                                                
+
+                        six                  // same as five but projectDir base path is
+                                             // \${rootProject.projectDir}/apis/subfolder/dsl
                     }
                 }
             }
 
-            kotlinJvmJs('core', 'core-')     // defines three projects which are contained in folder 'core' and are 
+            kotlinJvmJs('core', 'core-')     // defines three projects which are contained in folder 'core' and are
                                              // additionally prefixed with 'core-' named 'common', 'js' and 'jvm'
                                              // and sets `project.projectDir` accordingly. For instance, for 'jvm':
-                                             // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm" 
-                                             
-            kotlinJvmJs('domain')            // similar to kotlinJvmJs('core', 'core-') above but this time we do 
+                                             // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm"
+
+            kotlinJvmJs('domain')            // similar to kotlinJvmJs('core', 'core-') above but this time we do
                                              // not specify the additional prefix which means it will use the folder
                                              // name + '-' suffix for the prefix resulting in the following for 'js':
-                                             // "\${rootProject.projectDir}/domain/\${rootProject.name}-domain-js"                                                 
+                                             // "\${rootProject.projectDir}/domain/\${rootProject.name}-domain-js"
 
-            kotlinJvmJsAndroid('gui', 'ui-') // defines three projects which are contained in folder 'gui' and are 
-                                             // additionally prefixed with 'ui-' named 'common', 'android', 'js' and 
+            kotlinJvmJsAndroid('gui', 'ui-') // defines three projects which are contained in folder 'gui' and are
+                                             // additionally prefixed with 'ui-' named 'common', 'android', 'js' and
                                              // 'jvm' and sets `project.projectDir` accordingly. For instance, for 'jvm':
-                                             // "\${rootProject.projectDir}/gui/\${rootProject.name}-ui-jvm" 
-                                             
-            kotlinJvmJsAndroid('web')        // similar to kotlinJvmJsAndroid('gui', 'gui-') above but this time we do 
+                                             // "\${rootProject.projectDir}/gui/\${rootProject.name}-ui-jvm"
+
+            kotlinJvmJsAndroid('web')        // similar to kotlinJvmJsAndroid('gui', 'gui-') above but this time we do
                                              // not specify the additional prefix which means it will use the folder
                                              // name + '-' suffix for the prefix resulting in the following for 'js':
-                                             // "\${rootProject.projectDir}/web/\${rootProject.name}-web-js"     
+                                             // "\${rootProject.projectDir}/web/\${rootProject.name}-web-js"
 
-            // You can also include non prefixed projects with this style. 
-            // Have a look at the method extensionWithMethodCalls, 
+            // You can also include non prefixed projects with this style.
+            // Have a look at the method extensionWithMethodCalls,
             // you can use all methods shown there also here (mix both styles)
         }
         """
@@ -105,72 +105,72 @@ class SettingsUtilPluginIntTest {
     void extensionWithMethodCalls(SettingsExtensionObject settingsSetup) {
         //arrange
         createDirs(settingsSetup.tmp)
-        settingsSetup.settings << """        
+        settingsSetup.settings << """
         rootProject.name='test-project'
         buildscript {
             dependencies {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        apply plugin: 'ch.tutteli.settings'
-        
+       apply plugin: 'ch.tutteli.gradle.settings'
+
         // The style using an extension object and calling methods
-        
+
         include {
             prefixed 'one'                      // short for `include ":\${rootProject.name}-one"`
             prefixed ('one', 'two-with-slash')  // you can also define multiple projects in one line
-            
+
             folder('test') {                    // defines that the following projects are in folder test
-            
+
                 prefixed 'three'                // short for `include ":\${rootProject.name}-three"`
-                                                // and it sets `project.projectDir` to: 
+                                                // and it sets `project.projectDir` to:
                                                 // "\${rootProject.projectDir}/test/\${rootProject.name}-three"
             }
-            
-            folder('apis', 'api-') {            // defines that the following projects are in folder `apis` 
+
+            folder('apis', 'api-') {            // defines that the following projects are in folder `apis`
                                                 // and all prefixed projects are additionally prefixed with `api-`
-                                                  
+
                 prefixed ('four')               // short for `include ":\${rootProject.name}-api-four"`
-                                                // and it sets `project.projectDir` to: 
+                                                // and it sets `project.projectDir` to:
                                                 // "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
-                
+
                 folder('subfolder') {
-                    prefixed 'five'             // same as four but `project.projectDir` is 
-                                                // \${rootProject.projectDir}/api/subfolder/\${rootProject.name}-api-five 
-                    folder('dsl', 'dsl-') {     // defines that the following projects are in folder `dsl` 
-                                                // and all prefixed projects are additionally prefixed with `dsl-` 
+                    prefixed 'five'             // same as four but `project.projectDir` is
+                                                // \${rootProject.projectDir}/api/subfolder/\${rootProject.name}-api-five
+                    folder('dsl', 'dsl-') {     // defines that the following projects are in folder `dsl`
+                                                // and all prefixed projects are additionally prefixed with `dsl-`
                                                 // (resulting in a prefix of `api-dsl-`)
-                                                
+
                         prefixed 'six'          // same as five but projectDir base path is
                                                 // \${rootProject.projectDir}/apis/subfolder/dsl
                     }
                 }
-                
+
                 project 'seven'                   // short for `include ":six"` => additional prefix is ignored
                                                 // and it sets `project.projectDir` to:
-                                                // "\${rootProject.projectDir}/apis/six"                                                
+                                                // "\${rootProject.projectDir}/apis/six"
             }
-            
+
             folder ('test') {
                 project 'eight'                 // short for `include ":seven"`
                                                 // and it sets `project.projectDir` to:
                                                 // "\${rootProject.projectDir}/test/seven"
-                                      
+
                 project ('eight', 'nine')      // also here, you can define multiple projects
             }
-            
+
             project 'ten'                      // short for `include ":eight"`
             project ('ten', 'eleven')             // also here, you can define multiple projects
-            
-            kotlinJvmJs('core', 'core-')        // defines three projects which are contained in folder 'core' and are 
+
+            kotlinJvmJs('core', 'core-')        // defines three projects which are contained in folder 'core' and are
                                                 // additionally prefixed with 'core-' named 'common', 'js' and 'jvm'
                                                 // and sets `project.projectDir` accordingly. For instance, for 'jvm':
-                                                // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm" 
-                                                
-            kotlinJvmJs('domain')               // similar to kotlinJvmJs('core', 'core-') above but this time we do 
+                                                // "\${rootProject.projectDir}/core/\${rootProject.name}-core-jvm"
+
+            kotlinJvmJs('domain')               // similar to kotlinJvmJs('core', 'core-') above but this time we do
                                                 // not specify the additional prefix which means it will use the folder
                                                 // name + '-' suffix for the prefix resulting in the following for 'js':
-                                                // "\${rootProject.projectDir}/domain/\${rootProject.name}-domain-js"                                                 
+                                                // "\${rootProject.projectDir}/domain/\${rootProject.name}-domain-js"
         }
         """
         //act
@@ -194,61 +194,61 @@ class SettingsUtilPluginIntTest {
     void functions(SettingsExtensionObject settingsSetup) {
         //arrange
         createDirs(settingsSetup.tmp)
-        settingsSetup.settings << """   
+        settingsSetup.settings << """
         rootProject.name='test-project'
         buildscript {
             dependencies {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        apply plugin: 'ch.tutteli.settings'
-             
+       apply plugin: 'ch.tutteli.gradle.settings'
+
         // Simple functions
-        
+
         //short for `include ":\${rootProject.name}-one"`
         includePrefixed 'one'
-        
+
         //short for `include(":\${rootProject.name}-one", ":\${rootProject.name}-two-with-slash")`
         includePrefixed ('one', 'two-with-slash')
-        
+
         /**
          * Shortcut for `include ":\${rootProject.name}-three"`
-         * and it sets `project.projectDir` accordingly: 
+         * and it sets `project.projectDir` accordingly:
          * "\${rootProject.projectDir}/test/\${rootProject.name}-three"
          */
         includePrefixedInFolder('test', 'three')
-        
+
         /**
          * Shortcut for `include(":"\${rootProject.name}-api-four")`
-         * and it sets `project.projectDir` accordingly: 
+         * and it sets `project.projectDir` accordingly:
          * "\${rootProject.projectDir}/apis/\${rootProject.name}-api-four"
          */
         includePrefixedInFolder('apis', 'api-four')
-        
+
          /**
          * Shortcut for `include ":\${rootProject.name}-api-five"`
-         * and it sets `project.projectDir` accordingly: 
+         * and it sets `project.projectDir` accordingly:
          * "\${rootProject.projectDir}/apis/subfolder/\${rootProject.name}-api-five"
          */
         includePrefixedInFolder('apis/subfolder', 'api-five')
-        
+
         /**
          * Shortcut for `include ":\${rootProject.name}-api-dsl-six"`
-         * and it sets `project.projectDir` accordingly: 
+         * and it sets `project.projectDir` accordingly:
          * "\${rootProject.projectDir}/apis/subfolder/dsl/\${rootProject.name}-api-dsl-six"
          */
         includePrefixedInFolder('apis/subfolder/dsl', 'api-dsl-six')
-        
+
         /**
          * Shortcut for `include ":seven"`
-         * and it sets `project.projectDir` accordingly: 
+         * and it sets `project.projectDir` accordingly:
          * "\${rootProject.projectDir}/apis/seven"
          */
         includeCustomInFolder('apis', 'seven')
-        
+
         /**
          * Shortcut for `include(":eight", ":nine")`
-         * and it sets `project.projectDir` accordingly: 
+         * and it sets `project.projectDir` accordingly:
          * "\${rootProject.projectDir}/test/eight"    and
          * "\${rootProject.projectDir}/test/nine"
          */

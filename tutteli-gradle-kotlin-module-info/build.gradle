@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        plugin_id = 'ch.tutteli.kotlin.module.info'
+        plugin_id = 'ch.tutteli.gradle.kotlin.module.info'
         plugin_class = 'ch.tutteli.gradle.kotlin.module.info.ModuleInfoPlugin'
         plugin_name = 'Tutteli Kotlin module-info.java Plugin'
         plugin_description = 'Provides a way to use module-info.java in kotlin projects.'
