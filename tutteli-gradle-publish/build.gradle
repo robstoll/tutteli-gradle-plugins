@@ -3,12 +3,17 @@ buildscript {
         plugin_id = 'ch.tutteli.publish'
         plugin_class = 'ch.tutteli.gradle.publish.PublishPlugin'
         plugin_name = 'Tutteli Publish Plugin'
-        plugin_description = 'Applies maven-publish as well as JFrog\'s bintray plugin and configures them according to tutteli\'s publish conventions.'
-        plugin_tags = ['publish', 'bintray', 'kotlin']
+        plugin_description = 'Applies maven-publish as well as io.github.gradle-nexus.publish-plugin and configures them according to tutteli\'s publish conventions.'
+        plugin_tags = ['publish',  'kotlin']
     }
 }
 
+repositories {
+    maven { url "https://plugins.gradle.org/m2/" }
+}
+
+
 dependencies {
-    implementation "com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintray_version"
+    implementation "org.apache.maven:maven-model:$maven_model_version"
     testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 }

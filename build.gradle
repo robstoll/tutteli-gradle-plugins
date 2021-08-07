@@ -8,6 +8,7 @@ buildscript {
         spek_version = '2.0.15'
         mockito_version = '3.11.2'
         json_path_assert_version = '2.6.0'
+        maven_model_version = '3.3.1'
 
         publish_version = '0.15.0'
         jacoco_toolVersion = '0.8.7'
@@ -117,8 +118,8 @@ configure(pluginProjects) { subproject ->
         testImplementation(project(':test-utils')) {
             exclude group: 'org.codehaus.groovy'
         }
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit_jupiter_version")
-        implementation "org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_jupiter_version"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version"
 
         testRuntimeOnly(files(createClasspathManifest)) //required for settings.gradle test
         testImplementation "org.mockito:mockito-core:$mockito_version"

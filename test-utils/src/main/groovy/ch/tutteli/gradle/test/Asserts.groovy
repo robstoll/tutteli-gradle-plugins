@@ -5,6 +5,7 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.function.Executable
 
+
 import static org.junit.jupiter.api.Assertions.*
 
 class Asserts {
@@ -27,6 +28,12 @@ class Asserts {
 
     static void assertStatusOk(BuildResult result, String taskName) {
         assertStatusOk(result, [taskName], [], [])
+    }
+
+    static void assertTaskRunSuccessfully(BuildResult result, String taskName) {
+        def task = result.task(":$taskName")
+        assertNotNull(task, "looks like $taskName did not run")
+        assertEquals(task.outcome, TaskOutcome.SUCCESS, "task $taskName did not run successfully, outcome was $task.outcome")
     }
 
     static void assertStatusOk(

@@ -16,10 +16,6 @@ class Validation {
         if (!property.map { !it.isEmpty() }) throw newIllegalStateForProperty(propertyName)
     }
 
-    protected static void requireSetOnBintrayExtensionOrProperty(String bintray, Property<String> property, String propertyName) {
-        if (!bintray?.trim() && !property.getOrNull()?.trim()) throw newIllegalStateForProperty(propertyName)
-    }
-
     protected static IllegalStateException newIllegalStateForProperty(String propertyName) {
         return newIllegalState("${PublishPlugin.EXTENSION_NAME}.$propertyName")
     }

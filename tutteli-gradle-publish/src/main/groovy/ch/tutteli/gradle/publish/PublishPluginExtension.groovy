@@ -1,6 +1,5 @@
 package ch.tutteli.gradle.publish
 
-import com.jfrog.bintray.gradle.BintrayExtension
 import org.apache.maven.model.Developer
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -8,51 +7,44 @@ import org.gradle.api.Task
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.SetProperty
-import org.gradle.jvm.tasks.Jar
+
+import java.util.function.Predicate
 
 import static Validation.requireNotNullNorBlank
 
 class PublishPluginExtension {
     private static final String DEFAULT_DISTRIBUTION = 'repo'
     private Project project
-    private BintrayExtension bintrayExtension
 
     final Property<String> githubUser
     final Property<SoftwareComponent> component
-    final SetProperty<Task> artifacts
+    final Property<Closure<Boolean>> artifactFilter
     final ListProperty<License> licenses
     final ListProperty<Developer> developers
-    final Property<String> propNameBintrayUser
-    final Property<String> propNameBintrayApiKey
+    final Property<String> propNameSonatypeUserKey
+    final Property<String> propNameSonatypeApiKey
     final Property<String> propNameGpgKeyId
     final Property<String> propNameGpgKeyRing
     final Property<String> propNameGpgPassphrase
-    final Property<String> envNameBintrayUser
-    final Property<String> envNameBintrayApiKey
     final Property<String> envNameGpgPassphrase
     final Property<String> envNameGpgKeyId
     final Property<String> envNameGpgKeyRing
     final Property<String> envNameGpgSigningKey
-    final Property<String> bintrayRepo
-    final Property<String> bintrayPkg
-    final Property<String> bintrayOrganisation
     final Property<Boolean> signWithGpg
     final Property<String> manifestVendor
 
     PublishPluginExtension(Project project) {
         this.project = project
-        bintrayExtension = project.extensions.getByType(BintrayExtension)
         githubUser = project.objects.property(String)
         component = project.objects.property(SoftwareComponent)
-        artifacts = project.objects.setProperty(Task)
+        artifactFilter = project.objects.<Closure<Boolean>>property(Closure)
         licenses = project.objects.listProperty(License)
         resetLicenses(StandardLicenses.APACHE_2_0, 'repo')
         developers = project.objects.listProperty(Developer)
-        propNameBintrayUser = project.objects.property(String)
-        propNameBintrayUser.set('bintrayUser')
-        propNameBintrayApiKey = project.objects.property(String)
-        propNameBintrayApiKey.set('bintrayApiKey')
+        propNameSonatypeUserKey = project.objects.property(String)
+        propNameSonatypeUserKey.set('sonatypeUserKey')
+        propNameSonatypeApiKey = project.objects.property(String)
+        propNameSonatypeApiKey.set('sonatypeApiKey')
         propNameGpgPassphrase = project.objects.property(String)
         propNameGpgPassphrase.set('gpgPassphrase')
         propNameGpgKeyId = project.objects.property(String)
@@ -60,11 +52,6 @@ class PublishPluginExtension {
         propNameGpgKeyRing = project.objects.property(String)
         propNameGpgKeyRing.set('gpgKeyRing')
 
-
-        envNameBintrayUser = project.objects.property(String)
-        envNameBintrayUser.set('BINTRAY_USER')
-        envNameBintrayApiKey = project.objects.property(String)
-        envNameBintrayApiKey.set('BINTRAY_API_KEY')
         envNameGpgPassphrase = project.objects.property(String)
         envNameGpgPassphrase.set('GPG_PASSPHRASE')
         envNameGpgKeyId = project.objects.property(String)
@@ -73,10 +60,6 @@ class PublishPluginExtension {
         envNameGpgKeyRing.set('GPG_KEY_RING')
         envNameGpgSigningKey = project.objects.property(String)
         envNameGpgSigningKey.set('GPG_SIGNING_KEY')
-
-        bintrayRepo = project.objects.property(String)
-        bintrayPkg = project.objects.property(String)
-        bintrayOrganisation = project.objects.property(String)
 
         signWithGpg = project.objects.property(Boolean)
         signWithGpg.set(true)
@@ -87,7 +70,6 @@ class PublishPluginExtension {
 
         if (isTutteliProject(project) || isTutteliProject(project.rootProject)) {
             githubUser.set('robstoll')
-            bintrayRepo.set('tutteli-jars')
             manifestVendor.set('tutteli.ch')
             def dev = new Developer()
             dev.id = "robstoll"
@@ -101,13 +83,7 @@ class PublishPluginExtension {
         if (project.rootProject != project && project.group == project.rootProject.name) {
             project.group = ""
         }
-
         useJavaComponentIfJavaPluginAvailable()
-        addAllJarsToArtifacts()
-    }
-
-    private static boolean isTutteliProject(Project project) {
-        return project.group?.startsWith("ch.tutteli")
     }
 
     private void useJavaComponentIfJavaPluginAvailable() {
@@ -117,10 +93,8 @@ class PublishPluginExtension {
         }
     }
 
-    private void addAllJarsToArtifacts() {
-        project.tasks.withType(Jar).each {
-            artifacts.add(it)
-        }
+    private static boolean isTutteliProject(Project project) {
+        return project.group?.startsWith("ch.tutteli")
     }
 
     /**
@@ -189,7 +163,7 @@ class PublishPluginExtension {
         addNewLicense(applyClosureToNewLicense(license))
     }
 
-    private boolean addNewLicense(License license) {
+    private void addNewLicense(License license) {
         licenses.add(license)
     }
 
@@ -208,9 +182,5 @@ class PublishPluginExtension {
         def newDeveloper = project.objects.newInstance(Developer)
         developer.execute(newDeveloper)
         developers.add(newDeveloper)
-    }
-
-    void bintray(Action<BintrayExtension> bintray) {
-        bintray.execute(bintrayExtension)
     }
 }
