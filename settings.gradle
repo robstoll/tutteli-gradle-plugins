@@ -1,6 +1,6 @@
 buildscript {
     rootProject.name = 'tutteli-gradle'
-    gradle.ext.version = '1.1.0-SNAPSHOT'
+    gradle.ext.version = '2.0.0'
     gradle.ext.previous_version = '1.0.0'
 
     gradle.ext.repo = "${rootProject.projectDir}/repo"
