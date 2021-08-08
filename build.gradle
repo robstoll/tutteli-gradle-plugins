@@ -46,11 +46,20 @@ buildscript {
 version = gradle.ext.version
 group = 'ch.tutteli'
 
-subprojects {
+
+def allGroovy = subprojects.findAll {
+    it.name != 'tutteli-gradle-kotlin-dsl-extensions'
+}
+configure(allGroovy) {
     apply plugin: 'groovy'
+}
+configure(subprojects - allGroovy) {
+    apply plugin: 'java-gradle-plugin'
+}
+
+subprojects {
     version = rootProject.version
     group = rootProject.group
-
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -68,8 +77,8 @@ configure(pluginProjects) {
 }
 
 configure(pluginProjects) {
-   apply plugin: 'ch.tutteli.project.utils'
-   apply plugin: 'ch.tutteli.junitjacoco'
+    apply plugin: 'ch.tutteli.project.utils'
+    apply plugin: 'ch.tutteli.junitjacoco'
 
     junitjacoco {
         //enable or disable junit xml (disabled by default, enable it as follows)
@@ -129,7 +138,7 @@ configure(pluginProjects) { subproject ->
     afterEvaluate {
         gradlePlugin {
             plugins {
-                tutteliPlugin { //name does not matter
+                tutteliPlugin { // name does not matter
                     id = subproject.ext.plugin_id
                     implementationClass = subproject.ext.plugin_class
                 }
