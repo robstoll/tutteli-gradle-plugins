@@ -1,7 +1,7 @@
 buildscript {
     ext {
-        version = '2.0.0'
-        previous_version = '1.0.0'
+        version = '3.0.0-SNAPSHOT'
+        previous_version = '2.0.0'
         repo = "${rootProject.projectDir}/repo"
 
         junit_jupiter_version = '5.7.2'
@@ -79,8 +79,8 @@ configure(pluginProjects) {
 }
 
 configure(pluginProjects) {
-    apply plugin: 'ch.tutteli.project.utils'
-    apply plugin: 'ch.tutteli.junitjacoco'
+    apply plugin: 'ch.tutteli.gradle.plugins.project.utils'
+    apply plugin: 'ch.tutteli.gradle.plugins.junitjacoco'
 
     junitjacoco {
         //enable or disable junit xml (disabled by default, enable it as follows)
@@ -215,7 +215,7 @@ Release & deploy
     a) point to the tag
         1) update version of the badges in README (except for codecov)
         2) search for `tree/master` in README and replace it with `tree/vX.Y.Z`
-    b) change `version` in settings.gradle to X.Y.Z (remove -SNAPSHOT)
+    b) change `version` in build.gradle to X.Y.Z (remove -SNAPSHOT)
     c) search for old version and replace by new with the *exception* of previous_version in settings.gradle
     c) commit & push (modified README.md and settings.gradle)
     d) git tag vX.Y.Z
@@ -227,8 +227,8 @@ Release & deploy
 
 Prepare next dev cycle
 -----------------------
-1. change version in settings.gradle to X.Y.Z-SNAPSHOT
-2. change previous_version in settings.gradle
+1. change version in build.gradle to X.Y.Z-SNAPSHOT
+2. change previous_version in build.gradle
 3. point to master
    a) search for `tree/vX.Y.Z` in README and replace it with `tree/master`
 4. commit & push changes
