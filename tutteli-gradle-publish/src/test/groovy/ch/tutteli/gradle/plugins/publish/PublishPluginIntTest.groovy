@@ -67,7 +67,7 @@ class PublishPluginIntTest {
 
         // has to be before ch.tutteli.publish
         apply plugin: 'java'
-       apply plugin: 'ch.tutteli.gradle.plugins.publish'
+        apply plugin: 'ch.tutteli.gradle.plugins.publish'
 
         project.with {
             group = '$groupId'
@@ -226,9 +226,9 @@ class PublishPluginIntTest {
         }
 
         tutteliPublish {
-            //minimal setup required for publish, all other things are only needed if not the default is used
+            // minimal setup required for publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
-            //gpg passphrase not defined via property or something
+            // gpg passphrase not defined via property or something
         }
         """
         //act
@@ -245,120 +245,6 @@ class PublishPluginIntTest {
         }
         assertTrue(exception.message.contains("You need to define property with name gpgPassphrase or System.env variable with name GPG_PASSPHRASE"),
             "did not fail due to missing passphase\n$exception.message")
-    }
-
-    @Test
-    void combinePlugins(SettingsExtensionObject settingsSetup) throws IOException {
-        //arrange
-        def version = '1.0.0'
-        checkCombinePlugins('combine1', settingsSetup, version)
-    }
-
-    @Test
-    void combinePluginsWithSnapshot(SettingsExtensionObject settingsSetup) throws IOException {
-        //arrange
-        def version = '1.0.0-SNAPSHOT'
-        checkCombinePlugins('combine2', settingsSetup, version)
-    }
-
-    private static void checkCombinePlugins(String projectName, SettingsExtensionObject settingsSetup, String version) {
-        settingsSetup.settings << "rootProject.name='$projectName'"
-        def groupId = 'com.example'
-        def githubUser = 'robstoll'
-        def vendor = 'tutteli'
-        def gpgPassphrase = 'bla'
-        def gpgKeyId = 'A5875B96'
-        def gpgKeyRing = 'keyring.gpg'
-
-        settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
-
-        settingsSetup.buildGradle << """
-        buildscript {
-            repositories { maven { url "https://plugins.gradle.org/m2/" } }
-            dependencies {
-                classpath 'ch.tutteli:tutteli-gradle-dokka:0.10.1'
-                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$OLD_KOTLIN_VERSION'
-                classpath files($settingsSetup.pluginClasspath)
-            }
-
-            ext {
-                // required since we don't set the System.env variables.
-                gpgPassphrase = '$gpgPassphrase'
-                gpgKeyRing = '$gpgKeyRing'
-                gpgKeyId = '$gpgKeyId'
-            }
-        }
-        repositories {
-            mavenCentral()
-        }
-        apply plugin: 'kotlin'
-        apply plugin: 'ch.tutteli.dokka'
-        tutteliDokka.githubUser = '$githubUser'
-
-       apply plugin: 'ch.tutteli.gradle.plugins.publish'
-
-        project.with {
-            group = '$groupId'
-            version = '$version'
-            description = 'test project'
-        }
-
-        tutteliPublish {
-            githubUser = '$githubUser'
-            // Apache License 2.0 is the default
-            // developers are optional
-
-            // Optional, in case you want to mention the vendor in the manifest file of all jars
-            manifestVendor = '$vendor'
-        }
-
-        dependencies {
-            implementation 'ch.tutteli.atrium:atrium-fluent-en_GB:$ATRIUM_VERSION'
-        }
-        ${publishingRepo()}
-        ${taskPrintSigning()}
-        """
-        File license = new File(settingsSetup.tmp, 'LICENSE.txt')
-        license << "Copyright..."
-        //act
-
-
-        def result = GradleRunner.create()
-            .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
-            .build()
-        //assert
-
-        def releasePath = getReleasePath(settingsSetup, projectName, groupId, version)
-
-        def (pom, pomName) = getPomInclFileNameAndAssertBasicPomProperties(releasePath, projectName, groupId, version, githubUser)
-        assertContainsRegex(pom, "licenses", "<licenses>$NL_INDENT" +
-            "<license>$NL_INDENT" +
-            "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
-            "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
-            "<distribution>repo</distribution>$NL_INDENT" +
-            "</license>$NL_INDENT" +
-            "</licenses"
-        )
-        assertContainsRegex(pom, "developers", "<developers/>")
-        assertContainsRegex(pom, "dependencies", "<dependencies>$NL_INDENT" +
-            "<dependency>$NL_INDENT" +
-            "<groupId>ch.tutteli.atrium</groupId>$NL_INDENT" +
-            "<artifactId>atrium-fluent-en_GB</artifactId>$NL_INDENT" +
-            "<version>$ATRIUM_VERSION</version>$NL_INDENT" +
-            "<scope>runtime</scope>$NL_INDENT" +
-            "</dependency>$NL_INDENT" +
-            "</dependencies>"
-        )
-
-        def repoUrl = "https://github.com/$githubUser/$projectName"
-        assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
-        assertModuleExists(releasePath, projectName, version)
-        assertJarsWithLicenseAndManifest(releasePath, projectName, version, repoUrl, vendor, OLD_KOTLIN_VERSION, pomName,
-            ".jar",
-            "-sources.jar",
-            "-javadoc.jar",
-        )
     }
 
     @Test
