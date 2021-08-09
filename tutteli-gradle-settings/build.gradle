@@ -1,9 +1,0 @@
-buildscript {
-    ext{
-        plugin_id = 'ch.tutteli.gradle.plugins.settings'
-        plugin_class = 'ch.tutteli.gradle.plugins.settings.SettingsUtilPlugin'
-        plugin_name = 'Tutteli Settings Plugin'
-        plugin_description = 'Adds utility functions to your settings.gradle'
-        plugin_tags = ['utility', 'multi-project']
-    }
-}

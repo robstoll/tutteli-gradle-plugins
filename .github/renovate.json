@@ -1,8 +1,14 @@
 {
-  "extends": ["config:base", "github>robstoll/renovate-presets-jvm"],
+    "extends": [
+        "config:base",
+        "github>robstoll/renovate-presets-jvm"
+    ],
     "packageRules": [
         {
-            "packagePatterns": ["^ch.tutteli:tutteli-gradle", "^ch.tutteli.gradle.plugins"],
+            "packagePatterns": [
+                "^ch.tutteli:tutteli-gradle",
+                "^ch.tutteli.gradle.plugins"
+            ],
             "enabled": false
         }
     ]

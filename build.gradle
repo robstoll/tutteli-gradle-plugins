@@ -1,5 +1,9 @@
 buildscript {
     ext {
+        version = '2.0.0'
+        previous_version = '1.0.0'
+        repo = "${rootProject.projectDir}/repo"
+
         junit_jupiter_version = '5.7.2'
         junit_platform_version = '1.6.0'
         kotlin_version = '1.5.21'
@@ -22,20 +26,18 @@ buildscript {
     dependencies {
         classpath "com.gradle.publish:plugin-publish-plugin:$publish_version"
     }
-}
 
-buildscript {
     ext.error = false
     if (!ext.error) {
         apply from: "${rootProject.projectDir}/gradle/scripts/localRepo.gradle"
-        includeLocalRepo(gradle.ext.repo, 'junitjacoco', gradle.ext.version, this)
-        includeLocalRepo(gradle.ext.repo, 'project-utils', gradle.ext.version, this)
+        includeLocalRepo(ext.repo, 'junitjacoco', ext.version, this)
+        includeLocalRepo(ext.repo, 'project-utils', ext.version, this)
     }
 
     def setUpDependency = { String pluginName ->
         if (ext.error || !ext."plugin_${pluginName}_exists") {
             dependencies {
-                classpath "ch.tutteli:tutteli-gradle-$pluginName:${gradle.ext.previous_version}"
+                classpath "ch.tutteli:tutteli-gradle-$pluginName:${rootProject.ext.previous_version}"
             }
         }
     }
@@ -43,7 +45,7 @@ buildscript {
     setUpDependency('project-utils')
 }
 
-version = gradle.ext.version
+version = ext.version
 group = 'ch.tutteli'
 
 
@@ -70,7 +72,7 @@ subprojects {
     }
 }
 
-def pluginProjects = subprojects - project('test-utils')
+def pluginProjects = subprojects - project(':test-utils')
 configure(pluginProjects) {
     apply plugin: 'java-gradle-plugin'
     apply plugin: 'com.gradle.plugin-publish'
@@ -167,7 +169,7 @@ configure(pluginProjects) { subproject ->
     apply plugin: 'maven-publish'
 
     task repo(type: Copy) {
-        def outputJar = "${gradle.ext.repo}/ch/tutteli/${project.name}/${project.version}/"
+        def outputJar = "${rootProject.ext.repo}/ch/tutteli/${project.name}/${project.version}/"
         outputs.dir outputJar
         from jar
         from tasks.matching { it.name == 'generatePomFileForPluginMavenPublication' }
@@ -177,31 +179,31 @@ configure(pluginProjects) { subproject ->
 }
 
 task removeRepo(type: Delete) {
-    delete gradle.ext.repo
+    delete rootProject.ext.repo
 }
 
 [
     'junitjacoco',
     'spek',
 ].each { projectName ->
-    Project project = project(":tutteli-gradle-$projectName")
-    def generateHardCodedDependencies = project.task('generateHardCodedDependencies', group: 'build') {
+    Project subproject = project(":tutteli-gradle-$projectName")
+    def generateHardCodedDependencies = subproject.task('generateHardCodedDependencies', group: 'build') {
         doLast {
-            def folder = new File("${project.projectDir}/src/main/groovy/ch/tutteli/gradle/plugins/$projectName/generated")
+            def folder = new File("${subproject.projectDir}/src/main/groovy/ch/tutteli/gradle/plugins/$projectName/generated")
             mkdir folder
             new File(folder, "Dependencies.groovy").text =
                 """package ch.tutteli.gradle.plugins.${projectName}.generated
                 |
                 |class Dependencies {
-                |   public static final jacoco_toolsVersion = '$project.jacoco_toolVersion'
-                |   public static final junit_jupiter_version = '$project.junit_jupiter_version'
-                |   public static final junit_platform_version = '$project.junit_platform_version'
-                |   public static final spek_version = '$project.spek_version'
+                |   public static final jacoco_toolsVersion = '$subproject.jacoco_toolVersion'
+                |   public static final junit_jupiter_version = '$subproject.junit_jupiter_version'
+                |   public static final junit_platform_version = '$subproject.junit_platform_version'
+                |   public static final spek_version = '$subproject.spek_version'
                 |}
                 """.stripMargin('|')
         }
     }
-    project.compileGroovy.dependsOn generateHardCodedDependencies
+    subproject.compileGroovy.dependsOn generateHardCodedDependencies
 }
 
 /*
