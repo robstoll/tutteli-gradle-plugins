@@ -48,18 +48,8 @@ buildscript {
 version = ext.version
 group = 'ch.tutteli'
 
-
-def allGroovy = subprojects.findAll {
-    it.name != 'tutteli-gradle-kotlin-dsl-extensions'
-}
-configure(allGroovy) {
-    apply plugin: 'groovy'
-}
-configure(subprojects - allGroovy) {
-    apply plugin: 'java-gradle-plugin'
-}
-
 subprojects {
+    apply plugin: 'groovy'
     version = rootProject.version
     group = rootProject.group
     java {
@@ -78,33 +68,17 @@ configure(pluginProjects) {
     apply plugin: 'com.gradle.plugin-publish'
 }
 
-configure(pluginProjects) {
+configure(pluginProjects) { subproject ->
     apply plugin: 'ch.tutteli.gradle.plugins.project.utils'
     apply plugin: 'ch.tutteli.gradle.plugins.junitjacoco'
 
-    junitjacoco {
-        //enable or disable junit xml (disabled by default, enable it as follows)
-        enableJunitReport = true
-
-        //delegates to jacocoTestReport (just for your convenience, everything in one place)
-        jacocoReport {
-            reports {
-                html.enabled = true
-            }
-        }
-
-        //delegates to the jacoco extension (just for your convenience, everything in one place)
-        jacoco {
-            //e.g. set the version to a different version than the default
-            //toolVersion = '0.8.3'
-        }
+    jacocoTestReport {
+        reports.html.required.set(true)
     }
 
     test {
         reports {
-            html {
-                destination = file("${buildDir}/reports/junit")
-            }
+            html.outputLocation.set(file("${buildDir}/reports/junit"))
         }
     }
 }
@@ -183,7 +157,6 @@ task removeRepo(type: Delete) {
 }
 
 [
-    'junitjacoco',
     'spek',
 ].each { projectName ->
     Project subproject = project(":tutteli-gradle-$projectName")

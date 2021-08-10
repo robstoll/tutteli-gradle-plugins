@@ -1,12 +1,13 @@
 package ch.tutteli.gradle.plugins.spek
 
-import ch.tutteli.gradle.plugins.junitjacoco.JunitJacocoPlugin
+
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.internal.plugins.PluginApplicationException
+import org.gradle.api.ProjectConfigurationException
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
+import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.junit.jupiter.api.Test
 
 import static ch.tutteli.gradle.plugins.spek.SpekPlugin.EXTENSION_NAME
@@ -23,6 +24,10 @@ class SpekPluginSmokeTest {
     void smokeTest_KotlinPlatformJvmPlugin() {
         smokeTest(KotlinPlatformJvmPlugin)
     }
+    @Test
+    void smokeTest_KotlinMultiPlatformPlugin() {
+        smokeTest(KotlinMultiplatformPluginWrapper)
+    }
 
     private static void smokeTest(Class<? extends Plugin> plugin) {
         //arrange
@@ -32,17 +37,17 @@ class SpekPluginSmokeTest {
         project.plugins.apply(SpekPlugin)
         //assert
         assertNotNull(project.extensions.getByName(EXTENSION_NAME), EXTENSION_NAME)
-        assertNotNull(project.extensions.getByName(JunitJacocoPlugin.EXTENSION_NAME), JunitJacocoPlugin.EXTENSION_NAME)
+        assertNotNull(project.plugins.findPlugin("ch.tutteli.gradle.plugins.junitjacoco"))
     }
 
     @Test
     void errorIfKotlinNotApplied() {
         //arrange
         Project project = ProjectBuilder.builder().build()
-        //pre-assert
-        def ex = assertThrows(PluginApplicationException) {
-            //act
-            project.plugins.apply(SpekPlugin)
+        //act
+        project.plugins.apply(SpekPlugin)
+        def ex = assertThrows(ProjectConfigurationException) {
+            project.evaluate()
         }
         //assert
         assertEquals(IllegalStateException, ex.cause.class)

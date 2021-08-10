@@ -6,20 +6,19 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
 
 import static ch.tutteli.gradle.plugins.junitjacoco.JunitJacocoPlugin.EXTENSION_NAME
-import static org.junit.jupiter.api.Assertions.assertTrue
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 class JunitJacocoPluginTest {
 
     @Test
-    void enableJunitReport_true_JunitReportEnabledInGradle() {
+    void allowedTestTasksWithoutTests_defaultIsCorrect() {
         //arrange
         Project project = ProjectBuilder.builder().build()
         project.plugins.apply(JunitJacocoPlugin)
-        def extension = project.extensions.getByName(EXTENSION_NAME)
-        extension.enableJunitReport = true
+        def extension = project.extensions.getByName(EXTENSION_NAME) as JunitJacocoPluginExtension
         //act
         project.evaluate()
         //assert
-        assertTrue(project.test.reports.junitXml.enabled)
+        assertEquals(["jsBrowserTest"], extension.allowedTestTasksWithoutTests.get())
     }
 }
