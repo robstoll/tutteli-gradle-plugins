@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.Every.everyItem
 import static org.hamcrest.core.IsEqual.equalTo
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.*;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.*
 
 @ExtendWith(SettingsExtension)
 class KotlinUtilsPluginIntTest {
@@ -406,14 +406,7 @@ class KotlinUtilsPluginIntTest {
 
     private static GString headerBuildFile(SettingsExtensionObject settingsSetup) {
         def headerBuildFile = """
-        buildscript {
-            repositories { maven { url "https://plugins.gradle.org/m2/" } }
-            dependencies {
-
-                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
-                classpath files($settingsSetup.pluginClasspath)
-            }
-        }
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
 
        apply plugin: 'ch.tutteli.gradle.plugins.kotlin.utils'
         kotlinutils {
