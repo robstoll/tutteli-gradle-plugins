@@ -18,9 +18,8 @@ if you find a bug or need some help.
 
 The following sections give brief information what the different plugins offer.
 
-# ch.tutteli.gradle.plugins.project.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.project.utils/2.0.0)
-This plugin is the complement of the settings plugin and you will typically use it together. 
-Yet, you apply it in your `build.gradle` instead of the `settings.gradle` and accordingly this plugin adds utility functions to `Project`.
+# ch.tutteli.gradle.plugins.project.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.project.utils/3.0.0)
+This plugin adds utility functions to `Project` -> will most likely be removed with 5.0.0
 
 Currently, it provides the following functions:
 - `prefixedProject(name)` which is a shortcut for `project("${rootProject.name}-$name")`.
@@ -42,23 +41,25 @@ See [DokkaPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree
 for an example.
 -->
 
-# ch.tutteli.gradle.plugins.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/2.0.0)
+# ch.tutteli.gradle.plugins.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/3.0.0)
 Applies the [junit-platform-gradle-plugin](https://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle)
 as well as the [jacoco-plugin](https://docs.gradle.org/current/userguide/jacoco_plugin.html)
-and binds jacoco to the `junitPlatformTest` task.
+and applies some default configuration.
 
 This plugin does not set up a junit engine and you need to define it yourself. 
 Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/v3.0.0/build.gradle#L61)
 for an example.
 In case you should use Spek as your engine, then you might want to have a look at the `spek` plugin below.
 
-# ch.tutteli.gradle.plugins.kotlin.module.info [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.module.info/2.0.0)
+# ch.tutteli.gradle.plugins.kotlin.module.info [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.kotlin.module.info/3.0.0)
 
-In case the used jdk for gradle is JDK9 or newer and the user has defined `module-info.java` under `src/module` 
-then it compiles it add adds it to the kotlin target classes.
-This way the kotlin compiler verifies `requires` and the like and the `module-info.class` gets included in the jar when it is built.
+Intended to be used in a kotlin project where either module-info.java is the single java source file or where >= jdk 11 is used.
+It sets up compileJava accordingly and configures the java extension to use jdk 11 for `sourceCompatibility`/`targetCompatibility` if not already set or higher. 
 
-# ch.tutteli.gradle.plugins.kotlin.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.kotlin.utils/2.0.0)
+Per default, it reads the module name (which is used for `--patch-module`) from the defined module-info.java. 
+You can speed up this process (in case you have many java files) by defining `moduleName` on `project.extra`.
+
+# ch.tutteli.gradle.plugins.kotlin.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.kotlin.utils/3.0.0)
 Provides some utility functions to declare dependencies on kotlin projects, to configure projects as well as utility functions to exclude kotlin.
 Requires that `kotlinutils.kotlinVersion` (property on the extension) is configured.
 
@@ -72,7 +73,7 @@ Moreover, it turns warnings into errors if one of the env variables `CI` or `WAR
 
 You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v3.0.0/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
 
-# ch.tutteli.gradle.plugins.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.publish/2.0.0)
+# ch.tutteli.gradle.plugins.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.publish/3.0.0)
 
 Applies the `maven-publish` and `signing` plugin and 
 configures them based on given license(s), a github user and a few other information.

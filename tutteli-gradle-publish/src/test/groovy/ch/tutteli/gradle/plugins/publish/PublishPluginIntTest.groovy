@@ -455,10 +455,10 @@ class PublishPluginIntTest {
 
         assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
 
-        Asserts.assertTaskRunSuccessfully(result, PublishPlugin.TASK_GENERATE_GRADLE_METADATA)
-        Asserts.assertTaskRunSuccessfully(result, PublishPlugin.TASK_GENERATE_POM)
-        Asserts.assertTaskRunSuccessfully(result, "signTutteliPublication")
-        Asserts.assertTaskRunSuccessfully(result, "publishTutteliPublicationToMavenRepository")
+        Asserts.assertTaskRunSuccessfully(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")
+        Asserts.assertTaskRunSuccessfully(result, ":$PublishPlugin.TASK_GENERATE_POM")
+        Asserts.assertTaskRunSuccessfully(result, ":signTutteliPublication")
+        Asserts.assertTaskRunSuccessfully(result, ":publishTutteliPublicationToMavenRepository")
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
 
@@ -540,10 +540,10 @@ class PublishPluginIntTest {
             .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
 
-        Asserts.assertTaskRunSuccessfully(result, PublishPlugin.TASK_GENERATE_GRADLE_METADATA)
-        Asserts.assertTaskRunSuccessfully(result, PublishPlugin.TASK_GENERATE_POM)
-        Asserts.assertTaskRunSuccessfully(result, "signTutteliPublication")
-        Asserts.assertTaskRunSuccessfully(result, "publishTutteliPublicationToMavenRepository")
+        Asserts.assertTaskRunSuccessfully(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")
+        Asserts.assertTaskRunSuccessfully(result, ":$PublishPlugin.TASK_GENERATE_POM")
+        Asserts.assertTaskRunSuccessfully(result, ":signTutteliPublication")
+        Asserts.assertTaskRunSuccessfully(result, ":publishTutteliPublicationToMavenRepository")
 
         def releasePath = getReleasePath(settingsSetup, projectName, groupId, version)
         def (pom, pomName) = getPomInclFileNameAndAssertBasicPomProperties(releasePath, projectName, groupId, version, githubUser)
@@ -693,10 +693,10 @@ class PublishPluginIntTest {
             .withArguments("publishAllPublicationsToMavenRepository", "printSigning")
             .build()
 
-        assertNull(result.task(":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA"), "$PublishPlugin.TASK_GENERATE_GRADLE_METADATA should not run but did")
-        assertNull(result.task(":$PublishPlugin.TASK_GENERATE_POM"), "$PublishPlugin.TASK_GENERATE_POM should not run but did")
-        if(enableGranularSourceSetsMetadata){
-            Asserts.assertTaskRunSuccessfully(result,"allMetadataJar")
+        Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")
+        Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_POM")
+        if (enableGranularSourceSetsMetadata) {
+            Asserts.assertTaskRunSuccessfully(result, ":allMetadataJar")
         }
         assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
 
