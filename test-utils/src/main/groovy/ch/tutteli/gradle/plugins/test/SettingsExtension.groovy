@@ -51,7 +51,7 @@ class SettingsExtensionObject {
     }
 
 
-    String configureTestLogging() {
+    static String configureTestLogging() {
         return """
             tasks.withType(Test) {
                 testLogging {

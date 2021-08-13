@@ -32,12 +32,12 @@ class Asserts {
 
     static void assertTaskRunSuccessfully(BuildResult result, String taskName) {
         def task = result.task(taskName)
-        assertNotNull(task, "looks like $taskName did not run")
-        assertEquals(task.outcome, TaskOutcome.SUCCESS, "task $taskName did not run successfully, outcome was $task.outcome")
+        assertNotNull(task, "looks like $taskName did not run\n${result.output}")
+        assertEquals(TaskOutcome.SUCCESS, task.outcome, "task $taskName did not run successfully, outcome was $task.outcome\n${result.output}")
     }
 
     static void assertTaskNotInvolved(BuildResult result, String taskName) {
-        assertNull(result.task(taskName), "$taskName should not run but did")
+        assertNull(result.task(taskName), "$taskName should not run but did\n${result.output}")
     }
 
     @Override

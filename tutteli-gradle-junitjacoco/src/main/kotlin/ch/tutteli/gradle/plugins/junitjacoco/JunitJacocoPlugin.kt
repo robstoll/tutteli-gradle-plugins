@@ -13,6 +13,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.kotlin.dsl.create
+import java.io.File
 
 class JunitJacocoPlugin : Plugin<Project> {
 
@@ -42,8 +43,24 @@ class JunitJacocoPlugin : Plugin<Project> {
         jacocoPluginExtension.toolVersion = Dependencies.jacocoToolsVersion
 
         jacocoReportTask.configure {
-            reports {
 
+            if (project.plugins.findPlugin("org.jetbrains.kotlin.multiplatform") != null) {
+                val coverageSourceDirs = arrayOf(
+                    "src/commonMain",
+                    "src/jvmMain"
+                )
+
+                val classFiles = File("${project.buildDir}/classes/kotlin/jvm/")
+                    .walkBottomUp()
+                    .toSet()
+
+                classDirectories.setFrom(classFiles)
+                sourceDirectories.setFrom(project.files(coverageSourceDirs))
+
+                executionData.setFrom(project.files("${project.buildDir}/jacoco/jvmTest.exec"))
+                dependsOn(project.tasks.named("jvmTest"))
+            }
+            reports {
                 csv.required.set(false)
                 xml.required.set(true)
                 html.required.set(false)

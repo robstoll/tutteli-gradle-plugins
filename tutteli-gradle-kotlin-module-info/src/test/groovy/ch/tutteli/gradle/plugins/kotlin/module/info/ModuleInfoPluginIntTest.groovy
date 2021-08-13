@@ -34,7 +34,7 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoFails_MultiplatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkFails(settingsSetup, "org.jetbrains.kotlin.multiplatform", """
+        checkFails(settingsSetup, MULTIPLATFORM_PLUGIN, """
             kotlin {
                 jvm {
                     withJava()
@@ -66,7 +66,7 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfo(settingsSetup, "requires kotlin.stdlib;", "org.jetbrains.kotlin.multiplatform", "")
+        setupModuleInfo(settingsSetup, "requires kotlin.stdlib;", MULTIPLATFORM_PLUGIN, "")
         //act
         def exception = assertThrows(UnexpectedBuildFailure) {
             runGradleModuleBuild(settingsSetup, "jar")
@@ -91,7 +91,7 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoSucceeds_MultiplatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, "org.jetbrains.kotlin.multiplatform",
+        checkSucceeds(settingsSetup, MULTIPLATFORM_PLUGIN,
             """
             kotlin {
                 jvm {
