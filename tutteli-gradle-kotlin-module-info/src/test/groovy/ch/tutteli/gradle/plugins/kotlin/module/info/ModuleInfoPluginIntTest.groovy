@@ -144,27 +144,15 @@ class ModuleInfoPluginIntTest {
     }
 
     static final def gradleProjectDependencies(String kotlinPlugin) {
-        def content = new StringBuilder()
-        if (kotlinPlugin == MULTIPLATFORM_PLUGIN) {
-            content.append("kotlin { sourceSets { jvmMain {")
-        }
-        content.append("""
+        def configuration = kotlinPlugin == MULTIPLATFORM_PLUGIN ? "jvmMainImplementation" : "implementation"
+        return """
         dependencies {
-            implementation "ch.tutteli.atrium:atrium-fluent-en_GB:$ATRIUM_VERSION"
-        """)
-        if (kotlinPlugin != MULTIPLATFORM_PLUGIN) {
-            content.append("""
-                constraints {
-                    implementation "org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"
-                    implementation "org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"
-                }
-            """)
-        }
-        content.append("}")
-        if (kotlinPlugin == MULTIPLATFORM_PLUGIN) {
-            content.append("}}}")
-        }
-        return content.toString()
+            $configuration "ch.tutteli.atrium:atrium-fluent-en_GB:$ATRIUM_VERSION"
+            constraints {
+                implementation "org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"
+                implementation "org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"
+            }
+        }"""
     }
 
     static def setupModuleInfo(SettingsExtensionObject settingsSetup, String moduleInfoContent, String kotlinPlugin, String additions) throws IOException {

@@ -63,17 +63,22 @@ class ModuleInfoPlugin : Plugin<Project> {
         val java = project.the<JavaPluginExtension>()
         with(javaCompile) {
             inputs.property("moduleName", moduleName)
-            options.compilerArgs =
-                listOf("--patch-module", "$moduleName=${java.sourceSets.getByName("main").output.asPath}")
+            with(options) {
+                javaModuleVersion.set(project.provider { project.version as String })
+                compilerArgs =
+                    listOf("--patch-module", "$moduleName=${java.sourceSets.getByName("main").output.asPath}")
+            }
         }
-
-        if (java.sourceCompatibility <= JavaVersion.VERSION_11) {
-            checkOnlyModuleInfoInSrc(javaFiles)
-            java.sourceCompatibility = JavaVersion.VERSION_11
-        }
-        if (java.targetCompatibility <= JavaVersion.VERSION_11) {
-            checkOnlyModuleInfoInSrc(javaFiles)
-            java.targetCompatibility = JavaVersion.VERSION_11
+        with(java) {
+            modularity.inferModulePath.set(true)
+            if (sourceCompatibility <= JavaVersion.VERSION_11) {
+                checkOnlyModuleInfoInSrc(javaFiles)
+                sourceCompatibility = JavaVersion.VERSION_11
+            }
+            if (targetCompatibility <= JavaVersion.VERSION_11) {
+                checkOnlyModuleInfoInSrc(javaFiles)
+                targetCompatibility = JavaVersion.VERSION_11
+            }
         }
     }
 
