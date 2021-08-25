@@ -6,7 +6,7 @@ buildscript {
 
         junit_jupiter_version = '5.7.2'
         junit_platform_version = '1.6.0'
-        kotlin_version = '1.5.21'
+        kotlin_version = '1.5.30'
         dokka_version = '0.9.18'
         bintray_version = '1.8.5'
         spek_version = '2.0.15'
