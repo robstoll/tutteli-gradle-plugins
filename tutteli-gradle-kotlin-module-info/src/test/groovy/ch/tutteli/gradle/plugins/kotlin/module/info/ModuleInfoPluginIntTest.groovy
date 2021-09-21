@@ -183,6 +183,8 @@ class ModuleInfoPluginIntTest {
                 mavenCentral()
             }
 
+            project.version = '1.2.3'
+
             $additions
 
             ${gradleProjectDependencies(kotlinPlugin)}
@@ -218,6 +220,8 @@ class ModuleInfoPluginIntTest {
             """
         settingsSetup.buildGradle << """
             ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+
+            project.version = '1.2.3'
 
             def sub1 = project(':sub1')
             configure(sub1) {

@@ -64,7 +64,7 @@ class ModuleInfoPlugin : Plugin<Project> {
         with(javaCompile) {
             inputs.property("moduleName", moduleName)
             with(options) {
-                javaModuleVersion.set(project.provider { project.version as String })
+                javaModuleVersion.set(project.provider { project.rootProject.version as String })
                 compilerArgs =
                     listOf("--patch-module", "$moduleName=${java.sourceSets.getByName("main").output.asPath}")
             }
