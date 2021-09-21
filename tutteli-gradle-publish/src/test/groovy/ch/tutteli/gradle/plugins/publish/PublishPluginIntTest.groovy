@@ -626,7 +626,7 @@ class PublishPluginIntTest {
         }
 
         apply plugin: 'org.jetbrains.kotlin.multiplatform'
-       apply plugin: 'ch.tutteli.gradle.plugins.publish'
+        apply plugin: 'ch.tutteli.gradle.plugins.publish'
 
         project.with {
             group = '$groupId'
