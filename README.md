@@ -27,19 +27,14 @@ Currently, it provides the following functions:
 - `createTestJarTask` creates a task named `testJar` which creates a jar containing your test binaries
 - `createTestSourcesJarTask` creates a task named `testSourcesJar` which creates a jar containing your test sources
 
-<!--
-# ch.tutteli.gradle.plugins.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/2.0.0)
+# ch.tutteli.gradle.plugins.dokka [🔗](https://plugins.gradle.org/plugin/ch.tutteli.dokka/4.0.2)
 
 **Currently** no longer maintained
 
 Applies the [dokka-plugin](https://github.com/Kotlin/dokka) and creates a `javadocJar` task which can be used for publishing.
-Moreover it applies a [default configuration to dokka](https://github.com/robstoll/tutteli-gradle-plugins/tree/v4.0.2/tutteli-gradle-dokka/src/main/groovy/ch/tutteli/gradle/dokka/DokkaPluginExtension.groovy#L22)
-and allows to add an `externalDocumentationLink` based on the given `githubUser` with the `ghPages` flag.
-It exposes the `tutteliDokka` extension where you can define i.a. the `githubUser`.
- 
-See [DokkaPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/v4.0.2/tutteli-gradle-dokka/src/test/groovy/ch/tutteli/gradle/dokka/DokkaPluginIntTest.groovy#L112)
-for an example.
--->
+Moreover, it defines a `sourceLink` per `dokkaSourceSet`. 
+If the project version follows the pattern x.y.z, then an `externalDocumentationLink` per `dokkaSourceSet` is defined in addition.
+The url used for the `sourceLink` and the `externalDocumentationLink` is based on a given githubUser.
 
 # ch.tutteli.gradle.plugins.junitjacoco [🔗](https://plugins.gradle.org/plugin/ch.tutteli.junitjacoco/4.0.2)
 Applies the [junit-platform-gradle-plugin](https://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle)

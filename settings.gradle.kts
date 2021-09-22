@@ -1,6 +1,7 @@
 rootProject.name = "tutteli-gradle"
 
 listOf(
+    "dokka",
     "junitjacoco",
     "kotlin-module-info",
     "kotlin-utils",
