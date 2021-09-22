@@ -1,7 +1,7 @@
 buildscript {
     ext {
-        version = '4.0.2'
-        previous_version = '2.0.0'
+        version = '4.1.0'
+        previous_version = '4.0.2'
         repo = "${rootProject.projectDir}/repo"
 
         junit_jupiter_version = '5.7.2'
@@ -190,7 +190,7 @@ Release & deploy
         1) update version of the badges in README (except for codecov)
         2) search for `tree/master` in README and replace it with `tree/vX.Y.Z`
     b) change `version` in build.gradle to X.Y.Z (remove -SNAPSHOT)
-    c) search for old version and replace by new with the *exception* of previous_version in settings.gradle
+    c) search for old version and replace by new with the *exception* of previous_version in build.gradle
     c) commit & push (modified README.md and build.gradle)
     d) git tag vX.Y.Z
     e) git push origin vX.Y.Z
