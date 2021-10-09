@@ -5,11 +5,11 @@
     ],
     "packageRules": [
         {
-            "packagePatterns": [
+            "enabled": false,
+            "matchPackagePatterns": [
                 "^ch.tutteli:tutteli-gradle",
                 "^ch.tutteli.gradle.plugins"
-            ],
-            "enabled": false
+            ]
         }
     ]
 }
