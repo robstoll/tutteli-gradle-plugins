@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        version = '4.2.0'
+        version = '4.2.1'
         previous_version = '4.1.0'
         repo = "${rootProject.projectDir}/repo"
 
