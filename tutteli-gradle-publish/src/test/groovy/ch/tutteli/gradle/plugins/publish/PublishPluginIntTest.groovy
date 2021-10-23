@@ -271,7 +271,6 @@ class PublishPluginIntTest {
         buildscript {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
-                classpath 'ch.tutteli:tutteli-gradle-dokka:0.10.1'
                 classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$OLD_KOTLIN_VERSION'
                 classpath files($settingsSetup.pluginClasspath)
             }
@@ -809,10 +808,6 @@ class PublishPluginIntTest {
             assertJarWithLicenseAndManifest(releasePath, prefix + jarNameEnding, projectName, version, repoUrl, vendor, kotlinVersion)
             assertAscWithHashesExistForFile(releasePath, prefix + jarNameEnding)
         }
-    }
-
-    private static Path buildLib(SettingsExtensionObject settingsSetup) {
-        return Paths.get(settingsSetup.tmp.absolutePath, 'build', 'libs')
     }
 
     private static void assertJarWithLicenseAndManifest(Path releasePath, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {

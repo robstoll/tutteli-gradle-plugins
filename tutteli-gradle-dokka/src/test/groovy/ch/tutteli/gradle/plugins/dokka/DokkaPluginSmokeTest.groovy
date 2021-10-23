@@ -78,7 +78,7 @@ class DokkaPluginSmokeTest {
         Jar javadocTask = project.tasks.getByName(DokkaPlugin.TASK_NAME_JAVADOC) as Jar
         assertNotNull(javadocTask, DokkaPlugin.TASK_NAME_JAVADOC)
         assertEquals('javadoc', javadocTask.archiveClassifier.get())
-        assertTrue(javadocTask.dependsOn.toList().collect{ it.get() }.contains(project.tasks.getByName(DokkaPlugin.TASK_NAME_DOKKA)), "$DokkaPlugin.TASK_NAME_JAVADOC should depend on $DokkaPlugin.TASK_NAME_DOKKA, was $javadocTask.dependsOn")
+        assertTrue(javadocTask.dependsOn.toList().collect { it.get() }.contains(project.tasks.getByName(DokkaPlugin.TASK_NAME_DOKKA)), "$DokkaPlugin.TASK_NAME_JAVADOC should depend on $DokkaPlugin.TASK_NAME_DOKKA, was $javadocTask.dependsOn")
 
         GradleSourceLinkBuilder sourceLink = getSingleMainSourceLink(dokkaTask)
         assertEquals("$project.projectDir${s}src${s}main${s}kotlin".toString(), sourceLink.localDirectory.get().absolutePath)
@@ -118,7 +118,7 @@ class DokkaPluginSmokeTest {
         Jar javadocTask = project.tasks.getByName(DokkaPlugin.TASK_NAME_JAVADOC) as Jar
         assertNotNull(javadocTask, DokkaPlugin.TASK_NAME_JAVADOC)
         assertEquals('javadoc', javadocTask.archiveClassifier.get())
-        assertTrue(javadocTask.dependsOn.toList().collect{ it.get() }.contains(project.tasks.getByName(DokkaPlugin.TASK_NAME_DOKKA)), "$DokkaPlugin.TASK_NAME_JAVADOC should depend on $DokkaPlugin.TASK_NAME_DOKKA, was $javadocTask.dependsOn")
+        assertTrue(javadocTask.dependsOn.toList().collect { it.get() }.contains(project.tasks.getByName(DokkaPlugin.TASK_NAME_DOKKA)), "$DokkaPlugin.TASK_NAME_JAVADOC should depend on $DokkaPlugin.TASK_NAME_DOKKA, was $javadocTask.dependsOn")
 
         GradleSourceLinkBuilder sourceLink = getSingleMainSourceLink(dokkaTask)
         assertEquals("$project.projectDir${s}src${s}main${s}kotlin".toString(), sourceLink.localDirectory.get().absolutePath)
@@ -157,7 +157,7 @@ class DokkaPluginSmokeTest {
         Jar javadocTask = project.tasks.getByName(DokkaPlugin.TASK_NAME_JAVADOC) as Jar
         assertNotNull(javadocTask, DokkaPlugin.TASK_NAME_JAVADOC)
         assertEquals('javadoc', javadocTask.archiveClassifier.get())
-        assertTrue(javadocTask.dependsOn.toList().collect{ it.get() }.contains(project.tasks.getByName(DokkaPlugin.TASK_NAME_DOKKA)), "$DokkaPlugin.TASK_NAME_JAVADOC should depend on $DokkaPlugin.TASK_NAME_DOKKA, was $javadocTask.dependsOn")
+        assertTrue(javadocTask.dependsOn.toList().collect { it.get() }.contains(project.tasks.getByName(DokkaPlugin.TASK_NAME_DOKKA)), "$DokkaPlugin.TASK_NAME_JAVADOC should depend on $DokkaPlugin.TASK_NAME_DOKKA, was $javadocTask.dependsOn")
 
         GradleSourceLinkBuilder sourceLink = getSingleMainSourceLink(dokkaTask)
         assertEquals("$project.projectDir${s}src${s}main${s}kotlin".toString(), sourceLink.localDirectory.get().absolutePath)
