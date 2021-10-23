@@ -66,7 +66,8 @@ class PublishPlugin implements Plugin<Project> {
 
             def signingExtension = project.extensions.getByType(SigningExtension)
             def publications = getMavenPublications(project)
-            if (publications.isEmpty()) {
+            def usesOwnPublications = !publications.isEmpty()
+            if (!usesOwnPublications) {
                 // we only create the tutteli publication in case there is not already one (e.g. MPP creates own publications)
                 configurePublishing(project, extension)
                 publications = getMavenPublications(project)
@@ -92,7 +93,18 @@ class PublishPlugin implements Plugin<Project> {
                     def pubToMaLo = project.tasks.getByName("publish${taskSuffix}ToMavenLocal")
                     pubToMaLo.dependsOn(signTask)
                 }
+            if (usesOwnPublications && project.plugins.findPlugin('org.jetbrains.kotlin.multiplatform') != null) {
+                // in case we generate a javadocJar (e.g. via tutteli's dokka plugin) then we add it to each publication
+                def javadocJar = project.tasks.findByName("javadocJar")
+                if (javadocJar != null) {
+                    publications
+                        .forEach { publication ->
+                            publication.artifact(javadocJar)
+                        }
+                }
+            }
         }
+
     }
 
     private static List<MavenPublication> getMavenPublications(Project project) {
@@ -134,7 +146,6 @@ class PublishPlugin implements Plugin<Project> {
                             }
                         }
                     }
-
                     jarTasks(project, extension).each {
                         publication.artifact it
                     }

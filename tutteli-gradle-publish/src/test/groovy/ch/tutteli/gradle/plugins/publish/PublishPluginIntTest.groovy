@@ -588,12 +588,12 @@ class PublishPluginIntTest {
 
     @Test
     void withKotlinMultiplatformApplied_enableGranularSourceSetsMetadataIsTrue(SettingsExtensionObject settingsSetup) throws IOException {
-        checkKotlinMultiplatform('kotlin-mpp-enabled', settingsSetup, true)
+        checkKotlinMultiplatform('kotlin-mpp-enabled-granular', settingsSetup, true)
     }
 
     @Test
     void withKotlinMultiplatformApplied_enableGranularSourceSetsMetadataIsFalse(SettingsExtensionObject settingsSetup) throws IOException {
-        checkKotlinMultiplatform('kotlin-mpp-enabled', settingsSetup, false)
+        checkKotlinMultiplatform('kotlin-mpp-enabled-non-granular', settingsSetup, false)
     }
 
     static void checkKotlinMultiplatform(String projectName, SettingsExtensionObject settingsSetup, boolean enableGranularSourceSetsMetadata) {
@@ -753,6 +753,134 @@ class PublishPluginIntTest {
         assertTrue(Files.exists(path), "${path} not found")
         assertAscWithHashesExistForFile(nativeReleasePath, klibName)
 
+    }
+
+    @Test
+    void withKotlinMultiplatformApplied_andDokka(SettingsExtensionObject settingsSetup) throws IOException {
+        def projectName = 'kotlin-mpp-with-dokka'
+        settingsSetup.settings << "rootProject.name='$projectName'"
+        def groupId = 'com.example'
+        def version = '1.0.0'
+        def githubUser = 'robstoll'
+        def gpgPassphrase = 'bla'
+        def gpgKeyId = 'A5875B96'
+        def gpgKeyRing = 'keyring.gpg'
+
+        settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
+
+        settingsSetup.buildGradle << """
+        import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
+
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+        buildscript {
+            ext {
+                // required since we don't set the System.env variables.
+                gpgPassphrase = '$gpgPassphrase'
+                gpgKeyRing = '$gpgKeyRing'
+                gpgKeyId = '$gpgKeyId'
+            }
+        }
+        repositories {
+            mavenCentral()
+        }
+
+        apply plugin: 'org.jetbrains.kotlin.multiplatform'
+        apply plugin: 'ch.tutteli.gradle.plugins.publish'
+
+        project.with {
+            group = '$groupId'
+            version = '$version'
+            description = 'test project'
+        }
+        tutteliPublish {
+            //minimal setup required for local publish, all other things are only needed if not the default is used
+            githubUser = '$githubUser'
+        }
+
+        // simulate dokka's javadocJar task
+        project.tasks.register("javadocJar", org.gradle.jvm.tasks.Jar) {
+            archiveClassifier.set("javadoc")
+        }
+
+        kotlin {
+           jvm { }
+           js { browser { } }
+
+           sourceSets {
+               commonMain { }
+               commonTest { }
+               jvmMain { }
+               jvmTest { }
+               jsMain { }
+               jsTest { }
+           }
+        }
+        ${publishingRepo()}
+        ${taskPrintSigning()}
+        """
+        File license = new File(settingsSetup.tmp, 'LICENSE.txt')
+        license << 'Copyright...'
+        Path commonMain = Files.createDirectories(settingsSetup.tmpPath.resolve('src').resolve('commonMain'))
+        Path commonTutteli = Files.createDirectories(commonMain.resolve("kotlin").resolve('ch').resolve('tutteli').resolve('atrium'))
+        File commonKt = new File(commonTutteli.toFile(), 'common.kt')
+        commonKt << """package ch.tutteli.atrium
+                    val a = 1"""
+
+        Path jvmMain = Files.createDirectories(settingsSetup.tmpPath.resolve('src').resolve('jvmMain'))
+        Path resources = Files.createDirectory(jvmMain.resolve('resources'))
+        File txt = new File(resources.toFile(), 'a.txt')
+        txt << 'dummy'
+        Path tutteli = Files.createDirectories(jvmMain.resolve('kotlin').resolve('ch').resolve('tutteli').resolve('atrium'))
+        File kt = new File(tutteli.toFile(), 'a.kt')
+        kt << 'package ch.tutteli.atrium'
+
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("publishAllPublicationsToMavenRepository", "printSigning")
+            .build()
+
+        Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")
+        Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_POM")
+        assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
+
+
+        def repoUrl = "https://github.com/$githubUser/$projectName"
+
+        def rootReleasePath = getReleasePath(settingsSetup, projectName, groupId, version)
+        def (_, rootPomName) = getPomInclFileNameAndAssertBasicPomProperties(rootReleasePath, projectName, groupId, version, githubUser)
+        assertModuleExists(rootReleasePath, projectName, version)
+        assertJarsWithLicenseAndManifest(rootReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, rootPomName,
+            ".jar",
+            "-sources.jar",
+            "-javadoc.jar"
+        )
+        Path path = rootReleasePath.resolve("$projectName-${version}-all.jar")
+        assertFalse(Files.exists(path), "${path} found even though enableGranularSourceSetsMetadata is set to false")
+
+        def jsReleasePath = getReleasePath(settingsSetup, projectName + "-js", groupId, version)
+        def (_2, jsPomName) = getPomInclFileNameAndAssertBasicPomProperties(jsReleasePath, projectName + "-js", groupId, version, githubUser, projectName)
+        assertModuleExists(jsReleasePath, projectName + "-js", version)
+        assertJarsWithLicenseAndManifest(
+            jsReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, jsPomName,
+            ".jar",
+            "-sources.jar",
+            "-javadoc.jar"
+        )
+
+        def jvmReleasePath = getReleasePath(settingsSetup, projectName + "-jvm", groupId, version)
+        def (_3, jvmPomName) = getPomInclFileNameAndAssertBasicPomProperties(jvmReleasePath, projectName + "-jvm", groupId, version, githubUser, projectName)
+        assertModuleExists(jvmReleasePath, projectName + "-jvm", version)
+        assertJarsWithLicenseAndManifest(
+            jvmReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, jvmPomName,
+            ".jar",
+            "-sources.jar",
+            "-javadoc.jar"
+        )
+        new ZipFile(jvmReleasePath.resolve("$projectName-jvm-${version}-sources.jar").toFile()).withCloseable { zipFile ->
+            assertInZipFile(zipFile, 'commonMain/ch/tutteli/atrium/common.kt')
+            assertInZipFile(zipFile, 'jvmMain/ch/tutteli/atrium/a.kt')
+        }
     }
 
     private static Path getReleasePath(SettingsExtensionObject settingsSetup, String projectName, String groupId, String version, String subDir = '') {
