@@ -52,8 +52,14 @@ open class DokkaPlugin : Plugin<Project> {
 
                 if (isReleaseVersion(rootProject)) {
                     externalDocumentationLink {
-                        url.set(extension.githubUser.map { githubUser ->
-                            URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/doc/")
+                        url.set(extension.githubUser.flatMap { githubUser ->
+                            extension.modeSimple.map { useSimpleDocs ->
+                                if (useSimpleDocs) {
+                                    URL("https://$githubUser.github.io/${rootProject.name}/kdoc/${rootProject.name}/")
+                                } else {
+                                    URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/doc/${rootProject.name}/")
+                                }
+                            }
                         })
                     }
                 }

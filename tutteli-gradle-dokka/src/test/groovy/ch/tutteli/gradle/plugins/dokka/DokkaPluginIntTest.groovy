@@ -111,8 +111,8 @@ class DokkaPluginIntTest {
         //assert
         assertTrue(result.output.contains("main: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/main/kotlin"), "url should be in output:\n" + result.output)
         assertTrue(result.output.contains("test: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/test/kotlin"), "url should be in output:\n" + result.output)
-        assertTrue(result.output.contains("main: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("test: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("main: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("test: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "extLink should be in output:\n" + result.output)
     }
 
     @Test
@@ -147,8 +147,8 @@ class DokkaPluginIntTest {
         //assert
         assertTrue(result.output.contains("main: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/main/kotlin"), "url should be in output:\n" + result.output)
         assertTrue(result.output.contains("test: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/test/kotlin"), "url should be in output:\n" + result.output)
-        assertTrue(result.output.contains("main: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("test: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("main: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc/test-project"), "extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("test: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc/test-project"), "extLink should be in output:\n" + result.output)
     }
 
     @Test
@@ -221,14 +221,14 @@ class DokkaPluginIntTest {
         assertTrue(result.output.contains("nativeMain: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/nativeMain/kotlin"), "nativeMain url should be in output:\n" + result.output)
         assertTrue(result.output.contains("nativeTest: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/nativeTest/kotlin"), "nativeTest url should be in output:\n" + result.output)
 
-        assertTrue(result.output.contains("commonMain: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "commonMain extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("commonTest: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "commonTest extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("jvmMain: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "jvmMain extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("jvmTest: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "jvmTest extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("jsMain: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "jsMain extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("jsTest: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "jsTest extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("nativeMain: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "nativeMain extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("nativeTest: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc"), "nativeTest extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("commonMain: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "commonMain extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("commonTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "commonTest extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("jvmMain: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "jvmMain extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("jvmTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "jvmTest extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("jsMain: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "jsMain extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("jsTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "jsTest extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("nativeMain: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "nativeMain extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("nativeTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "nativeTest extLink should be in output:\n" + result.output)
     }
 
 
