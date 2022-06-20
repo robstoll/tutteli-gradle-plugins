@@ -588,12 +588,12 @@ class PublishPluginIntTest {
 
     @Test
     void withKotlinMultiplatformApplied_enableGranularSourceSetsMetadataIsTrue(SettingsExtensionObject settingsSetup) throws IOException {
-        checkKotlinMultiplatform('kotlin-mpp-enabled-granular', settingsSetup, true)
+        checkKotlinMultiplatform('mpp-enabled-granular', settingsSetup, true)
     }
 
     @Test
     void withKotlinMultiplatformApplied_enableGranularSourceSetsMetadataIsFalse(SettingsExtensionObject settingsSetup) throws IOException {
-        checkKotlinMultiplatform('kotlin-mpp-enabled-non-granular', settingsSetup, false)
+        checkKotlinMultiplatform('mpp-enabled-non-granular', settingsSetup, false)
     }
 
     static void checkKotlinMultiplatform(String projectName, SettingsExtensionObject settingsSetup, boolean enableGranularSourceSetsMetadata) {
