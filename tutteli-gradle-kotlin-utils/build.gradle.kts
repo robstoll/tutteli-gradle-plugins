@@ -1,0 +1,5 @@
+val pluginId by extra("ch.tutteli.gradle.plugins.kotlin.utils")
+val pluginClass by extra("ch.tutteli.gradle.plugins.kotlin.utils.KotlinUtilsPlugin")
+val pluginName by extra("Tutteli Kotlin Utils Plugin")
+val pluginDescription by extra("Provides a few utility functions which makes it easier to manage kotlin projects.")
+val pluginTags by extra(listOf("kotlin", "utility"))

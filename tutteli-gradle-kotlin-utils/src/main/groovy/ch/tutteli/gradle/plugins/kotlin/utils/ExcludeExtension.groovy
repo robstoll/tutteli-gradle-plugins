@@ -36,5 +36,7 @@ class ExcludeExtension {
 
     static void excludeAtriumVerbs(ExternalModuleDependency externalModuleDependency) {
         externalModuleDependency.exclude group: 'ch.tutteli.atrium', module: 'atrium-verbs'
+        externalModuleDependency.exclude group: 'ch.tutteli.atrium', module: 'atrium-verbs-common'
+        externalModuleDependency.exclude group: 'ch.tutteli.atrium', module: 'atrium-verbs-js'
     }
 }

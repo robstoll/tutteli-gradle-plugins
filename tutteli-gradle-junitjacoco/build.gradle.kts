@@ -1,19 +1,22 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins{
     `kotlin-dsl`
 }
-val plugin_id by extra("ch.tutteli.gradle.plugins.junitjacoco")
-val plugin_class by extra("ch.tutteli.gradle.plugins.junitjacoco.JunitJacocoPlugin")
-val plugin_name by extra("Tutteli Jacoco Plugin")
-val plugin_description by extra("Sets up JaCoCo for the JUnit 5 Platform")
-val plugin_tags by extra(listOf("jacoco", "junit"))
+val pluginId by extra("ch.tutteli.gradle.plugins.junitjacoco")
+val pluginClass by extra("ch.tutteli.gradle.plugins.junitjacoco.JunitJacocoPlugin")
+val pluginName by extra("Tutteli Jacoco Plugin")
+val pluginDescription by extra("Sets up JaCoCo for the JUnit 5 Platform")
+val pluginTags by extra(listOf("jacoco", "junit"))
 
-val junit_jupiter_version: String by rootProject.extra
+val junitJupiterVersion: String by rootProject.extra
+val jacocoToolVersion: String by rootProject.extra
 
 dependencies {
-    implementation("org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version")
+    implementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
 }
 
-val dep = tasks.register("generateHardCodedDependencies") {
+val generateDependencyVersions = tasks.register("generateHardCodedDependencies") {
     group = "build"
     description = "dependency version as code"
 
@@ -26,17 +29,17 @@ val dep = tasks.register("generateHardCodedDependencies") {
             package ch.tutteli.gradle.plugins.junitjacoco.generated
 
             object Dependencies{
-                const val jacocoToolsVersion = "0.8.7"
+                const val jacocoToolsVersion = "$jacocoToolVersion"
             }
         """.trimIndent()
         )
     }
 }
-tasks.filterIsInstance<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile>().forEach {
-    it.dependsOn(dep)
+tasks.withType<KotlinCompile>{
+    dependsOn(generateDependencyVersions)
 }
 afterEvaluate {
     tasks.named("publishPluginJar").configure {
-        dependsOn(dep)
+        dependsOn(generateDependencyVersions)
     }
 }

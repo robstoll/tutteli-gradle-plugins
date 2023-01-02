@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse
 @ExtendWith(SettingsExtension)
 class ModuleInfoPluginIntTest {
     private static final String KOTLIN_VERSION = '1.5.21'
-    private static final String ATRIUM_VERSION = '0.16.0'
+    private static final String ATRIUM_VERSION = '0.17.0'
     private static final String MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 
     @Test

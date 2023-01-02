@@ -45,7 +45,6 @@ class SettingsExtensionObject {
                 classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
                 classpath files($pluginClasspath)
             }
-
         }
         """
     }

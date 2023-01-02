@@ -16,6 +16,7 @@ class KotlinUtilsPlugin implements Plugin<Project> {
         createBuildTasks(project)
     }
 
+    //TODO 5.0.0 drop what we don't need anymore
     private void augmentProjectExt(Project project, KotlinUtilsPluginExtension extension) {
         project.ext.kotlinStdlib = { getKotlinDependency(extension, 'stdlib') }
         project.ext.kotlinStdlibJs = { getKotlinDependency(extension, 'stdlib-js') }
