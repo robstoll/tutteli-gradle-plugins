@@ -50,7 +50,7 @@ class ModuleInfoPluginIntTest {
         setupModuleInfo(settingsSetup, "requires kotlin.stdlib;", kotlinPlugin, additions)
         //act
         def exception = assertThrows(UnexpectedBuildFailure) {
-            runGradleModuleBuild(settingsSetup, "jar")
+            runGradleModuleBuild(settingsSetup, null, "jar")
         }
 
         //assert
@@ -69,29 +69,29 @@ class ModuleInfoPluginIntTest {
         setupModuleInfo(settingsSetup, "requires kotlin.stdlib;", MULTIPLATFORM_PLUGIN, "")
         //act
         def exception = assertThrows(UnexpectedBuildFailure) {
-            runGradleModuleBuild(settingsSetup, "jar")
+            runGradleModuleBuild(settingsSetup, null, "jar")
         }
         assertTrue(exception.message.contains("Looks like the java plugin was not applied. Did you forget to apply the kotlin plugin?"), "did not fail due to missing `withJava")
     }
 
     @Test
     void moduleInfoSucceeds_OldKotlinPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, "kotlin")
+        checkSucceeds(settingsSetup,  null, "kotlin")
     }
 
     @Test
     void moduleInfoSucceeds_KotlinPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, "org.jetbrains.kotlin.jvm")
+        checkSucceeds(settingsSetup,  null,"org.jetbrains.kotlin.jvm")
     }
 
     @Test
     void moduleInfoSucceeds_OldJvmPlatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, "kotlin-platform-jvm")
+        checkSucceeds(settingsSetup, null, "kotlin-platform-jvm")
     }
 
     @Test
     void moduleInfoSucceeds_MultiplatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, MULTIPLATFORM_PLUGIN,
+        checkSucceeds(settingsSetup, null, MULTIPLATFORM_PLUGIN,
             """
             kotlin {
                 jvm {
@@ -102,15 +102,28 @@ class ModuleInfoPluginIntTest {
         )
     }
 
-    private static void checkSucceeds(SettingsExtensionObject settingsSetup, String kotlinPlugin, String additions = "") {
+    @Test
+    void moduleInfoSucceeds_MultiplatformPlugin_Gradle6_9_3(SettingsExtensionObject settingsSetup) {
+        checkSucceeds(settingsSetup, "6.9.3", MULTIPLATFORM_PLUGIN,
+            """
+            kotlin {
+                jvm {
+                    withJava()
+                }
+            }
+            """
+        )
+    }
+
+    private static void checkSucceeds(SettingsExtensionObject settingsSetup, String gradleVersion, String kotlinPlugin, String additions = "") {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
         setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;", kotlinPlugin, additions)
         //act
-        def result = runGradleModuleBuild(settingsSetup, "build")
+        def result = runGradleModuleBuild(settingsSetup, gradleVersion, "build")
         //assert
-        Asserts.assertTaskRunSuccessfully(result,":compileJava")
+        Asserts.assertTaskRunSuccessfully(result, ":compileJava")
         assertFalse(result.output.contains("Execution optimizations have been disabled"), "Execution optimizations have been disabled! maybe due to module-info?\n$result.output")
     }
 
@@ -122,7 +135,7 @@ class ModuleInfoPluginIntTest {
         setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib;")
         //act
         def exception = assertThrows(UnexpectedBuildFailure) {
-            runGradleModuleBuild(settingsSetup, "sub1:jar")
+            runGradleModuleBuild(settingsSetup, null, "sub1:jar")
         }
         //assert
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':sub1:compileKotlin'"), ":sub1:compileKotlin did not fail.\n$exception.message")
@@ -137,9 +150,9 @@ class ModuleInfoPluginIntTest {
         //arrange
         setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
         //act
-        def result = runGradleModuleBuild(settingsSetup, "sub1:jar")
+        def result = runGradleModuleBuild(settingsSetup, null, "sub1:jar")
         //assert
-        Asserts.assertTaskRunSuccessfully(result,":sub1:compileJava")
+        Asserts.assertTaskRunSuccessfully(result, ":sub1:compileJava")
         assertFalse(result.output.contains("Execution optimizations have been disabled"), "Execution optimizations have been disabled! maybe due to module-info?\n$result.output")
     }
 
@@ -191,8 +204,12 @@ class ModuleInfoPluginIntTest {
             """
     }
 
-    static def runGradleModuleBuild(SettingsExtensionObject settingsSetup, String... tasks) {
-        return GradleRunner.create()
+    static def runGradleModuleBuild(SettingsExtensionObject settingsSetup, String gradleVersion, String... tasks) {
+        def builder = GradleRunner.create()
+        if (gradleVersion != null) {
+            builder = builder.withGradleVersion(gradleVersion)
+        }
+        return builder
             .withProjectDir(settingsSetup.tmp)
             .withArguments(tasks.toList() + "--stacktrace")
             .build()
