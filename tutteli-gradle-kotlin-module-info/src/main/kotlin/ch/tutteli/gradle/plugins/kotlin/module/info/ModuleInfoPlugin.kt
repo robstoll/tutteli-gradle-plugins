@@ -36,15 +36,13 @@ class ModuleInfoPlugin : Plugin<Project> {
 
         val moduleName = if (project.extra.has("moduleName")) {
             val moduleName = project.extra.get("moduleName") as String
-            project.logger.info("tutteli-gradle-kotlin-module-info: using moduleName from project.ext which is: $moduleName")
+            project.logger.info("tutteli-gradle-kotlin-module-info: using moduleName from project.extra which is: $moduleName")
             moduleName
         } else {
             val moduleInfo = javaFiles.find { it.name == "module-info.java" }
                 ?: throw IllegalStateException(
                     "no module-info.java found in compileJava.source, following the first 10 files:\n${
-                        javaFiles.take(
-                            10
-                        ).joinToString("\n")
+                        javaFiles.take(10).joinToString("\n")
                     }"
                 )
 

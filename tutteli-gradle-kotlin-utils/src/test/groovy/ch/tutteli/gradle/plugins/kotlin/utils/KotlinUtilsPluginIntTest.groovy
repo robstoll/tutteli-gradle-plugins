@@ -1,6 +1,5 @@
 package ch.tutteli.gradle.plugins.kotlin.utils
 
-import ch.tutteli.gradle.plugins.test.Asserts
 import ch.tutteli.gradle.plugins.test.SettingsExtension
 import ch.tutteli.gradle.plugins.test.SettingsExtensionObject
 import org.gradle.testkit.runner.BuildResult
@@ -9,6 +8,8 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import static ch.tutteli.gradle.plugins.test.Asserts.assertContainsNotRegex
+import static ch.tutteli.gradle.plugins.test.Asserts.assertStatusOk
 import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertTrue
 import static org.hamcrest.MatcherAssert.assertThat
@@ -31,65 +32,56 @@ class KotlinUtilsPluginIntTest {
         include 'test1-android'
         include 'test2-android'
         """
-//
-//    @Test
-//    void compileAndExcludeXy(SettingsExtensionObject settingsSetup) throws IOException {
-//        //arrange
-//        settingsSetup.settings << "rootProject.name='test-project'"
-//        settingsSetup.buildGradle << """
-//        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
-//
-//        apply plugin: 'kotlin-platform-js'
-//       apply plugin: 'ch.tutteli.gradle.plugins.kotlin.utils'
-//        kotlinutils.kotlinVersion = '$KOTLIN_VERSION'
-//
-//        repositories{
-//            mavenCentral()
-//        }
-//
-//        dependencies {
-//            implementation kotlinStdlib(), excludeKbox
-//            implementation kotlinStdlibJs(), excludeAtriumVerbs
-//            implementation kotlinStdlibCommon(), excludeKotlin
-//            implementation kotlinReflect(), excluding {
-//                kotlin()
-//                kbox()
-//                atriumVerbs()
-//            }
-//            testImplementation "ch.tutteli.atrium:atrium-fluent-en_GB:0.16.0", excluding {
-//                kotlin()
-//                atriumVerbs()
-//                kbox()
-//            }
-//            testRuntimeOnly "org.jetbrains.spek:spek-junit-platform-engine:1.1.5", excluding {
-//                kotlin()
-//                exclude group: 'org.jetbrains.spek', module: 'spek-api'
-//            }
-//            testImplementation kotlinTest()
-//            testImplementation kotlinTestJunit5()
-//            testImplementation kotlinTestJs()
-//            testImplementation kotlinTestCommon()
-//            testImplementation kotlinTestAnnotationsCommon()
-//        }
-//        """
-//        //act
-//        def result = GradleRunner.create()
-//            .withProjectDir(settingsSetup.tmp)
-//            .withArguments("dependencies", "--stacktrace")
-//            .build()
-//        //assert
-//        Asserts.assertStatusOk(result, ":dependencies")
-//
-//        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"), "should contain stdlib:\n" + result.output)
-//        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-js:$KOTLIN_VERSION"), "should contain stdlib-js:\n" + result.output)
-//        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + result.output)
-//        assertTrue(result.output.contains("\n\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"), "should contain reflect:\n" + result.output)
-//
-//        assertContainsNotRegex(result.output, "stdlib", /(compile|default|runtime)[\S\s]+?\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION\r?\n\s*\\--- org.jetbrains.kotlin:kotlin-stdlib:/)
-//        assertContainsNotRegex(result.output, "atrium-verbs", /ch.tutteli.atrium:atrium-verbs/)
-//        assertContainsNotRegex(result.output, "kbox", /ch.tutteli.kbox/)
-//        assertContainsNotRegex(result.output, "kbox", /org.jetbrains.spek:spek-api/)
-//    }
+
+    @Test
+    void compileAndExcludeXy(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << "rootProject.name='test-project'"
+        settingsSetup.buildGradle << """
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+
+        apply plugin: 'kotlin-platform-js'
+       apply plugin: 'ch.tutteli.gradle.plugins.kotlin.utils'
+        kotlinutils.kotlinVersion = '$KOTLIN_VERSION'
+
+        repositories{
+            mavenCentral()
+        }
+
+        dependencies {
+            implementation kotlinStdlib(), excludeKbox
+            implementation kotlinStdlibJs(), excludeAtriumVerbs
+            implementation kotlinStdlibCommon(), excludeKotlin
+            implementation kotlinReflect(), excludeKotlin
+
+            testImplementation ("ch.tutteli.atrium:atrium-fluent-en_GB:0.16.0"), excludeAtriumVerbs
+
+            testRuntimeOnly ("org.jetbrains.spek:spek-junit-platform-engine:1.1.5") {
+                exclude group: 'org.jetbrains.spek', module: 'spek-api'
+            }
+            testImplementation kotlinTest()
+            testImplementation kotlinTestJunit5()
+            testImplementation kotlinTestJs()
+            testImplementation kotlinTestCommon()
+            testImplementation kotlinTestAnnotationsCommon()
+        }
+        """
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("dependencies", "--stacktrace")
+            .build()
+        //assert
+        assertStatusOk(result, ":dependencies")
+
+        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"), "should contain stdlib:\n" + result.output)
+        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-js:$KOTLIN_VERSION"), "should contain stdlib-js:\n" + result.output)
+        assertTrue(result.output.contains("\n+--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + result.output)
+        assertTrue(result.output.contains("\n\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"), "should contain reflect:\n" + result.output)
+
+        assertContainsNotRegex(result.output, "stdlib", /(compile|default|runtime)[\S\s]+?\\--- org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION\r?\n\s*\\--- org.jetbrains.kotlin:kotlin-stdlib:/)
+        assertContainsNotRegex(result.output, "atrium-verbs", /ch.tutteli.atrium:atrium-verbs/)
+    }
 
     @Test
     void commonProjectsHaveSourceTargetJdk8(SettingsExtensionObject settingsSetup) throws IOException {
@@ -255,7 +247,7 @@ class KotlinUtilsPluginIntTest {
             .withArguments('buildAllJs')
             .build()
         //assert
-        Asserts.assertStatusOk(result, [],[],[':buildAllJs'])
+        assertStatusOk(result, [],[],[':buildAllJs'])
     }
 
     @Test
@@ -269,7 +261,7 @@ class KotlinUtilsPluginIntTest {
             .withArguments('buildAllCommon')
             .build()
         //assert
-        Asserts.assertStatusOk(result,
+        assertStatusOk(result,
             [':test1-common:inspectClassesForKotlinIC',
              ':test1-common:jar',
              ':test1-common:assemble',
@@ -301,7 +293,7 @@ class KotlinUtilsPluginIntTest {
             .withArguments('buildAllJs')
             .build()
         //assert
-        Asserts.assertStatusOk(result,
+        assertStatusOk(result,
             [':test1-common:inspectClassesForKotlinIC',
              ':test1-common:jar',
              ':test1-js:inspectClassesForKotlinIC',
@@ -339,7 +331,7 @@ class KotlinUtilsPluginIntTest {
             .withArguments('buildAllAndroid', '--stacktrace', '--warning-mode', 'all')
             .build()
         //assert
-        Asserts.assertStatusOk(result,
+        assertStatusOk(result,
             [':test1-common:inspectClassesForKotlinIC',
              ':test1-common:jar',
              ':test1-android:inspectClassesForKotlinIC',
@@ -377,7 +369,7 @@ class KotlinUtilsPluginIntTest {
             .withArguments('buildAllJvm')
             .build()
         //assert
-        Asserts.assertStatusOk(result,
+        assertStatusOk(result,
             [':test1-common:inspectClassesForKotlinIC',
              ':test1-common:jar',
              ':test1-jvm:inspectClassesForKotlinIC',
@@ -433,7 +425,7 @@ class KotlinUtilsPluginIntTest {
         assertTrue(output.contains("\n\\--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + output)
         assertFalse(output.contains("org.jetbrains.kotlin:kotlin-stdlib:"), "stdlib should not be in output:\n" + output)
         assertFalse(output.contains("org.jetbrains.kotlin:kotlin-stdlib-js:"), "stdlib-js should not be in output:\n" + output)
-        Asserts.assertStatusOk(result, subproject + ":dependencies")
+        assertStatusOk(result, subproject + ":dependencies")
     }
 
     private static void executeDependenciesAndAssertCommonAndJs(GradleRunner gradleRunner, String prefix) {
@@ -470,7 +462,7 @@ class KotlinUtilsPluginIntTest {
         assertTrue(output.contains("  \\--- org.jetbrains.kotlin:kotlin-stdlib-common:$KOTLIN_VERSION"), "should contain stdlib-common:\n" + output)
         assertFalse(output.contains("org.jetbrains.kotlin:kotlin-" + libNotInThere + ":"), "$libNotInThere should not be in output:\n" + output)
 
-        Asserts.assertStatusOk(result, prefix + suffix + ":dependencies")
+        assertStatusOk(result, prefix + suffix + ":dependencies")
     }
 
     private static void executeDependenciesAndAssertNotExisting(GradleRunner gradleRunner, String subproject) {
