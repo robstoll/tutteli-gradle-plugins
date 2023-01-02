@@ -1,23 +1,14 @@
 import com.gradle.publish.PluginBundleExtension
 
 buildscript {
-    val version = "4.2.1"
-    val previousVersion = "4.1.0"
+    val version = "4.3.0"
+    val previousVersion = "4.2.1"
 
     rootProject.version = version
     rootProject.group = "ch.tutteli"
 
     val repo = "${rootProject.projectDir}/repo"
     rootProject.extra.set("repo", repo)
-
-//    repositories {
-//        mavenCentral()
-//        gradlePluginPortal()
-//    }
-
-//    dependencies {
-//        classpath("com.gradle.publish:plugin-publish-plugin:0.15.0")
-//    }
 
     rootProject.extra.set("error", false)
 
@@ -258,7 +249,7 @@ Release & deploy
         2) search for `tree/master` in README and replace it with `tree/vX.Y.Z`
     b) change `version` in build.gradle to X.Y.Z (remove -SNAPSHOT)
     c) search for old version and replace by new with the *exception* of previous_version in build.gradle
-    c) commit & push (modified README.md and build.gradle)
+    c) commit & push (modified README.md and build.gradle.kts)
     d) git tag vX.Y.Z
     e) git push origin vX.Y.Z
 3. publish plugins
