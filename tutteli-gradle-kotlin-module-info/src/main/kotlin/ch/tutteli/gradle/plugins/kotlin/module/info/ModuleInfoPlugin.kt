@@ -3,6 +3,7 @@ package ch.tutteli.gradle.plugins.kotlin.module.info
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.*
@@ -54,7 +55,7 @@ class ModuleInfoPlugin : Plugin<Project> {
                 }
             }
             val moduleName = Regex("module\\s+([^ ]+).*").matchEntire(line)?.groupValues?.get(1)
-                ?: throw  IllegalStateException("line starting with module in module-info.java did not specify moduleName")
+                ?: throw IllegalStateException("line starting with module in module-info.java did not specify moduleName")
             project.logger.info("tutteli-gradle-kotlin-module-info: using moduleName from module-info.java which is: $moduleName")
             moduleName
         }
@@ -63,8 +64,14 @@ class ModuleInfoPlugin : Plugin<Project> {
             inputs.property("moduleName", moduleName)
             with(options) {
                 javaModuleVersion.set(project.provider { project.rootProject.version as String })
-                compilerArgs =
-                    listOf("--patch-module", "$moduleName=${java.sourceSets.getByName("main").output.asPath}")
+                val modulePath =
+                    try {
+                        java.sourceSets.getByName("main").output.asPath
+                    } catch (e: NoSuchMethodError) {
+                        //maybe a gradle 6.x user
+                        project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.getByName("main").output.asPath
+                    }
+                compilerArgs = listOf("--patch-module", "$moduleName=$modulePath")
             }
         }
         with(java) {
