@@ -1,7 +1,7 @@
 import com.gradle.publish.PluginBundleExtension
 
 buildscript {
-    val version = "4.3.0"
+    val version = "4.4.0"
     val previousVersion = "4.2.1"
 
     rootProject.version = version
