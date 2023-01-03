@@ -9,7 +9,7 @@ jobs:
       fail-fast: true
       matrix:
         # re-add 17 once we update gradle, yet windows had problems with module-info tests when two jobs run at the same time
-        java_version: [ 11 ]
+        java_version: [ 11, 14 ]
 
     steps:
       - uses: actions/checkout@v2

@@ -64,8 +64,8 @@ class SettingsExtensionObject {
     }
 }
 
-class SettingsExtension implements ParameterResolver, AfterEachCallback {
-
+class SettingsExtension implements ParameterResolver, AfterEachCallback, BeforeEachCallback {
+    static count = 0
     @Override
     boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         return parameterContext.getParameter().getType() == SettingsExtensionObject.class
@@ -73,14 +73,20 @@ class SettingsExtension implements ParameterResolver, AfterEachCallback {
 
     @Override
     Object resolveParameter(ParameterContext parameterContext, ExtensionContext context) {
-        return getStore(context)
-            .getOrComputeIfAbsent("settingsSetup") {
+        return getStore(context).getOrComputeIfAbsent("settingsSetup") {
             new SettingsExtensionObject(Files.createTempDirectory("myTests"))
         }
     }
 
     private ExtensionContext.Store getStore(ExtensionContext context) {
-        context.getStore(ExtensionContext.Namespace.create(this.class, context))
+        context.getStore(ExtensionContext.Namespace.create(this.class))
+    }
+
+
+    @Override
+    void beforeEach(ExtensionContext context) throws Exception {
+        // we also cleanup beforeEach just in case it did not work out as expected (we used to have shaky tests)
+        afterEach(context)
     }
 
     @Override
@@ -89,7 +95,6 @@ class SettingsExtension implements ParameterResolver, AfterEachCallback {
         if (settingsSetup != null) {
             deleteTmp(settingsSetup.tmpPath)
         }
-
     }
 
     static Path deleteTmp(Path tmpDir) {
