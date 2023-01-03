@@ -71,7 +71,7 @@ class ModuleInfoPlugin : Plugin<Project> {
                         //maybe a gradle 6.x user
                         project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.getByName("main").output.asPath
                     }
-                compilerArgs = listOf("--patch-module", "$moduleName=$modulePath")
+                compilerArgs.plus(listOf("--patch-module", "$moduleName=$modulePath"))
             }
         }
         with(java) {
