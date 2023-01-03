@@ -9,6 +9,7 @@ import org.jetbrains.dokka.gradle.GradleSourceLinkBuilder
 import org.junit.jupiter.api.Test
 
 import java.nio.file.FileSystems
+import java.nio.file.Files
 
 import static ch.tutteli.gradle.plugins.dokka.DokkaPlugin.EXTENSION_NAME
 import static ch.tutteli.gradle.plugins.test.Asserts.assertThrowsProjectConfigExceptionWithCause
@@ -26,6 +27,7 @@ class DokkaPluginSmokeTest {
         Project project = ProjectBuilder.builder()
             .withName(projectName)
             .build()
+        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
         //act
         project.plugins.apply('org.jetbrains.kotlin.jvm')
         project.plugins.apply(DokkaPlugin)
@@ -61,6 +63,7 @@ class DokkaPluginSmokeTest {
         Project project = ProjectBuilder.builder()
             .withName(projectName)
             .build()
+        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
         //act
         project.version = version
         project.plugins.apply('org.jetbrains.kotlin.jvm')
@@ -101,6 +104,7 @@ class DokkaPluginSmokeTest {
         Project project = ProjectBuilder.builder()
             .withName(projectName)
             .build()
+        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
         //act
         project.version = version
         project.plugins.apply('org.jetbrains.kotlin.jvm')
@@ -140,6 +144,7 @@ class DokkaPluginSmokeTest {
         Project project = ProjectBuilder.builder()
             .withName(projectName)
             .build()
+        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
         //act
         project.version = version
         project.plugins.apply('org.jetbrains.kotlin.jvm')
@@ -179,6 +184,7 @@ class DokkaPluginSmokeTest {
         Project project = ProjectBuilder.builder()
             .withName(projectName)
             .build()
+        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
         //act
         project.plugins.apply('org.jetbrains.kotlin.jvm')
         project.plugins.apply(DokkaPlugin)
@@ -198,6 +204,7 @@ class DokkaPluginSmokeTest {
         Project project = ProjectBuilder.builder()
             .withName(projectName)
             .build()
+        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
         //act
         project.plugins.apply('org.jetbrains.kotlin.jvm')
         project.plugins.apply(DokkaPlugin)
@@ -225,6 +232,7 @@ class DokkaPluginSmokeTest {
         Project project = ProjectBuilder.builder()
             .withName(projectName)
             .build()
+        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
         //act
         project.version= version
         project.plugins.apply('org.jetbrains.kotlin.jvm')
