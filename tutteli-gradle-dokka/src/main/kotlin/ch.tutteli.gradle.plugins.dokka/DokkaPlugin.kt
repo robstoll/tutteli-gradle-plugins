@@ -42,12 +42,16 @@ open class DokkaPlugin : Plugin<Project> {
             outputDirectory.set(docsDir)
 
             dokkaSourceSets.configureEach {
-                val sourceSet = this
-                val src = "src/${sourceSet.name}/kotlin"
-                sourceLink {
-                    localDirectory.set(project.file(src))
-                    remoteUrl.set(getUrl(project.rootProject, extension, src))
-                    remoteLineSuffix.set("#L")
+                val src = "src/${name}/kotlin"
+                val srcDir = project.file(src)
+                // might be we deal with a multi-platform project where the corresponding target has no sources and hence
+                // the directory is missing
+                if (srcDir.exists()) {
+                    sourceLink {
+                        localDirectory.set(project.file(srcDir))
+                        remoteUrl.set(getUrl(project.rootProject, extension, src))
+                        remoteLineSuffix.set("#L")
+                    }
                 }
 
                 if (isReleaseVersion(rootProject)) {

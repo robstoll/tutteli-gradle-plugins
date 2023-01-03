@@ -231,6 +231,89 @@ class DokkaPluginIntTest {
         assertTrue(result.output.contains("nativeTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "nativeTest extLink should be in output:\n" + result.output)
     }
 
+    @Test
+    void smokeTestMpp_notAllSourceFoldersExist(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << "rootProject.name='test-project'"
+
+        settingsSetup.buildGradle << """
+        import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
+
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+         repositories {
+            mavenCentral()
+        }
+        project.version = '1.0.0'
+
+        apply plugin: 'org.jetbrains.kotlin.multiplatform'
+        apply plugin: 'ch.tutteli.gradle.plugins.dokka'
+
+        kotlin {
+           jvm { }
+           js { browser { } }
+           def hostOs = System.getProperty("os.name")
+           def isMingwX64 = hostOs.startsWith("Windows")
+           KotlinNativeTargetWithTests nativeTarget
+           if (hostOs == "Mac OS X") nativeTarget = macosX64('native')
+           else if (hostOs == "Linux") nativeTarget = linuxX64("native")
+           else if (isMingwX64) nativeTarget = mingwX64("native")
+           else throw new GradleException("Host OS is not supported in Kotlin/Native.")
+
+
+           sourceSets {
+               commonMain { }
+               commonTest { }
+               jvmMain { }
+               jvmTest { }
+               jsMain { }
+               jsTest { }
+               nativeMain { }
+               nativeTest { }
+           }
+        }
+
+        tutteliDokka {
+            //uses the githubUser to create the repo url as well as the externalDocumentationLink if one uses a release version (x.y.z)
+            githubUser = 'robstoll'
+        }
+        ${printInfo()}
+        """
+        new File(settingsSetup.tmp, "src/commonMain/kotlin").mkdirs()
+        new File(settingsSetup.tmp, "src/commonTest/kotlin").mkdirs()
+        new File(settingsSetup.tmp, "src/jvmMain/kotlin").mkdirs()
+        // no jvm specific tests on purpose
+//        new File(settingsSetup.tmp, "src/jvmTest/kotlin").mkdirs()
+        // no js specific main sources on purpose
+//        new File(settingsSetup.tmp, "src/jsMain/kotlin").mkdirs()
+        new File(settingsSetup.tmp, "src/jsTest/kotlin").mkdirs()
+        // no native specific main sources on purpose
+//        new File(settingsSetup.tmp, "src/nativeMain/kotlin").mkdirs()
+        new File(settingsSetup.tmp, "src/nativeTest/kotlin").mkdirs()
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("dokka")
+            .build()
+        //assert
+        assertTrue(result.output.contains("commonMain: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/commonMain/kotlin"), "commonMain url should be in output:\n" + result.output)
+        assertTrue(result.output.contains("commonTest: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/commonTest/kotlin"), "commonTest url should be in output:\n" + result.output)
+        assertTrue(result.output.contains("jvmMain: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/jvmMain/kotlin"), "jvmMain url should be in output:\n" + result.output)
+        assertFalse(result.output.contains("jvmTest: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/jvmTest/kotlin"), "jvmTest url should *not* be in output:\n" + result.output)
+        assertFalse(result.output.contains("jsMain: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/jsMain/kotlin"), "jsMain url should *not* be in output:\n" + result.output)
+        assertTrue(result.output.contains("jsTest: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/jsTest/kotlin"), "jsTest url should be in output:\n" + result.output)
+        assertFalse(result.output.contains("nativeMain: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/nativeMain/kotlin"), "nativeMain url should *not* be in output:\n" + result.output)
+        assertTrue(result.output.contains("nativeTest: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/nativeTest/kotlin"), "nativeTest url should be in output:\n" + result.output)
+
+        assertTrue(result.output.contains("commonMain: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "commonMain extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("commonTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "commonTest extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("jvmMain: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "jvmMain extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("jvmTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "jvmTest extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("jsMain: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "jsMain extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("jsTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "jsTest extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("nativeMain: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "nativeMain extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("nativeTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "nativeTest extLink should be in output:\n" + result.output)
+    }
+
 
     private static String printInfo() {
         """
