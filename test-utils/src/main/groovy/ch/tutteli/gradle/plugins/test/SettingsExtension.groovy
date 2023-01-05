@@ -65,7 +65,7 @@ class SettingsExtensionObject {
 }
 
 class SettingsExtension implements ParameterResolver, AfterEachCallback, BeforeEachCallback {
-    static count = 0
+
     @Override
     boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         return parameterContext.getParameter().getType() == SettingsExtensionObject.class
@@ -93,6 +93,7 @@ class SettingsExtension implements ParameterResolver, AfterEachCallback, BeforeE
     void afterEach(ExtensionContext context) throws Exception {
         SettingsExtensionObject settingsSetup = getStore(context).get("settingsSetup") as SettingsExtensionObject
         if (settingsSetup != null) {
+            println("tmp folder is: $settingsSetup.tmpPath")
             deleteTmp(settingsSetup.tmpPath)
         }
     }

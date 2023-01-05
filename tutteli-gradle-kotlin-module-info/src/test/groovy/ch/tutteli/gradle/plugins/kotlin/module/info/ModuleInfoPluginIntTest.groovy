@@ -8,6 +8,9 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import java.nio.file.Files
+import java.util.stream.Collectors
+
 import static org.junit.jupiter.api.Assertions.*
 import static org.junit.jupiter.api.Assumptions.assumeFalse
 
@@ -18,23 +21,13 @@ class ModuleInfoPluginIntTest {
     private static final String MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 
     @Test
-    void moduleInfoFails_OldKotlinPlugin(SettingsExtensionObject settingsSetup) {
-        checkFails(settingsSetup, "kotlin")
-    }
-
-    @Test
     void moduleInfoFails_JvmPlugin(SettingsExtensionObject settingsSetup) {
-        checkFails(settingsSetup, "org.jetbrains.kotlin.jvm")
-    }
-
-    @Test
-    void moduleInfoFailsOldJvmPlatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkFails(settingsSetup, "kotlin-platform-jvm")
+        setupPluginAndCheckFails(settingsSetup, "org.jetbrains.kotlin.jvm")
     }
 
     @Test
     void moduleInfoFails_MultiplatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkFails(settingsSetup, MULTIPLATFORM_PLUGIN, """
+        setupPluginAndCheckFails(settingsSetup, MULTIPLATFORM_PLUGIN, """
             kotlin {
                 jvm {
                     withJava()
@@ -43,23 +36,46 @@ class ModuleInfoPluginIntTest {
             """)
     }
 
-    private static void checkFails(SettingsExtensionObject settingsSetup, String kotlinPlugin, String additions = "") {
+    private static void setupPluginAndCheckFails(SettingsExtensionObject settingsSetup, String kotlinPlugin, String additions = "") {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
         setupModuleInfo(settingsSetup, "requires kotlin.stdlib;", kotlinPlugin, additions)
         //act
+        checkFails(settingsSetup, kotlinPlugin, "")
+    }
+
+    private static void checkFails(SettingsExtensionObject settingsSetup, String kotlinPlugin, String project) {
         def exception = assertThrows(UnexpectedBuildFailure) {
-            runGradleModuleBuild(settingsSetup, null, "jar")
+            runGradleModuleBuild(settingsSetup, null, project + ":jar")
         }
+
+        checkDoesNotFailDueToUnnamedModuleBug(settingsSetup, exception)
 
         //assert
         def taskName = kotlinPlugin == MULTIPLATFORM_PLUGIN ? "compileKotlinJvm" : "compileKotlin"
-        assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':$taskName'"), ":$taskName did not fail.\n$exception.message")
+        assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task '$project:$taskName'"), "$project:$taskName did not fail.\n$exception.message")
         assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.verbs'"), "not atrium was the problem.\n$exception.message")
         assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.api.fluent.en_GB'"), "not atrium-verbs was the problem.\n$exception.message")
     }
 
+    private static void checkDoesNotFailDueToUnnamedModuleBug(SettingsExtensionObject settingsSetup, UnexpectedBuildFailure exception) {
+        if (exception.message.contains("Symbol is declared in unnamed module")) {
+            def moduleInfo = settingsSetup.tmpPath.resolve("src/main/java/module-info.java")
+
+            if (!Files.exists(moduleInfo)) {
+                moduleInfo = settingsSetup.tmpPath.resolve("sub1/src/main/java/module-info.java")
+            }
+            println("unnamed module bug detected, following the content of the tmp folder:\n" +
+                "- ${Files.list(settingsSetup.tmpPath).collect(Collectors.toList()).join("\n- ")}\n" +
+                "\n" +
+                "===================================================\n" +
+                "Content of module-info.java\n" +
+                "${moduleInfo.text}"
+            )
+            throw exception
+        }
+    }
 
     @Test
     void moduleInfoCannotApplyJavaMissingMultiplatformPlugin(SettingsExtensionObject settingsSetup) {
@@ -75,18 +91,8 @@ class ModuleInfoPluginIntTest {
     }
 
     @Test
-    void moduleInfoSucceeds_OldKotlinPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup,  null, "kotlin")
-    }
-
-    @Test
     void moduleInfoSucceeds_KotlinPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup,  null,"org.jetbrains.kotlin.jvm")
-    }
-
-    @Test
-    void moduleInfoSucceeds_OldJvmPlatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, null, "kotlin-platform-jvm")
+        checkSucceeds(settingsSetup, null, "org.jetbrains.kotlin.jvm")
     }
 
     @Test
@@ -121,26 +127,25 @@ class ModuleInfoPluginIntTest {
         //arrange
         setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;", kotlinPlugin, additions)
         //act
-        def result = runGradleModuleBuild(settingsSetup, gradleVersion, "build")
-        //assert
-        Asserts.assertTaskRunSuccessfully(result, ":compileJava")
-        assertFalse(result.output.contains("Execution optimizations have been disabled"), "Execution optimizations have been disabled! maybe due to module-info?\n$result.output")
+        try {
+            def result = runGradleModuleBuild(settingsSetup, gradleVersion, "build")
+            //assert
+            Asserts.assertTaskRunSuccessfully(result, ":compileJava")
+            assertFalse(result.output.contains("Execution optimizations have been disabled"), "Execution optimizations have been disabled! maybe due to module-info?\n$result.output")
+        } catch (UnexpectedBuildFailure ex) {
+            checkDoesNotFailDueToUnnamedModuleBug(settingsSetup, ex)
+            throw ex
+        }
     }
 
     @Test
-    void moduleInfoInSubprojectFails(SettingsExtensionObject settingsSetup) throws IOException {
+    void moduleInfoInSubprojectMppFails(SettingsExtensionObject settingsSetup) throws IOException {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
         setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib;")
         //act
-        def exception = assertThrows(UnexpectedBuildFailure) {
-            runGradleModuleBuild(settingsSetup, null, "sub1:jar")
-        }
-        //assert
-        assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task ':sub1:compileKotlin'"), ":sub1:compileKotlin did not fail.\n$exception.message")
-        assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.verbs'"), "not atrium was the problem.\n$exception.message")
-        assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.api.fluent.en_GB'"), "not atrium-verbs was the problem.\n$exception.message")
+        checkFails(settingsSetup, "kotlin-platform-jvm", ":sub1")
     }
 
     @Test
@@ -149,11 +154,16 @@ class ModuleInfoPluginIntTest {
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
         setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
-        //act
-        def result = runGradleModuleBuild(settingsSetup, null, "sub1:jar")
-        //assert
-        Asserts.assertTaskRunSuccessfully(result, ":sub1:compileJava")
-        assertFalse(result.output.contains("Execution optimizations have been disabled"), "Execution optimizations have been disabled! maybe due to module-info?\n$result.output")
+        try {
+            //act
+            def result = runGradleModuleBuild(settingsSetup, null, "sub1:jar")
+            //assert
+            Asserts.assertTaskRunSuccessfully(result, ":sub1:compileJava")
+            assertFalse(result.output.contains("Execution optimizations have been disabled"), "Execution optimizations have been disabled! maybe due to module-info?\n$result.output")
+        } catch (UnexpectedBuildFailure ex) {
+            checkDoesNotFailDueToUnnamedModuleBug(settingsSetup, ex)
+            throw ex
+        }
     }
 
     static final def gradleProjectDependencies(String kotlinPlugin) {
@@ -242,7 +252,7 @@ class ModuleInfoPluginIntTest {
 
             def sub1 = project(':sub1')
             configure(sub1) {
-                apply plugin: 'kotlin-platform-jvm'
+                apply plugin: 'org.jetbrains.kotlin.jvm'
                 apply plugin: 'ch.tutteli.gradle.plugins.kotlin.module.info'
                 repositories {
                     mavenCentral()
