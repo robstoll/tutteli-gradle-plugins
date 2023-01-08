@@ -8,7 +8,11 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import java.nio.file.FileVisitResult
 import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.stream.Collectors
 
 import static org.junit.jupiter.api.Assertions.*
@@ -61,17 +65,45 @@ class ModuleInfoPluginIntTest {
 
     private static void checkDoesNotFailDueToUnnamedModuleBug(SettingsExtensionObject settingsSetup, UnexpectedBuildFailure exception) {
         if (exception.message.contains("Symbol is declared in unnamed module")) {
-            def moduleInfo = settingsSetup.tmpPath.resolve("src/main/java/module-info.java")
-
-            if (!Files.exists(moduleInfo)) {
-                moduleInfo = settingsSetup.tmpPath.resolve("sub1/src/main/java/module-info.java")
+            def javaSrcDir = settingsSetup.tmpPath.resolve("src/main/java")
+            if (!Files.exists(javaSrcDir)) {
+                javaSrcDir = settingsSetup.tmpPath.resolve("sub1/src/main/java")
             }
-            println("unnamed module bug detected, following the content of the tmp folder:\n" +
-                "- ${Files.list(settingsSetup.tmpPath).collect(Collectors.toList()).join("\n- ")}\n" +
-                "\n" +
+            String moduleInfoContent = null
+            if (Files.exists(javaSrcDir)) {
+                def moduleInfo = javaSrcDir.resolve("module-info.java")
+                moduleInfoContent = moduleInfo.text
+            }
+            if (moduleInfoContent == null) {
+                moduleInfoContent = "looks like java src dir or moduleInfo does not exist. Following the content"
+            }
+
+            println("unnamed module bug detected, following the content of the tmp folder:")
+            def indent = 0
+            Files.walkFileTree(settingsSetup.tmpPath, new SimpleFileVisitor<Path>() {
+
+                @Override
+                FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    println(" ".repeat(indent) + "- " + file.fileName.toString())
+                    return FileVisitResult.CONTINUE
+                }
+
+                @Override
+                FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    ++indent
+                    return FileVisitResult.CONTINUE
+                }
+
+                @Override
+                FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    --indent
+                    return FileVisitResult.CONTINUE
+                }
+            })
+            println("\n" +
                 "===================================================\n" +
                 "Content of module-info.java\n" +
-                "${moduleInfo.text}"
+                "${moduleInfoContent}"
             )
             throw exception
         }
@@ -261,4 +293,5 @@ class ModuleInfoPluginIntTest {
             }
             """
     }
+
 }
