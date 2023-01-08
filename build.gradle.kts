@@ -58,7 +58,7 @@ val kotlinVersion by extra("1.5.21")
 val dokkaVersion by extra("1.5.0")
 
 val junitJupiterVersion by extra("5.9.2")
-val junitPlatformVersion by extra("1.6.0")
+val junitPlatformVersion by extra("1.9.1")
 
 val spekVersion by extra("2.0.15")
 val mockitoVersion by extra("4.11.0")
