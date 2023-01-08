@@ -1,5 +1,17 @@
 import com.gradle.publish.PluginBundleExtension
 
+val kotlinVersion by extra("1.5.21")
+val dokkaVersion by extra("1.5.0")
+
+val junitJupiterVersion by extra("5.9.2")
+val junitPlatformVersion by extra("1.9.1")
+
+val spekVersion by extra("2.0.15")
+val mockitoVersion by extra("4.11.0")
+val jsonPathAssertVersion by extra("2.7.0")
+val mavenModelVersion by extra("3.8.7")
+val jacocoToolVersion by extra("0.8.8")
+
 buildscript {
     val version = "4.4.0"
     val previousVersion = "4.2.1"
@@ -54,17 +66,6 @@ buildscript {
     setUpDependency("project-utils")
 }
 
-val kotlinVersion by extra("1.5.21")
-val dokkaVersion by extra("1.5.0")
-
-val junitJupiterVersion by extra("5.9.2")
-val junitPlatformVersion by extra("1.9.1")
-
-val spekVersion by extra("2.0.15")
-val mockitoVersion by extra("4.11.0")
-val jsonPathAssertVersion by extra("2.7.0")
-val mavenModelVersion by extra("3.8.7")
-val jacocoToolVersion by extra("0.8.8")
 
 
 
