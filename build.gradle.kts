@@ -64,7 +64,7 @@ val spekVersion by extra("2.0.15")
 val mockitoVersion by extra("4.11.0")
 val jsonPathAssertVersion by extra("2.7.0")
 val mavenModelVersion by extra("3.8.2")
-val jacocoToolVersion by extra("0.8.7")
+val jacocoToolVersion by extra("0.8.8")
 
 
 
