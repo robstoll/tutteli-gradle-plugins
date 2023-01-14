@@ -13,7 +13,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
-import java.util.stream.Collectors
 
 import static org.junit.jupiter.api.Assertions.*
 import static org.junit.jupiter.api.Assumptions.assumeFalse
@@ -75,34 +74,31 @@ class ModuleInfoPluginIntTest {
                 moduleInfoContent = moduleInfo.text
             }
             if (moduleInfoContent == null) {
-                moduleInfoContent = "looks like java src dir or moduleInfo does not exist. Following the content"
+                moduleInfoContent = "looks like java src dir or moduleInfo does not exist."
             }
 
             println("unnamed module bug detected, following the content of the tmp folder:")
-            def indent = 0
             Files.walkFileTree(settingsSetup.tmpPath, new SimpleFileVisitor<Path>() {
 
                 @Override
                 FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    println(" ".repeat(indent) + "- " + file.fileName.toString())
+                    println(file.toAbsolutePath().toString())
                     return FileVisitResult.CONTINUE
                 }
 
                 @Override
                 FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    ++indent
                     return FileVisitResult.CONTINUE
                 }
 
                 @Override
                 FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    --indent
                     return FileVisitResult.CONTINUE
                 }
             })
             println("\n" +
                 "===================================================\n" +
-                "Content of module-info.java\n" +
+                "Content of module-info.java:\n" +
                 "${moduleInfoContent}"
             )
             throw exception
