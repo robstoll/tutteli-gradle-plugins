@@ -3,7 +3,6 @@ package ch.tutteli.gradle.plugins.kotlin.module.info
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.*
@@ -69,7 +68,8 @@ class ModuleInfoPlugin : Plugin<Project> {
                         java.sourceSets.getByName("main").output.asPath
                     } catch (e: NoSuchMethodError) {
                         //maybe a gradle 6.x user
-                        project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.getByName("main").output.asPath
+                        @Suppress("DEPRECATION" /* JavaPluginConvention is deprecated but not yet in 6.x */)
+                        project.convention.getPlugin(org.gradle.api.plugins.JavaPluginConvention::class.java).sourceSets.getByName("main").output.asPath
                     }
                 compilerArgs = listOf("--patch-module", "$moduleName=$modulePath")
             }
