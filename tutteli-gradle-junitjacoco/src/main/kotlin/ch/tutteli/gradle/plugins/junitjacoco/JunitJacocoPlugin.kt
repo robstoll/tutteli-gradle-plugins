@@ -123,7 +123,7 @@ class JunitJacocoPlugin : Plugin<Project> {
                                     if (memoizeTestFile.exists() && memoizeTestFile.readText() == TestResult.ResultType.FAILURE.toString()) {
                                         val allTests = project.tasks.named("allTests")
                                         val reportFile = if (allTests.isPresent && allTests.get().didWork) {
-                                            (allTests.get() as TestReport).destinationDir.resolve("index.html")
+                                            (allTests.get() as TestReport).destinationDirectory.file("index.html").get().asFile
                                         } else {
                                             testTask.reports.html.entryPoint
                                         }

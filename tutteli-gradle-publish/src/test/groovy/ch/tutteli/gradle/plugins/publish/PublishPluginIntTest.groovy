@@ -16,6 +16,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
 import static ch.tutteli.gradle.plugins.test.Asserts.NL_INDENT
+import static ch.tutteli.gradle.plugins.test.Asserts.assertContainsNotRegex
 import static ch.tutteli.gradle.plugins.test.Asserts.assertContainsRegex
 import static org.junit.jupiter.api.Assertions.*
 
@@ -27,20 +28,28 @@ class PublishPluginIntTest {
     def static final ATRIUM_VERSION = '0.14.0'
 
     @Test
-    void smokeTest(SettingsExtensionObject settingsSetup) throws IOException {
+    void smokeTestJava(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def version = '1.0.0'
-        checkSmokeTest("smoke1", settingsSetup, version)
+        checkSmokeTestJava("smoke1", settingsSetup, version, null)
     }
 
     @Test
-    void smokeTestWithSnapshot(SettingsExtensionObject settingsSetup) throws IOException {
+    void smokeTestJava_6x(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
-        def version = '1.0.0-SNAPSHOT'
-        checkSmokeTest("smoke2", settingsSetup, version)
+        def version = '1.0.0'
+        checkSmokeTestJava("smoke1", settingsSetup, version, "6.9.4")
     }
 
-    private static void checkSmokeTest(String projectName, SettingsExtensionObject settingsSetup, String version) {
+
+    @Test
+    void smokeTestJavaWithSnapshot(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        def version = '1.0.0-SNAPSHOT'
+        checkSmokeTestJava("smoke2", settingsSetup, version, null)
+    }
+
+    private static void checkSmokeTestJava(String projectName, SettingsExtensionObject settingsSetup, String version, String gradleVersion) {
         settingsSetup.settings << "rootProject.name='$projectName'"
         def githubUser = 'robstoll'
         def gpgPassphrase = 'bla'
@@ -84,30 +93,30 @@ class PublishPluginIntTest {
             resetLicenses 'EUPL-1.2', 'manually'
             resetLicenses ch.tutteli.gradle.plugins.publish.StandardLicenses.EUPL_1_2
             resetLicenses ch.tutteli.gradle.plugins.publish.StandardLicenses.EUPL_1_2, 'manually'
-            resetLicenses {
-                shortName = 'Lic-1.2'
-                longName = 'License 1.2'
-                url = 'https://license.com'
-                distribution = 'manually'
-            }
-            resetLicenses {
-                shortName = 'Lic-1.2'
-                longName = 'License 1.2'
-                url = 'https://license.com'
-                //default distribution is repo
-            }
+            resetLicenses new ch.tutteli.gradle.plugins.publish.License(
+                'Lic-1.2',
+                'License 1.2',
+                'https://license.com',
+                'manually'
+            )
+            resetLicenses new ch.tutteli.gradle.plugins.publish.License(
+                 'Lic-1.2',
+                'License 1.2',
+                'https://license.com',
+                'repo'
+            )
 
             // different ways to add additional licenses
             license 'Apache-2.0'
             license 'Apache-2.0', 'manually'
             license ch.tutteli.gradle.plugins.publish.StandardLicenses.APACHE_2_0
             license ch.tutteli.gradle.plugins.publish.StandardLicenses.APACHE_2_0, 'somethingElse'
-            license {
-                shortName = 'Lic-1.2'
-                longName = 'License 1.2'
-                url = 'https://license.com'
-                distribution = 'repo'
-            }
+            license(new ch.tutteli.gradle.plugins.publish.License(
+                'Lic-1.2',
+                'License 1.2',
+                'https://license.com',
+                'repo'
+            ))
 
             // you can add multiple developers if required
             developer {
@@ -146,7 +155,11 @@ class PublishPluginIntTest {
         ${taskPrintSigning()}
         """
         //act
-        def result = GradleRunner.create()
+        def builder = GradleRunner.create()
+        if (gradleVersion != null) {
+            builder = builder.withGradleVersion(gradleVersion)
+        }
+        def result = builder
             .withProjectDir(settingsSetup.tmp)
             .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
@@ -207,7 +220,6 @@ class PublishPluginIntTest {
         settingsSetup.settings << "rootProject.name='$projectName'"
         def version = '1.0.0'
         def githubUser = 'robstoll'
-        def user = 'myUser'
 
         settingsSetup.buildGradle << """
         buildscript {
@@ -217,7 +229,7 @@ class PublishPluginIntTest {
         }
         // has to be before ch.tutteli.publish
         apply plugin: 'java'
-       apply plugin: 'ch.tutteli.gradle.plugins.publish'
+        apply plugin: 'ch.tutteli.gradle.plugins.publish'
 
         project.with {
             group = 'com.example'
@@ -249,7 +261,16 @@ class PublishPluginIntTest {
 
     @Test
     void subproject(SettingsExtensionObject settingsSetup) throws IOException {
-        //arrange
+        checkSubproject(settingsSetup)
+    }
+
+    @Test
+    void subproject_6_x(SettingsExtensionObject settingsSetup) throws IOException {
+        checkSubproject(settingsSetup, "6.9.4")
+    }
+
+    private void checkSubproject(SettingsExtensionObject settingsSetup, String gradleVersion = null) {
+//arrange
         def rootProjectName = 'rootProject'
         def subprojectName = "test-sub-jvm"
         def dependentName = 'dependent'
@@ -318,7 +339,7 @@ class PublishPluginIntTest {
                 //githubUser = '$githubUser'
                 //manifestVendor = $vendor // we don't have a manifestVendor, thus we reset it to null
 
-                artifactFilter = { jar -> jar.name != 'testSourcesJarFiltered' }
+                artifactFilter = { jar -> jar.name != 'testSourcesJarFiltered' } as kotlin.jvm.functions.Function1
             }
             ${publishingRepo()}
             ${taskPrintSigning()}
@@ -333,10 +354,16 @@ class PublishPluginIntTest {
         File license = new File(settingsSetup.tmp, 'LICENSE.txt')
         license << "Copyright..."
         //act
-        def result = GradleRunner.create()
+        def builder = GradleRunner.create()
+        if (gradleVersion != null) {
+            builder = builder.withGradleVersion(gradleVersion)
+        }
+        def result = builder
             .withProjectDir(settingsSetup.tmp)
             .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
+
+
         //assert
         assertSigning(result, gpgPassphrase, gpgKeyId, "${settingsSetup.tmpPath.toRealPath()}/$gpgKeyRing")
 
@@ -554,7 +581,7 @@ class PublishPluginIntTest {
             "</license>$NL_INDENT" +
             "</licenses"
         )
-        assertContainsRegex(pom, "developers", "<developers/>")
+        assertContainsNotRegex(pom, "developers", "<developers")
         assertContainsRegex(pom, "dependencies", "<dependencies>$NL_INDENT" +
             "<dependency>$NL_INDENT" +
             "<groupId>org.jetbrains.kotlin</groupId>$NL_INDENT" +
@@ -596,7 +623,23 @@ class PublishPluginIntTest {
         checkKotlinMultiplatform('mpp-enabled-non-granular', settingsSetup, false)
     }
 
-    static void checkKotlinMultiplatform(String projectName, SettingsExtensionObject settingsSetup, boolean enableGranularSourceSetsMetadata) {
+    @Test
+    void withKotlinMultiplatformApplied_Kotlin1_8(SettingsExtensionObject settingsSetup) throws IOException {
+        checkKotlinMultiplatform('mpp-kotlin-1.7.0', settingsSetup, false, "1.7.0")
+    }
+
+    @Test
+    void withKotlinMultiplatformApplied_gradle_6_x(SettingsExtensionObject settingsSetup) throws IOException {
+        checkKotlinMultiplatform('mpp-gradle-6.9.4', settingsSetup, false, KOTLIN_VERSION, "6.9.4")
+    }
+
+    static void checkKotlinMultiplatform(
+        String projectName,
+        SettingsExtensionObject settingsSetup,
+        boolean enableGranularSourceSetsMetadata,
+        String kotlinVersion = KOTLIN_VERSION,
+        String gradleVersion = null
+    ) {
 
         settingsSetup.settings << "rootProject.name='$projectName'"
         def groupId = 'com.example'
@@ -611,7 +654,7 @@ class PublishPluginIntTest {
         settingsSetup.buildGradle << """
         import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 
-        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+        ${settingsSetup.buildscriptWithKotlin(kotlinVersion)}
         buildscript {
             ext {
                 // required since we don't set the System.env variables.
@@ -639,7 +682,7 @@ class PublishPluginIntTest {
 
         kotlin {
            jvm { }
-           js { browser { } }
+           js(LEGACY) { browser { } }
            def hostOs = System.getProperty("os.name")
            def isMingwX64 = hostOs.startsWith("Windows")
            KotlinNativeTargetWithTests nativeTarget
@@ -687,7 +730,12 @@ class PublishPluginIntTest {
         }
 
         //act
-        def result = GradleRunner.create()
+
+        def builder = GradleRunner.create()
+        if (gradleVersion != null) {
+            builder = builder.withGradleVersion(gradleVersion)
+        }
+        def result = builder
             .withProjectDir(settingsSetup.tmp)
             .withArguments("publishAllPublicationsToMavenRepository", "printSigning")
             .build()
@@ -705,12 +753,12 @@ class PublishPluginIntTest {
         def rootReleasePath = getReleasePath(settingsSetup, projectName, groupId, version)
         def (_, rootPomName) = getPomInclFileNameAndAssertBasicPomProperties(rootReleasePath, projectName, groupId, version, githubUser)
         assertModuleExists(rootReleasePath, projectName, version)
-        assertJarsWithLicenseAndManifest(rootReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, rootPomName,
+        assertJarsWithLicenseAndManifest(rootReleasePath, projectName, version, repoUrl, null, kotlinVersion, rootPomName,
             ".jar",
             "-sources.jar",
         )
         if (enableGranularSourceSetsMetadata) {
-            assertJarsWithLicenseAndManifest(rootReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, rootPomName,
+            assertJarsWithLicenseAndManifest(rootReleasePath, projectName, version, repoUrl, null, kotlinVersion, rootPomName,
                 "-all.jar",
             )
         } else {
@@ -722,7 +770,7 @@ class PublishPluginIntTest {
         def (_2, jsPomName) = getPomInclFileNameAndAssertBasicPomProperties(jsReleasePath, projectName + "-js", groupId, version, githubUser, projectName)
         assertModuleExists(jsReleasePath, projectName + "-js", version)
         assertJarsWithLicenseAndManifest(
-            jsReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, jsPomName,
+            jsReleasePath, projectName, version, repoUrl, null, kotlinVersion, jsPomName,
             ".jar",
             "-sources.jar",
         )
@@ -731,7 +779,7 @@ class PublishPluginIntTest {
         def (_3, jvmPomName) = getPomInclFileNameAndAssertBasicPomProperties(jvmReleasePath, projectName + "-jvm", groupId, version, githubUser, projectName)
         assertModuleExists(jvmReleasePath, projectName + "-jvm", version)
         assertJarsWithLicenseAndManifest(
-            jvmReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, jvmPomName,
+            jvmReleasePath, projectName, version, repoUrl, null, kotlinVersion, jvmPomName,
             ".jar",
             "-sources.jar",
         )
@@ -745,7 +793,7 @@ class PublishPluginIntTest {
         def (_4, nativePomName) = getPomInclFileNameAndAssertBasicPomProperties(nativeReleasePath, projectName + "-native", groupId, version, githubUser, projectName)
         assertModuleExists(nativeReleasePath, projectName + "-native", version)
         assertJarsWithLicenseAndManifest(
-            nativeReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, nativePomName,
+            nativeReleasePath, projectName, version, repoUrl, null, kotlinVersion, nativePomName,
             "-sources.jar",
         )
         def klibName = "$projectName-native-${version}.klib"
@@ -942,7 +990,7 @@ class PublishPluginIntTest {
         def zipFile = new ZipFile(releasePath.resolve(jarName).toFile())
         zipFile.withCloseable {
             def manifest = zipFile.getInputStream(findInZipFile(zipFile, 'META-INF/MANIFEST.MF')).text
-            assertManifest(manifest, ': ', projectName, version, repoUrl, vendor, kotlinVersion)
+            assertManifest(manifest, ': ', projectName, jarName, version, repoUrl, vendor, kotlinVersion)
             assertTrue(manifest.contains("Build-Time: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "manifest build time was not ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}\n${manifest}")
             assertInZipFile(zipFile, 'LICENSE.txt')
         }
@@ -959,16 +1007,16 @@ class PublishPluginIntTest {
     }
 
 
-    private static void assertManifest(String output, String separator, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
-        assertTrue(output.contains("Implementation-Title$separator$projectName"), "contains: Implementation-Title$separator$projectName\nbut was:\n${output}")
-        assertTrue(output.contains("Implementation-Version$separator$version"), "contains: Implementation-Version$separator$version\nbut was:\n${output}")
-        assertTrue(output.contains("Implementation-URL$separator$repoUrl"), "contains: Implementatison-URL$separator$repoUrl\nbut was:\n${output}")
+    private static void assertManifest(String output, String separator, String projectName, String jarName, String version, String repoUrl, String vendor, String kotlinVersion) {
+        assertTrue(output.contains("Implementation-Title$separator$projectName"), "$jarName contains: Implementation-Title$separator$projectName\nbut was:\n${output}")
+        assertTrue(output.contains("Implementation-Version$separator$version"), "$jarName  contains: Implementation-Version$separator$version\nbut was:\n${output}")
+        assertTrue(output.contains("Implementation-URL$separator$repoUrl"), "$jarName contains: Implementatison-URL$separator$repoUrl\nbut was:\n${output}")
         if (vendor != null) {
-            assertTrue(output.contains("Implementation-Vendor$separator$vendor"), "contains: Implementation-Vendor$separator$vendor\nbut was:\n${output}")
+            assertTrue(output.contains("Implementation-Vendor$separator$vendor"), "$jarName contains: Implementation-Vendor$separator$vendor\nbut was:\n${output}")
         } else {
-            assertFalse(output.contains("Implementation-Vendor"), "should not contain Implementation-Vendor")
+            assertFalse(output.contains("Implementation-Vendor"), "$jarName: should not contain Implementation-Vendor")
         }
-        assertTrue(output.contains("Implementation-Kotlin-Version$separator$kotlinVersion"), "contains: Implementation-Kotlin-Version$separator$kotlinVersion\nbut was:\n${output}")
+        assertTrue(output.contains("Implementation-Kotlin-Version$separator$kotlinVersion"), "$jarName contains: Implementation-Kotlin-Version$separator$kotlinVersion\nbut was:\n${output}")
     }
 
     private static void assertModuleExists(Path releasePath, String projectName, String version) {

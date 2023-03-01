@@ -74,91 +74,48 @@ class PublishPluginValidationTest {
     }
 
     @Test
-    void evaluate_licenseWithoutShortName_throwsIllegalStateException() {
+    void evaluate_licensesEmpty_throwsIllegalStateException() {
         //arrange
         Project project = setUp()
+        getPluginExtension(project).licenses.set(Collections.emptyList())
         //act && assert
-        assertThrowsIllegalState("${PublishPlugin.EXTENSION_NAME}.license.shortName") {
-            getPluginExtension(project).license {
-                longName = "test"
-                url = "http"
-            }
-        }
+        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.licenses", project)
     }
 
     @Test
-    void evaluate_licenseLongNameEmpty_throwsIllegalStateException() {
-        //arrange
-        Project project = setUp()
-        //act && assert
-        assertThrowsIllegalState("${PublishPlugin.EXTENSION_NAME}.license.longName") {
-            getPluginExtension(project).license {
-                shortName = "test"
-                longName = ""
-                url = "http"
-            }
-        }
-    }
-
-    @Test
-    void evaluate_licenseWithoutUrl_throwsIllegalStateException() {
-        //arrange
-        Project project = setUp()
-        //act && assert
-        assertThrowsIllegalState("${PublishPlugin.EXTENSION_NAME}.license.url") {
-            getPluginExtension(project).license {
-                shortName = "test"
-                longName = "Test License"
-            }
-        }
-    }
-
-    @Test
-    void evaluate_licenseDistributionSetToNull_throwsIllegalStateException() {
-        //arrange
-        Project project = setUp()
-        //act && assert
-        assertThrowsIllegalState("${PublishPlugin.EXTENSION_NAME}.license.distribution") {
-            getPluginExtension(project).license {
-                shortName = "test"
-                longName = "Test License"
-                url = "http"
-                distribution = null
-            }
-        }
-    }
-
-    @Test
-    void evaluate_envNameGpgPassphrase_throwsIllegalStateException() {
+    void evaluate_setEnvNameGpgPassphraseToNull_usesConvention() {
         //arrange
         Project project = setUp()
         getPluginExtension(project).envNameGpgPassphrase.set(null)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameGpgPassphrase", project)
+        //act
+        project.evaluate()
+        //assert
+        assertEquals("GPG_PASSPHRASE", getPluginExtension(project).envNameGpgPassphrase.get())
     }
+
     @Test
-    void evaluate_envNameGpgKeyId_throwsIllegalStateException() {
-        //arrange
+    void evaluate_setEnvNameGpgKeyIdToNull_usesConvention() {
         Project project = setUp()
         getPluginExtension(project).envNameGpgKeyId.set(null)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameGpgKeyId", project)
+
+        project.evaluate()
+        assertEquals("GPG_KEY_ID", getPluginExtension(project).envNameGpgKeyId.get())
     }
     @Test
-    void evaluate_envNameGpgSecretKeyRingFile_throwsIllegalStateException() {
-        //arrange
+    void evaluate_setEnvNameGpgSecretKeyRingFileToNull_usesConvention() {
         Project project = setUp()
         getPluginExtension(project).envNameGpgKeyRing.set(null)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameGpgSecretKeyRingFile", project)
+
+        project.evaluate()
+        assertEquals("GPG_KEY_RING", getPluginExtension(project).envNameGpgKeyRing.get())
     }
     @Test
-    void evaluate_envNameGpgSigningKey_throwsIllegalStateException() {
-        //arrange
+    void evaluate_setEnvNameGpgSigningKeyToNull_usesConvention() {
         Project project = setUp()
         getPluginExtension(project).envNameGpgSigningKey.set(null)
-        //act && assert
-        assertThrowsProjectConfigWithCauseIllegalStateNotDefined("${PublishPlugin.EXTENSION_NAME}.envNameGpgSigningKey", project)
+
+        project.evaluate()
+        assertEquals("GPG_SIGNING_KEY", getPluginExtension(project).envNameGpgSigningKey.get())
     }
 
     @Test
