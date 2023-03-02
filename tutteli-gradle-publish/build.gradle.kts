@@ -1,3 +1,6 @@
+plugins {
+    `kotlin-dsl`
+}
 val pluginId by extra("ch.tutteli.gradle.plugins.publish")
 val pluginClass by extra("ch.tutteli.gradle.plugins.publish.PublishPlugin")
 val pluginName by extra("Tutteli Publish Plugin")
@@ -8,10 +11,11 @@ repositories {
     gradlePluginPortal()
 }
 
-val mavenModelVersion : String by rootProject.extra
-val kotlinVersion : String by rootProject.extra
+val mavenModelVersion: String by rootProject.extra
+val kotlinVersion: String by rootProject.extra
 
 dependencies {
     implementation("org.apache.maven:maven-model:$mavenModelVersion")
+    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 }

@@ -20,6 +20,6 @@ open class DokkaPluginExtension(project: Project) {
     }
 
     private fun isTutteliProject(project: Project): Boolean {
-        return (project.group as? String)?.startsWith("ch.tutteli") ?: false
+        return (project.group as? CharSequence)?.startsWith("ch.tutteli") ?: false
     }
 }

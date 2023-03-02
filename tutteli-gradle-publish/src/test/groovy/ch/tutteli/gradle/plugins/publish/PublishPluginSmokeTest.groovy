@@ -1,27 +1,19 @@
 package ch.tutteli.gradle.plugins.publish
 
 import org.apache.maven.model.Developer
-import org.apache.maven.model.Model
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer
-import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.UncheckedIOException
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.internal.publication.MavenPomInternal
-import org.gradle.api.publish.maven.internal.tasks.MavenPomFileGenerator
-import org.gradle.internal.xml.XmlTransformer
 import org.junit.jupiter.api.Test
 
 import static ch.tutteli.gradle.plugins.publish.SetUp.*
-import static ch.tutteli.gradle.plugins.test.Asserts.NL_INDENT
-import static ch.tutteli.gradle.plugins.test.Asserts.assertContainsRegex
-import static org.junit.jupiter.api.Assertions.*
+import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertNull
 
 class PublishPluginSmokeTest {
 
     @Test
     void smokeTest_TasksAndExtensionPresent() {
-        //arrange & act
         Project project = setUp()
         //assert
         assertExtensionAndTaskDefined(project)
@@ -126,10 +118,11 @@ class PublishPluginSmokeTest {
         //assert
         assertExtensionAndTaskDefined(project)
         assertNull(project.tasks.findByName(PublishPlugin.TASK_GENERATE_POM), "task ${PublishPlugin.TASK_GENERATE_POM} exists even though we use the new MPP plugin")
+
     }
 
     @Test
-    void resetLicensesToEupl_LicenseEtcSetButNoDevelopers() {
+    void resetLicensesToEupl_LicenseEtcSetButNoDevelopersButTutteliProject_DeveloperSet() {
         //arrange
         def distribution = 'someDistro'
         Project project = setUp()
@@ -140,29 +133,12 @@ class PublishPluginSmokeTest {
         project.publishing.publications.withType(MavenPublication) {
             MavenPublication pub = it
             assertGroupIdArtifactIdAndVersion(pub)
-            def pom = getPomAsString(pub)
-            assertContainsRegex(pom, "description", "<description>$DESCRIPTION</description>")
-            def domainAndPath = "github.com/$GITHUB_USER/$ARTIFACT_ID"
-            assertContainsRegex(pom, "url", "\n    <url>https://$domainAndPath</url>")
-            assertContainsRegex(pom, "license", "<licenses>$NL_INDENT<license>$NL_INDENT" +
-                "<name>${StandardLicenses.EUPL_1_2.longName}</name>$NL_INDENT" +
-                "<url>${StandardLicenses.EUPL_1_2.url}</url>$NL_INDENT" +
-                "<distribution>$distribution</distribution>$NL_INDENT" +
-                "</license>$NL_INDENT</licenses>"
-            )
-            assertContainsRegex(pom, "developers", "<developers>$NL_INDENT" +
-                "<developer>$NL_INDENT" +
-                "<id>robstoll</id>$NL_INDENT" +
-                "<name>Robert Stoll</name>$NL_INDENT" +
-                "<email>rstoll@tutteli.ch</email>$NL_INDENT" +
-                "<url>https://tutteli.ch</url>$NL_INDENT" +
-                "</developer>$NL_INDENT" +
-                "</developers>")
-            assertContainsRegex(pom, "scm", "<scm>$NL_INDENT" +
-                "<connection>scm:git:git://${domainAndPath}.git</connection>$NL_INDENT" +
-                "<developerConnection>scm:git:ssh://${domainAndPath}.git</developerConnection>$NL_INDENT" +
-                "<url>https://$domainAndPath</url>$NL_INDENT" +
-                "</scm>")
+            assertPom(pub, StandardLicenses.EUPL_1_2, distribution)
+            def pom = pub.pom as MavenPomInternal
+
+            def developer = pom.developers.get(0)
+            assertEquals("Robert Stoll", developer.name.get(), "dev name")
+            assertEquals("rstoll@tutteli.ch", developer.email.get(), "dev email")
         }
     }
 
@@ -179,25 +155,28 @@ class PublishPluginSmokeTest {
         project.publishing.publications.withType(MavenPublication) {
             MavenPublication pub = it
             assertGroupIdArtifactIdAndVersion(pub)
-            def pom = getPomAsString(pub)
-            assertContainsRegex(pom, "description", "<description>$DESCRIPTION</description>")
-            def domainAndPath = "github.com/$GITHUB_USER/$ARTIFACT_ID"
-            assertContainsRegex(pom, "url", "\n    <url>https://$domainAndPath</url>")
-            assertContainsRegex(pom, "license", "<licenses>$NL_INDENT<license>$NL_INDENT" +
-                "<name>${StandardLicenses.APACHE_2_0.longName}</name>$NL_INDENT" +
-                "<url>${StandardLicenses.APACHE_2_0.url}</url>$NL_INDENT" +
-                "<distribution>repo</distribution>$NL_INDENT" +
-                "</license>$NL_INDENT</licenses>"
-            )
-            assertContainsRegex(pom, "developers", "<developers>$NL_INDENT<developer>$NL_INDENT" +
-                "<id>$GITHUB_USER</id>$NL_INDENT" +
-                "</developer>$NL_INDENT</developers>")
-            assertContainsRegex(pom, "scm", "<scm>$NL_INDENT" +
-                "<connection>scm:git:git://${domainAndPath}.git</connection>$NL_INDENT" +
-                "<developerConnection>scm:git:ssh://${domainAndPath}.git</developerConnection>$NL_INDENT" +
-                "<url>https://$domainAndPath</url>$NL_INDENT" +
-                "</scm>")
+            assertPom(pub, StandardLicenses.APACHE_2_0, "repo")
         }
+    }
+
+    private void assertPom(MavenPublication pub, StandardLicenses standardLicense, String expectedDistribution) {
+        def pom = pub.pom as MavenPomInternal
+        assertEquals(pom.description.get(), DESCRIPTION, "description differs")
+        def domainAndPath = "github.com/$GITHUB_USER/$ARTIFACT_ID"
+        assertEquals(pom.url.get(), "https://$domainAndPath".toString(), "url differs")
+        assertEquals(pom.licenses.size(), 1, "one license")
+        def license = pom.licenses.get(0)
+
+
+        assertEquals(standardLicense.longName, license.name.get(), "longname")
+        assertEquals(standardLicense.url.toString(), license.url.get(), "url")
+        assertEquals(expectedDistribution, license.distribution.get(), "distribution")
+        assertEquals(pom.developers.size(), 1, "one developer")
+        def developer = pom.developers.get(0)
+        assertEquals(GITHUB_USER, developer.id.get(), "dev id")
+        assertEquals("scm:git:git://${domainAndPath}.git".toString(), pom.scm.connection.get(), "scm connection")
+        assertEquals("scm:git:ssh://${domainAndPath}.git".toString(), pom.scm.developerConnection.get(), "scm developerConnection")
+        assertEquals("https://$domainAndPath".toString(), pom.scm.url.get(), "scm url")
     }
 
     private static void assertExtensionAndTaskDefined(Project project) {
@@ -208,23 +187,6 @@ class PublishPluginSmokeTest {
 
     private static PublishPluginExtension getPluginExtension(Project project) {
         return project.extensions.getByType(PublishPluginExtension)
-    }
-
-    private static String getPomAsString(MavenPublication pub) {
-        XmlTransformer transformer = new XmlTransformer()
-        transformer.addAction((pub.pom as MavenPomInternal).xmlAction)
-        StringWriter stringWriter = new StringWriter()
-        transformer.transform(stringWriter, MavenPomFileGenerator.POM_FILE_ENCODING, new Action<Writer>() {
-            void execute(Writer writer) {
-                try {
-                    Model model = new Model()
-                    new MavenXpp3Writer().write(writer, model)
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e)
-                }
-            }
-        })
-        return stringWriter.toString()
     }
 
     private static void assertGroupIdArtifactIdAndVersion(MavenPublication pub) {

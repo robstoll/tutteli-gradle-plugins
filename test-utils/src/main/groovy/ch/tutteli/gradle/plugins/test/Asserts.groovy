@@ -60,7 +60,10 @@ class Asserts {
 
     static void assertContainsRegex(String content, String what, String regex) {
         def matcher = content =~ regex
-        assertTrue(matcher.find(), what + " should be in content\n" + content)
+        assertTrue(
+            matcher.find(),
+            what + " should be in content\nRegex: ${regex.replace("\r", "\\r").replace("\n", "\\n")}\n" + content
+        )
     }
 
     static void assertContainsNotRegex(String content, String what, String regex) {
