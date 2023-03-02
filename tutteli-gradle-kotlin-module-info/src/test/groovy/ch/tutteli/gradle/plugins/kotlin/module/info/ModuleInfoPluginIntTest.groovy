@@ -101,6 +101,20 @@ class ModuleInfoPluginIntTest {
                 "Content of module-info.java:\n" +
                 "${moduleInfoContent}"
             )
+            def kotlinSrcDir = settingsSetup.tmpPath.resolve("src/main/kotlin")
+            if (!Files.exists(kotlinSrcDir)) {
+                kotlinSrcDir = settingsSetup.tmpPath.resolve("sub1/src/main/kotlin")
+            }
+            String testKtContent = null
+            if (Files.exists(kotlinSrcDir)) {
+                def moduleInfo = kotlinSrcDir.resolve("test.kt")
+                testKtContent = moduleInfo.text
+            }
+            println("\n" +
+                "===================================================\n" +
+                "Content of src/main/kotlin/test.kt:\n" +
+                "${testKtContent}"
+            )
             throw exception
         }
     }
