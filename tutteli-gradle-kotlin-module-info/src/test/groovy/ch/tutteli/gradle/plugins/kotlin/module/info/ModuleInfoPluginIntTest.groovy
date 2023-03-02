@@ -25,12 +25,12 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoFails_JvmPlugin(SettingsExtensionObject settingsSetup) {
-        setupPluginAndCheckFails(settingsSetup, "org.jetbrains.kotlin.jvm")
+        setupPluginAndCheckFails("kotlin-jvm-fails", settingsSetup, "org.jetbrains.kotlin.jvm")
     }
 
     @Test
     void moduleInfoFails_MultiplatformPlugin(SettingsExtensionObject settingsSetup) {
-        setupPluginAndCheckFails(settingsSetup, MULTIPLATFORM_PLUGIN, """
+        setupPluginAndCheckFails("kotlin-mpp-fails", settingsSetup, MULTIPLATFORM_PLUGIN, """
             kotlin {
                 jvm {
                     withJava()
@@ -39,11 +39,11 @@ class ModuleInfoPluginIntTest {
             """)
     }
 
-    private static void setupPluginAndCheckFails(SettingsExtensionObject settingsSetup, String kotlinPlugin, String additions = "") {
+    private static void setupPluginAndCheckFails(String projectName, SettingsExtensionObject settingsSetup, String kotlinPlugin, String additions = "") {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfo(settingsSetup, "requires kotlin.stdlib;", kotlinPlugin, additions)
+        setupModuleInfo(projectName, settingsSetup, "requires kotlin.stdlib;", kotlinPlugin, additions)
         //act
         checkFails(settingsSetup, kotlinPlugin, "")
     }
@@ -124,7 +124,7 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfo(settingsSetup, "requires kotlin.stdlib;", MULTIPLATFORM_PLUGIN, "")
+        setupModuleInfo("mpp-missing-kotlin", settingsSetup, "requires kotlin.stdlib;", MULTIPLATFORM_PLUGIN, "")
         //act
         def exception = assertThrows(UnexpectedBuildFailure) {
             runGradleModuleBuild(settingsSetup, null, "jar")
@@ -134,12 +134,12 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoSucceeds_KotlinPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, null, "org.jetbrains.kotlin.jvm")
+        checkSucceeds("kotlin-jvm-success", settingsSetup, null, "org.jetbrains.kotlin.jvm")
     }
 
     @Test
     void moduleInfoSucceeds_MultiplatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, null, MULTIPLATFORM_PLUGIN,
+        checkSucceeds("kotlin-mpp-success", settingsSetup, null, MULTIPLATFORM_PLUGIN,
             """
             kotlin {
                 jvm {
@@ -152,7 +152,7 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoSucceeds_MultiplatformPlugin_Gradle6_9_3(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, "6.9.3", MULTIPLATFORM_PLUGIN,
+        checkSucceeds("mpp-6.9.3-success", settingsSetup, "6.9.3", MULTIPLATFORM_PLUGIN,
             """
             kotlin {
                 jvm {
@@ -163,11 +163,11 @@ class ModuleInfoPluginIntTest {
         )
     }
 
-    private static void checkSucceeds(SettingsExtensionObject settingsSetup, String gradleVersion, String kotlinPlugin, String additions = "") {
+    private static void checkSucceeds(String projectName, SettingsExtensionObject settingsSetup, String gradleVersion, String kotlinPlugin, String additions = "") {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfo(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;", kotlinPlugin, additions)
+        setupModuleInfo(projectName, settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;", kotlinPlugin, additions)
         //act
         try {
             def result = runGradleModuleBuild(settingsSetup, gradleVersion, "build")
@@ -185,7 +185,7 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib;")
+        setupModuleInfoInSubproject("sub-jvm-fails", settingsSetup, "requires kotlin.stdlib;")
         //act
         checkFails(settingsSetup, "kotlin-platform-jvm", ":sub1")
     }
@@ -195,10 +195,28 @@ class ModuleInfoPluginIntTest {
         //not for jdk8
         assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfoInSubproject(settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
+        setupModuleInfoInSubproject("sub-jvm-success", settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
         try {
             //act
             def result = runGradleModuleBuild(settingsSetup, null, "sub1:jar")
+            //assert
+            Asserts.assertTaskRunSuccessfully(result, ":sub1:compileJava")
+            assertFalse(result.output.contains("Execution optimizations have been disabled"), "Execution optimizations have been disabled! maybe due to module-info?\n$result.output")
+        } catch (UnexpectedBuildFailure ex) {
+            checkDoesNotFailDueToUnnamedModuleBug(settingsSetup, ex)
+            throw ex
+        }
+    }
+
+    @Test
+    void moduleInfoInSubproject_gradle6x_Succeeds(SettingsExtensionObject settingsSetup) {
+        //not for jdk8
+        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
+        //arrange
+        setupModuleInfoInSubproject("sub-jvm-6.9.3-success", settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
+        try {
+            //act
+            def result = runGradleModuleBuild(settingsSetup, "6.9.3", "sub1:jar")
             //assert
             Asserts.assertTaskRunSuccessfully(result, ":sub1:compileJava")
             assertFalse(result.output.contains("Execution optimizations have been disabled"), "Execution optimizations have been disabled! maybe due to module-info?\n$result.output")
@@ -220,8 +238,14 @@ class ModuleInfoPluginIntTest {
         }"""
     }
 
-    static def setupModuleInfo(SettingsExtensionObject settingsSetup, String moduleInfoContent, String kotlinPlugin, String additions) throws IOException {
-        settingsSetup.settings << "rootProject.name='test-project'"
+    static def setupModuleInfo(
+        String projectName,
+        SettingsExtensionObject settingsSetup,
+        String moduleInfoContent,
+        String kotlinPlugin,
+        String additions
+    ) throws IOException {
+        settingsSetup.settings << "rootProject.name='$projectName'"
 
         def module = new File(settingsSetup.tmp, kotlinPlugin == MULTIPLATFORM_PLUGIN ? "src/jvmMain/java" : "src/main/java")
         module.mkdirs()
@@ -267,9 +291,9 @@ class ModuleInfoPluginIntTest {
             .build()
     }
 
-    static def setupModuleInfoInSubproject(SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
+    static def setupModuleInfoInSubproject(String projectName, SettingsExtensionObject settingsSetup, String moduleInfoContent) throws IOException {
         settingsSetup.settings << """
-        rootProject.name='test-project'
+        rootProject.name='$projectName'
         include 'sub1'
         """
         def module = new File(settingsSetup.tmp, 'sub1/src/main/java/')
