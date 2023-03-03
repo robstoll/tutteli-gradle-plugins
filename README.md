@@ -1,8 +1,8 @@
 [![Gradle Plugin Portal](https://img.shields.io/badge/gradle%20plugin-v4.5.1-blue.svg)](https://plugins.gradle.org/u/robstoll)
 [![Apache license](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](http://opensource.org/licenses/Apache2.0)
-[![Build Status Ubuntu](https://github.com/robstoll/tutteli-gradle-plugins/workflows/Ubuntu/badge.svg?event=push)](https://github.com/robstoll/tutteli-gradle-plugins/actions?query=workflow%3AUbuntu+branch%3Amaster)
-[![Build Status Windows](https://github.com/robstoll/tutteli-gradle-plugins/workflows/Windows/badge.svg?event=push)](https://github.com/robstoll/tutteli-gradle-plugins/actions?query=workflow%3AWindows+branch%3Amaster)
-[![Coverage](https://codecov.io/gh/robstoll/tutteli-gradle-plugins/branch/master/graph/badge.svg)](https://codecov.io/github/robstoll/tutteli-gradle-plugins/branch/master)
+[![Build Status Ubuntu](https://github.com/robstoll/tutteli-gradle-plugins/workflows/Ubuntu/badge.svg?event=push)](https://github.com/robstoll/tutteli-gradle-plugins/actions?query=workflow%3AUbuntu+branch%3Amain)
+[![Build Status Windows](https://github.com/robstoll/tutteli-gradle-plugins/workflows/Windows/badge.svg?event=push)](https://github.com/robstoll/tutteli-gradle-plugins/actions?query=workflow%3AWindows+branch%3Amain)
+[![Coverage](https://codecov.io/gh/robstoll/tutteli-gradle-plugins/branch/main/graph/badge.svg)](https://codecov.io/github/robstoll/tutteli-gradle-plugins/branch/main)
 
 # Tutteli gradle plugin
 A set of gradle plugins which provide utility tasks and functions which I often use in my projects.
@@ -67,14 +67,14 @@ Following a list of functions it supports:
 
 Moreover, it turns warnings into errors if one of the env variables `CI` or `WARN_AS_ERROR` is set to `true`.
 
-You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
+You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/main/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
 
 # ch.tutteli.gradle.plugins.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.publish/4.5.1)
 
 Applies the `maven-publish` and `signing` plugin and 
 configures them based on given license(s), a github user and a few other information.
 It exposes the `tutteliPublish` extension which lets you specify those information and refine default conventions.
-Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/master/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
+Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/main/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
 for more information.
 
 If not set, it automatically propagates `version` and `group` from `rootProject` to subprojects 
