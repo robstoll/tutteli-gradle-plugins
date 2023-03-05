@@ -299,7 +299,7 @@ class ModuleInfoPluginIntTest {
         def module = new File(settingsSetup.tmp, 'sub1/src/main/java/')
         module.mkdirs()
         def moduleInfo = new File(module, 'module-info.java')
-        moduleInfo << "module ch.tutteli.test { $moduleInfoContent }"
+        moduleInfo << "module ch.tutteli.${UUID.randomUUID().toString().replace('-', '_')} { $moduleInfoContent }"
         def kotlin = new File(settingsSetup.tmp, 'sub1/src/main/kotlin')
         kotlin.mkdirs()
         def test = new File(kotlin, 'test.kt')
