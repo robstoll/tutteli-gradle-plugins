@@ -63,7 +63,7 @@ class ModuleInfoPluginIntTest {
     }
 
     private static void checkDoesNotFailDueToUnnamedModuleBug(SettingsExtensionObject settingsSetup, UnexpectedBuildFailure exception) {
-        if (exception.message.contains("Symbol is declared in unnamed module")) {
+        if (exception.message.contains("Symbol is declared in unnamed module") || exception.message.contains("The Kotlin standard library is not found in the module graph")) {
             def javaSrcDir = settingsSetup.tmpPath.resolve("src/main/java")
             if (!Files.exists(javaSrcDir)) {
                 javaSrcDir = settingsSetup.tmpPath.resolve("sub1/src/main/java")
@@ -299,7 +299,7 @@ class ModuleInfoPluginIntTest {
         def module = new File(settingsSetup.tmp, 'sub1/src/main/java/')
         module.mkdirs()
         def moduleInfo = new File(module, 'module-info.java')
-        moduleInfo << "module ch.tutteli.${(projectName+"_"+UUID.randomUUID().toString()).replace('-', '_')} { $moduleInfoContent }"
+        moduleInfo << "module ch.tutteli.${(projectName.replace(".", "_") + "_" + UUID.randomUUID().toString()).replace('-', '_')} { $moduleInfoContent }"
         def kotlin = new File(settingsSetup.tmp, 'sub1/src/main/kotlin')
         kotlin.mkdirs()
         def test = new File(kotlin, 'test.kt')
