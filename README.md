@@ -88,7 +88,7 @@ Regardless if there was one or several existing MavenPublications or one was cre
 All Jar Tasks are modified in a way that they include the LICENSE(.txt) file located in the root of the rootProject
 and augments the manifest file with information such as Build-Time, Kotlin-version used etc.
 
-Last but not least, it augments the pom-file with license, developer and scm information (can be configured via tge `tutteliPublish` extension)
+Last but not least, it augments the pom-file with license, developer and scm information (can be configured via the `tutteliPublish` extension)
 
 The conventions:
 - Apache 2.0 is used as default license
