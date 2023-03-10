@@ -625,7 +625,7 @@ class PublishPluginIntTest {
 
     @Test
     void withKotlinMultiplatformApplied_Kotlin1_8(SettingsExtensionObject settingsSetup) throws IOException {
-        checkKotlinMultiplatform('mpp-kotlin-1.7.0', settingsSetup, false, "1.7.0")
+        checkKotlinMultiplatform('mpp-kotlin-1.8.0', settingsSetup, false, "1.8.0")
     }
 
     @Test
