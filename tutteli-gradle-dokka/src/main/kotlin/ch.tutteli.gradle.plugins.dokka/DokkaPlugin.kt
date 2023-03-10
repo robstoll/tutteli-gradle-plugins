@@ -5,8 +5,9 @@ import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.dokka.gradle.DokkaPlugin as JetbrainsDokkaPlugin
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.gradle.kotlin.dsl.*
+import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
+import java.io.File
 import java.net.URL
 
 open class DokkaPlugin : Plugin<Project> {
@@ -18,38 +19,36 @@ open class DokkaPlugin : Plugin<Project> {
         val extension = project.extensions.create<DokkaPluginExtension>(EXTENSION_NAME, project)
         val rootProject = project.rootProject;
 
-        val docsDir = extension.modeSimple.map { useSimpleDocs ->
-            if (useSimpleDocs) {
+        val docsDir = extension.modeSimple.map { usesSimpleDocs ->
+            if (usesSimpleDocs) {
                 rootProject.projectDir.resolve("docs/kdoc")
             } else {
                 rootProject.projectDir.resolve("../${rootProject.name}-gh-pages/${rootProject.version}/kdoc")
             }
         }
 
-        val dokkaTask = project.tasks.register(TASK_NAME_DOKKA) {
-            dependsOn(project.tasks.named("dokkaHtml"))
-        }
         project.tasks.register<Jar>(TASK_NAME_JAVADOC) {
             archiveClassifier.set("javadoc")
-            dependsOn(dokkaTask)
+            dependsOn(project.tasks.named("dokkaHtml"))
             doFirst {
                 from(docsDir)
             }
         }
 
-        project.tasks.withType<DokkaTask>().configureEach {
+        // we want to configure DokkaTask as well as DokkaPartialTask
+        project.tasks.withType<AbstractDokkaLeafTask>().configureEach {
             // custom output directory
             outputDirectory.set(docsDir)
 
             dokkaSourceSets.configureEach {
                 val src = "src/${name}/kotlin"
                 val srcDir = project.file(src)
-                // might be we deal with a multi-platform project where the corresponding target has no sources and hence
-                // the directory is missing
+                // might be we deal with a multi-platform project where the corresponding target has no sources and
+                // hence the directory is missing
                 if (srcDir.exists()) {
                     sourceLink {
-                        localDirectory.set(project.file(srcDir))
-                        remoteUrl.set(getUrl(project.rootProject, extension, src))
+                        localDirectory.set(srcDir)
+                        remoteUrl.set(getUrl(project.rootProject, extension, srcDir))
                         remoteLineSuffix.set("#L")
                     }
                 }
@@ -57,8 +56,8 @@ open class DokkaPlugin : Plugin<Project> {
                 if (isReleaseVersion(rootProject)) {
                     externalDocumentationLink {
                         url.set(extension.githubUser.flatMap { githubUser ->
-                            extension.modeSimple.map { useSimpleDocs ->
-                                if (useSimpleDocs) {
+                            extension.modeSimple.map { usesSimpleDocs ->
+                                if (usesSimpleDocs) {
                                     URL("https://$githubUser.github.io/${rootProject.name}/kdoc/${rootProject.name}/")
                                 } else {
                                     URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/doc/${rootProject.name}/")
@@ -83,7 +82,7 @@ open class DokkaPlugin : Plugin<Project> {
     }
 
 
-    private fun getUrl(rootProject: Project, extension: DokkaPluginExtension, src: String): Provider<URL> {
+    private fun getUrl(rootProject: Project, extension: DokkaPluginExtension, srcDir: File): Provider<URL> {
         return extension.repoUrl.map { urlWithPossibleSlash ->
             val urlWithSlash = if (urlWithPossibleSlash.endsWith("/")) {
                 urlWithPossibleSlash
@@ -95,19 +94,19 @@ open class DokkaPlugin : Plugin<Project> {
             } else {
                 "v${rootProject.version}"
             }
-            URL("${urlWithSlash}tree/$gitRef/$src")
+            URL("${urlWithSlash}tree/$gitRef/${srcDir.relativeTo(rootProject.projectDir).toString().replace('\\', '/')}")
         }
     }
 
     private fun hasSnapshotVersion(rootProject: Project) =
-        (rootProject.version as String).endsWith("-SNAPSHOT")
+        (rootProject.version as? CharSequence)?.endsWith("-SNAPSHOT") ?: false
 
     private fun isReleaseVersion(rootProject: Project): Boolean =
-        (rootProject.version as String).matches(Regex("^[0-9]+\\.[0-9]+\\.[0-9]+"))
+        (rootProject.version as? CharSequence)?.matches(Regex("^[0-9]+\\.[0-9]+\\.[0-9]+"))
+            ?: throw IllegalStateException("please define your version as CharSequence (e.g. String), was ${rootProject.version::class} (${rootProject.version}")
 
     companion object {
         const val EXTENSION_NAME = "tutteliDokka"
-        const val TASK_NAME_DOKKA = "dokka"
         const val TASK_NAME_JAVADOC = "javadocJar"
     }
 }

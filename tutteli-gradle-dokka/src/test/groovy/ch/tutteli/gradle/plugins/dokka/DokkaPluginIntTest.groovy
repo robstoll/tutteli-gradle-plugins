@@ -14,7 +14,7 @@ class DokkaPluginIntTest {
     def static final KOTLIN_VERSION = '1.5.30'
 
     @Test
-    void smokeTestUsesSimple_repoUrl(SettingsExtensionObject settingsSetup) throws IOException {
+    void smokeTest_usesSimple_noVersionDefined_NoExtLink(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << "rootProject.name='test-project'"
         def url = 'https://github.com/robstoll/tutteli-gradle-plugins'
@@ -40,11 +40,120 @@ class DokkaPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("dokka")
+            .withArguments("dokkaHtml")
             .build()
         //assert
-        assertTrue(result.output.contains("main: was here url: $url/tree/main/src/main/kotlin"), "url should be in output:\n" + result.output)
-        assertTrue(result.output.contains("test: was here url: $url/tree/main/src/test/kotlin"), "url should be in output:\n" + result.output)
+
+        def expectedMainUrl = "$url/tree/main/src/main/kotlin"
+        assertTrue(result.output.contains("main: was here url: $expectedMainUrl"), "url ($expectedMainUrl) be in output:\n" + result.output)
+
+        def expectedTestUrl = "$url/tree/main/src/test/kotlin"
+        assertTrue(result.output.contains("test: was here url: $expectedTestUrl"), "url ($expectedTestUrl should be in output:\n" + result.output)
+        assertFalse(result.output.contains("was here extLink"), "should not contain extLink in output:\n" + result.output)
+    }
+
+    @Test
+    void smokeTest_usesSimple_notInRoot_repoUrlIsRelative(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << """
+            rootProject.name='test-project'
+            include 'sub'
+            project(':sub').projectDir = file("\${rootProject.projectDir}/subDir")
+        """
+        def url = 'https://github.com/robstoll/tutteli-gradle-plugins'
+
+        settingsSetup.buildGradle << """
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+
+        repositories {
+            mavenCentral()
+        }
+
+        configure(project(':sub')) { project ->
+            repositories {
+                mavenCentral()
+            }
+            apply plugin: 'org.jetbrains.kotlin.jvm'
+            apply plugin: 'ch.tutteli.gradle.plugins.dokka'
+
+            tutteliDokka {
+                repoUrl = '$url'
+            }
+
+            ${printInfo()}
+        }
+        """
+        new File(settingsSetup.tmp, "subDir/src/main/kotlin").mkdirs()
+        new File(settingsSetup.tmp, "subDir/src/test/kotlin").mkdirs()
+
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("dokkaHtml")
+            .build()
+        //assert
+        def expectedMainUrl = "$url/tree/main/subDir/src/main/kotlin"
+        assertTrue(result.output.contains("main: was here url: $expectedMainUrl"), "url ($expectedMainUrl) be in output:\n" + result.output)
+
+        def expectedTestUrl = "$url/tree/main/subDir/src/test/kotlin"
+        assertTrue(result.output.contains("test: was here url: $expectedTestUrl"), "url ($expectedTestUrl should be in output:\n" + result.output)
+        assertFalse(result.output.contains("was here extLink"), "should not contain extLink in output:\n" + result.output)
+    }
+
+    @Test
+    void smokeTest_multiModule_dokkaHtmlMultiModule_repoUrlIsRelative(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << """
+            rootProject.name='test-project'
+            include 'sub'
+            project(':sub').projectDir = file("\${rootProject.projectDir}/subDir")
+        """
+        def url = 'https://github.com/robstoll/tutteli-gradle-plugins'
+
+        settingsSetup.buildGradle << """
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+
+        repositories {
+            mavenCentral()
+        }
+        apply plugin: 'ch.tutteli.gradle.plugins.dokka'
+        tutteliDokka {
+            repoUrl = '$url'
+        }
+
+
+        subprojects { project ->
+            repositories {
+                mavenCentral()
+            }
+            apply plugin: 'org.jetbrains.kotlin.jvm'
+            apply plugin: 'ch.tutteli.gradle.plugins.dokka'
+        }
+        allprojects {
+            ${printInfo()}
+        }
+        """
+        new File(settingsSetup.tmp, "subDir/src/main/kotlin").mkdirs()
+        new File(settingsSetup.tmp, "subDir/src/test/kotlin").mkdirs()
+
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("dokkaHtmlMultiModule", "--stacktrace")
+            .build()
+        //assert
+        def expectedRootMainUrl = "$url/tree/main/subDir/src/main/kotlin"
+        assertFalse(result.output.contains("test-project main: was here url: $expectedRootMainUrl"), "test-project main url ($expectedRootMainUrl) shoule not be in output:\n" + result.output)
+
+        def expectedRootTestUrl = "$url/tree/main/subDir/src/test/kotlin"
+        assertFalse(result.output.contains("test-project test: was here url: $expectedRootTestUrl"), "test-project test url ($expectedRootTestUrl should not be in output:\n" + result.output)
+
+        def expectedSubMainUrl = "$url/tree/main/subDir/src/main/kotlin"
+        assertTrue(result.output.contains("sub main: was here url: $expectedSubMainUrl"), "sub main url ($expectedSubMainUrl) be in output:\n" + result.output)
+
+        def expectedSubTestUrl = "$url/tree/main/subDir/src/test/kotlin"
+        assertTrue(result.output.contains("sub test: was here url: $expectedSubTestUrl"), "sub test url ($expectedSubTestUrl should be in output:\n" + result.output)
+
         assertFalse(result.output.contains("was here extLink"), "should not contain extLink in output:\n" + result.output)
     }
 
@@ -75,7 +184,7 @@ class DokkaPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("dokka")
+            .withArguments("dokkaHtml")
             .build()
         //assert
         assertTrue(result.output.contains("main: was here url: https://github.com/$githubUser/test-project/tree/main/src/main/kotlin"), "url should be in output:\n" + result.output)
@@ -106,7 +215,7 @@ class DokkaPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("dokka")
+            .withArguments("dokkaHtml")
             .build()
         //assert
         assertTrue(result.output.contains("main: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/main/kotlin"), "url should be in output:\n" + result.output)
@@ -142,7 +251,7 @@ class DokkaPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("dokka")
+            .withArguments("dokkaHtml")
             .build()
         //assert
         assertTrue(result.output.contains("main: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/main/kotlin"), "url should be in output:\n" + result.output)
@@ -209,7 +318,7 @@ class DokkaPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("dokka")
+            .withArguments("dokkaHtml")
             .build()
         //assert
         assertTrue(result.output.contains("commonMain: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/commonMain/kotlin"), "commonMain url should be in output:\n" + result.output)
@@ -292,7 +401,7 @@ class DokkaPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("dokka")
+            .withArguments("dokkaHtml")
             .build()
         //assert
         assertTrue(result.output.contains("commonMain: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/commonMain/kotlin"), "commonMain url should be in output:\n" + result.output)
@@ -314,12 +423,74 @@ class DokkaPluginIntTest {
         assertTrue(result.output.contains("nativeTest: was here extLink: https://robstoll.github.io/test-project/kdoc/test-project"), "nativeTest extLink should be in output:\n" + result.output)
     }
 
+    @Test
+    void smokeTest_multiModuleAndVersionSet_dokkaHtmlMultiModule_repoUrlAndExtLinkAreRelative(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << """
+            rootProject.name='test-project'
+            include 'sub'
+            project(':sub').projectDir = file("\${rootProject.projectDir}/subDir")
+        """
+        def url = 'https://github.com/robstoll/tutteli-gradle-plugins'
+        def githubUser = 'test-user'
+        settingsSetup.buildGradle << """
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+
+        repositories {
+            mavenCentral()
+        }
+
+        version = "1.2.3"
+
+        apply plugin: 'ch.tutteli.gradle.plugins.dokka'
+        tutteliDokka {
+            githubUser = '$githubUser'
+            repoUrl = '$url'
+        }
+
+        subprojects { project ->
+            repositories {
+                mavenCentral()
+            }
+            apply plugin: 'org.jetbrains.kotlin.jvm'
+            apply plugin: 'ch.tutteli.gradle.plugins.dokka'
+        }
+        allprojects {
+            ${printInfo()}
+        }
+        """
+        new File(settingsSetup.tmp, "subDir/src/main/kotlin").mkdirs()
+        new File(settingsSetup.tmp, "subDir/src/test/kotlin").mkdirs()
+
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("dokkaHtmlMultiModule", "--stacktrace")
+            .build()
+        //assert
+        def expectedRootMainUrl = "$url/tree/v1.2.3/subDir/src/main/kotlin"
+        assertFalse(result.output.contains("test-project main: was here url: $expectedRootMainUrl"), "test-project url main ($expectedRootMainUrl) shoule not be in output:\n" + result.output)
+
+        def expectedRootTestUrl = "$url/tree/v1.2.3/subDir/src/test/kotlin"
+        assertFalse(result.output.contains("test-project test: was here url: $expectedRootTestUrl"), "test-project url test ($expectedRootTestUrl) should not be in output:\n" + result.output)
+
+        def expectedSubMainUrl = "$url/tree/v1.2.3/subDir/src/main/kotlin"
+        assertTrue(result.output.contains("sub main: was here url: $expectedSubMainUrl"), "sub url main ($expectedSubMainUrl) should be in output:\n" + result.output)
+
+        def expectedSubTestUrl = "$url/tree/v1.2.3/subDir/src/test/kotlin"
+        assertTrue(result.output.contains("sub test: was here url: $expectedSubTestUrl"), "sub url test ($expectedSubTestUrl should be in output:\n" + result.output)
+
+        def extLink = "https://test-user.github.io/test-project/kdoc/test-project"
+        assertTrue(result.output.contains("sub main: was here extLink: $extLink"), "sub main extLink ($extLink) should be in output:\n" + result.output)
+        assertTrue(result.output.contains("sub test: was here extLink: $extLink"), "sub test extLink ($extLink) should be in output:\n" + result.output)
+    }
+
 
     private static String printInfo() {
         """
         project.afterEvaluate {
-            dokkaHtml.dokkaSourceSets.each { set -> set.sourceLinks.get().each { println("\$set.name: was here url: \${it.remoteUrl.get()}") }}
-            dokkaHtml.dokkaSourceSets.each { set -> set.externalDocumentationLinks.get().each{ println("\$set.name: was here extLink: \${it.url.get()}") }}
+            dokkaHtml.dokkaSourceSets.each { set -> set.sourceLinks.get().each { println("\$project.name \$set.name: was here url: \${it.remoteUrl.get()}") }}
+            dokkaHtml.dokkaSourceSets.each { set -> set.externalDocumentationLinks.get().each{ println("\$project.name \$set.name: was here extLink: \${it.url.get()}") }}
         }
         """
     }
