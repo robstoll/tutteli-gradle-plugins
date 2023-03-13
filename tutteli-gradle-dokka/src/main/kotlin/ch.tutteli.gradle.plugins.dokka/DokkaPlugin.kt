@@ -7,6 +7,8 @@ import org.gradle.jvm.tasks.Jar
 import org.jetbrains.dokka.gradle.DokkaPlugin as JetbrainsDokkaPlugin
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
+import org.jetbrains.dokka.gradle.AbstractDokkaParentTask
+import org.jetbrains.dokka.gradle.DokkaTask
 import java.io.File
 import java.net.URL
 
@@ -19,12 +21,16 @@ open class DokkaPlugin : Plugin<Project> {
         val extension = project.extensions.create<DokkaPluginExtension>(EXTENSION_NAME, project)
         val rootProject = project.rootProject;
 
-        val docsDir = extension.modeSimple.map { usesSimpleDocs ->
-            if (usesSimpleDocs) {
-                rootProject.projectDir.resolve("docs/kdoc")
-            } else {
-                rootProject.projectDir.resolve("../${rootProject.name}-gh-pages/${rootProject.version}/kdoc")
+        val docsDir = if (project == rootProject) {
+            extension.modeSimple.map { usesSimpleDocs ->
+                if (usesSimpleDocs) {
+                    rootProject.projectDir.resolve("docs/kdoc")
+                } else {
+                    rootProject.projectDir.resolve("../${rootProject.name}-gh-pages/${rootProject.version}/kdoc")
+                }
             }
+        } else {
+            project.tasks.withType<DokkaTask>().first().outputDirectory
         }
 
         project.tasks.register<Jar>(TASK_NAME_JAVADOC) {
@@ -32,6 +38,12 @@ open class DokkaPlugin : Plugin<Project> {
             dependsOn(project.tasks.named("dokkaHtml"))
             doFirst {
                 from(docsDir)
+            }
+        }
+
+        if (project == rootProject) {
+            project.tasks.withType<AbstractDokkaParentTask>().configureEach {
+                outputDirectory.set(docsDir)
             }
         }
 
@@ -94,7 +106,11 @@ open class DokkaPlugin : Plugin<Project> {
             } else {
                 "v${rootProject.version}"
             }
-            URL("${urlWithSlash}tree/$gitRef/${srcDir.relativeTo(rootProject.projectDir).toString().replace('\\', '/')}")
+            URL(
+                "${urlWithSlash}tree/$gitRef/${
+                    srcDir.relativeTo(rootProject.projectDir).toString().replace('\\', '/')
+                }"
+            )
         }
     }
 

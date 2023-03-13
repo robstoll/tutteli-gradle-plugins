@@ -19,11 +19,14 @@ open class DokkaPluginExtension(project: Project) {
         if (isTutteliProject(project) || isTutteliProject(project.rootProject)) {
             githubUser.set("robstoll")
         }
-        val rootExtension = project.rootProject.extensions.findByType<DokkaPluginExtension>()
+
+        val rootExtension = if (project != project.rootProject) {
+            project.rootProject.extensions.findByType<DokkaPluginExtension>()
+        } else null
+
         if (rootExtension != null) {
             takeOverValueFromRoot(rootExtension.repoUrl, repoUrl)
             takeOverValueFromRoot(rootExtension.githubUser, githubUser)
-            takeOverValueFromRoot(rootExtension.modeSimple, modeSimple)
         } else {
             modeSimple.convention(true)
         }
