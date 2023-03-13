@@ -30,18 +30,19 @@ open class DokkaPlugin : Plugin<Project> {
                 }
             }
         } else {
-            project.tasks.withType<DokkaTask>().first().outputDirectory
+            null
         }
 
         project.tasks.register<Jar>(TASK_NAME_JAVADOC) {
             archiveClassifier.set("javadoc")
-            dependsOn(project.tasks.named("dokkaHtml"))
+            val dokkaHtml = project.tasks.named<DokkaTask>("dokkaHtml")
+            dependsOn(dokkaHtml)
             doFirst {
-                from(docsDir)
+                from(dokkaHtml.map { it.outputDirectory })
             }
         }
 
-        if (project == rootProject) {
+        if (docsDir != null) {
             project.tasks.withType<AbstractDokkaParentTask>().configureEach {
                 outputDirectory.set(docsDir)
             }
@@ -50,7 +51,9 @@ open class DokkaPlugin : Plugin<Project> {
         // we want to configure DokkaTask as well as DokkaPartialTask
         project.tasks.withType<AbstractDokkaLeafTask>().configureEach {
             // custom output directory
-            outputDirectory.set(docsDir)
+            if (docsDir != null) {
+                outputDirectory.set(docsDir)
+            }
 
             dokkaSourceSets.configureEach {
                 val sourceSet = this
