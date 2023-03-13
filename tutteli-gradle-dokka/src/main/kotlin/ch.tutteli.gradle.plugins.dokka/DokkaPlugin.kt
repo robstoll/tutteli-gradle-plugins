@@ -53,6 +53,8 @@ open class DokkaPlugin : Plugin<Project> {
             outputDirectory.set(docsDir)
 
             dokkaSourceSets.configureEach {
+                val sourceSet = this
+
                 val src = "src/${name}/kotlin"
                 val srcDir = project.file(src)
                 // might be we deal with a multi-platform project where the corresponding target has no sources and
@@ -76,6 +78,18 @@ open class DokkaPlugin : Plugin<Project> {
                                 }
                             }
                         })
+                    }
+                }
+
+                if (sourceSet.name.endsWith("Main")) {
+                    val testFolder =
+                        project.projectDir.resolve("src/${sourceSet.name.substringBeforeLast("Main")}Test/kotlin")
+
+                    if (testFolder.exists()) {
+                        val files = project.fileTree(testFolder) {
+                            include("**/*Samples.kt")
+                        }
+                        samples.from(files)
                     }
                 }
             }
