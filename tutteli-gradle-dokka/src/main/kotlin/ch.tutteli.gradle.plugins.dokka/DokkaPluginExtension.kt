@@ -27,9 +27,8 @@ open class DokkaPluginExtension(project: Project) {
         if (rootExtension != null) {
             takeOverValueFromRoot(rootExtension.repoUrl, repoUrl)
             takeOverValueFromRoot(rootExtension.githubUser, githubUser)
-        } else {
-            modeSimple.convention(true)
         }
+        modeSimple.convention(true)
     }
 
     private fun <T> takeOverValueFromRoot(rootProperty: Property<T>, property: Property<T>) {
