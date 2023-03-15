@@ -127,8 +127,9 @@ class JunitJacocoPlugin : Plugin<Project> {
                                         } else {
                                             testTask.reports.html.entryPoint
                                         }
+                                        val projectPrefix = if(project == project.rootProject) "" else ":${project.name}"
                                         throw GradleException(
-                                            "test failed in last run, execute clean${testTask.name.capitalize()} to force its execution\n" +
+                                            "test failed in last run, execute ${projectPrefix}clean${testTask.name.capitalize()} to force its execution\n" +
                                                 "See the following report for more information:\nfile://${reportFile.absolutePath}"
                                         )
                                     }

@@ -41,8 +41,8 @@ class ModuleInfoPlugin : Plugin<Project> {
         } else {
             val moduleInfo = javaFiles.find { it.name == "module-info.java" }
                 ?: throw IllegalStateException(
-                    "no module-info.java found in compileJava.source, following the first 10 files:\n${
-                        javaFiles.take(10).joinToString("\n")
+                    "no module-info.java found in compileJava.source of project ${project.name}, following the first 10 files:\n${
+                        javaFiles.take(10).let{ it.ifEmpty { null } }?.joinToString("\n") ?: "no lines"
                     }"
                 )
 
