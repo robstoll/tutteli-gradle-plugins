@@ -4,6 +4,7 @@ import ch.tutteli.gradle.plugins.junitjacoco.generated.Dependencies
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.testing.*
@@ -13,6 +14,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.named
 import java.io.File
 
 class JunitJacocoPlugin : Plugin<Project> {
@@ -22,7 +24,6 @@ class JunitJacocoPlugin : Plugin<Project> {
         project.pluginManager.apply(JavaPlugin::class.java)
         project.pluginManager.apply(JacocoPlugin::class.java)
 
-        // Add the 'greeting' extension object
         val extension = project.extensions.create<JunitJacocoPluginExtension>(EXTENSION_NAME, project)
 
         project.tasks.withType(Test::class.java) {
@@ -50,7 +51,7 @@ class JunitJacocoPlugin : Plugin<Project> {
                     "src/jvmMain"
                 )
 
-                val classFiles = File("${project.buildDir}/classes/kotlin/jvm/")
+                val classFiles = File("${project.buildDir}/classes/kotlin/jvm/main")
                     .walkBottomUp()
                     .toSet()
 
@@ -75,8 +76,6 @@ class JunitJacocoPlugin : Plugin<Project> {
 
 
     private fun configureTestTasks(project: Project, extension: JunitJacocoPluginExtension) {
-        fun memoizeTestFile(testTask: AbstractTestTask) =
-            project.file("${project.buildDir}/test-results/memoize-previous-state-${testTask.name}.txt")
 
         project.tasks.withType(AbstractTestTask::class.java) {
             testLogging {
@@ -106,7 +105,7 @@ class JunitJacocoPlugin : Plugin<Project> {
                         }
                         println("${testTask.name} Result: ${result.resultType} (${result.successfulTestCount} succeeded, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)")
                         if (testTask.doesNotFailIfFailedBefore) {
-                            memoizeTestFile(testTask).writeText(result.resultType.toString())
+                            determineMemoizeTestFile(project, testTask).writeText(result.resultType.toString())
                         }
                     }
                 }
@@ -115,36 +114,41 @@ class JunitJacocoPlugin : Plugin<Project> {
         project.afterEvaluate {
             project.tasks.withType(AbstractTestTask::class.java).forEach { testTask ->
                 if (testTask.doesNotFailIfFailedBefore) {
-                    val failIfTestFailedLastTime =
-                        project.tasks.register("fail-if-${testTask.name}-failed-last-time") {
-                            doLast {
-                                if (!testTask.didWork) {
-                                    val memoizeTestFile = memoizeTestFile(testTask)
-                                    if (memoizeTestFile.exists() && memoizeTestFile.readText() == TestResult.ResultType.FAILURE.toString()) {
-                                        val allTests = project.tasks.named("allTests")
-                                        val reportFile = if (allTests.isPresent && allTests.get().didWork) {
-                                            (allTests.get() as TestReport).destinationDirectory.file("index.html").get().asFile
-                                        } else {
-                                            testTask.reports.html.entryPoint
-                                        }
-                                        val projectPrefix = if(project == project.rootProject) "" else ":${project.name}"
-                                        throw GradleException(
-                                            "test failed in last run, execute ${projectPrefix}clean${testTask.name.capitalize()} to force its execution\n" +
-                                                "See the following report for more information:\nfile://${reportFile.absolutePath}"
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    testTask.finalizedBy(failIfTestFailedLastTime)
+                    testTask.finalizedBy(failIfTestFailedLastTimeTask(project, testTask))
                 }
             }
         }
     }
 
-    private val AbstractTestTask.doesNotFailIfFailedBefore
-        get(): Boolean =
-            name != "test"
+    private fun determineMemoizeTestFile(project: Project, testTask: AbstractTestTask) =
+        project.file("${project.buildDir}/test-results/memoize-previous-state-${testTask.name}.txt")
+
+
+    private fun failIfTestFailedLastTimeTask(
+        project: Project,
+        testTask: AbstractTestTask
+    ): TaskProvider<Task> = project.tasks.register("fail-if-${testTask.name}-failed-last-time") {
+        doLast {
+            if (testTask.didWork.not()) {
+                val memoizeTestFile = determineMemoizeTestFile(project, testTask)
+                if (memoizeTestFile.exists() && memoizeTestFile.readText() == TestResult.ResultType.FAILURE.toString()) {
+                    val allTests = project.tasks.named<TestReport>("allTests")
+                    val reportFile = if (allTests.isPresent && allTests.get().didWork) {
+                        allTests.get().destinationDirectory.file("index.html").get().asFile
+                    } else {
+                        testTask.reports.html.entryPoint
+                    }
+                    val projectPrefix = if (project == project.rootProject) "" else ":${project.name}"
+                    throw GradleException(
+                        "test failed in last run, execute ${projectPrefix}clean${testTask.name.capitalize()} to force its execution\n" +
+                            "See the following report for more information:\nfile://${reportFile.absolutePath}"
+                    )
+                }
+            }
+        }
+    }
+
+    private val AbstractTestTask.doesNotFailIfFailedBefore get(): Boolean = name != "test"
 
 
     companion object {
