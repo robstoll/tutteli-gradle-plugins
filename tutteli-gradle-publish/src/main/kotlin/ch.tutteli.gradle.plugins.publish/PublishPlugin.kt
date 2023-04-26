@@ -111,9 +111,12 @@ class PublishPlugin : Plugin<Project> {
                 // in case we generate a javadocJar (e.g. via tutteli's dokka plugin) then we add it to each publication
                 val javadocJar = project.tasks.findByName("javadocJar")
                 if (javadocJar != null) {
-                    publications.forEach { publication ->
-                        publication.artifact(javadocJar)
-                    }
+                    publications
+                        // don't add javadocJar to a "relocation" publication
+                        .filterNot { it.name.endsWith("-relocation") }
+                        .forEach { publication ->
+                            publication.artifact(javadocJar)
+                        }
                 }
             }
         }
@@ -127,7 +130,7 @@ class PublishPlugin : Plugin<Project> {
 
 
     private fun getMavenPublications(project: Project): NamedDomainObjectCollection<MavenPublication> =
-        project.extensions.getByType<PublishingExtension>().publications.withType()
+        project.extensions.getByType<PublishingExtension>().publications.withType<MavenPublication>()
 
     private fun determineRepoDomainAndPath(project: Project, extension: PublishPluginExtension): String =
         "github.com/${extension.githubUser.get()}/${project.rootProject.name}"
