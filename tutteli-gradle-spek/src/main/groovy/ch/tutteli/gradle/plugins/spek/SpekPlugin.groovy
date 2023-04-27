@@ -5,6 +5,7 @@ import ch.tutteli.gradle.plugins.spek.generated.Dependencies
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapperKt
 
 class SpekPluginExtension {
     String version = Dependencies.spek_version
@@ -65,12 +66,32 @@ class SpekPlugin implements Plugin<Project> {
     }
 
     private static String getKotlinVersion(Project project) {
-        def plugins = project.plugins
-        def kotlinPlugin = plugins.findPlugin('kotlin')
-            ?: plugins.findPlugin('kotlin-platform-jvm')
-            ?: plugins.findPlugin('org.jetbrains.kotlin.multiplatform')
-            ?: plugins.findPlugin('org.jetbrains.kotlin.jvm')
-        def version = kotlinPlugin?.getKotlinPluginVersion()
+        def version
+        try {
+            version = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
+        } catch (MissingMethodException e) {
+            e.printStackTrace()
+            // KotlinPluginWrapperKt (source where extension method getKotlinPluginVersion is defined) might not exist
+            // if no kotlin plugin was applied or an old one or an old gradle version is used where the extension
+            // method on Project does not exist yet
+            version = null
+        }
+
+        if (version == null) {
+            def plugins = project.plugins
+            def kotlinPlugin =
+                // TODO drop once we no longer support the old kotlin plugins and old gradle version
+                plugins.findPlugin("kotlin")
+                    ?: plugins.findPlugin("kotlin2js")
+                    ?: plugins.findPlugin("kotlin-platform-jvm")
+                    ?: plugins.findPlugin("kotlin-platform-js")
+                    ?: plugins.findPlugin("kotlin-common")
+                    ?: plugins.findPlugin("org.jetbrains.kotlin.multiplatform")
+                    ?: plugins.findPlugin("org.jetbrains.kotlin.jvm")
+                    ?: plugins.findPlugin("org.jetbrains.kotlin.js")
+            version = kotlinPlugin?.getKotlinPluginVersion()
+        }
+
         if (version != null) {
             return version
         } else {

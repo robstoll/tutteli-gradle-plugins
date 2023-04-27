@@ -1,41 +1,55 @@
 package ch.tutteli.gradle.plugins.spek
 
-import ch.tutteli.gradle.plugins.test.Asserts
 import ch.tutteli.gradle.plugins.test.SettingsExtension
 import ch.tutteli.gradle.plugins.test.SettingsExtensionObject
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+
 
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
 class SpekPluginIntTest {
-    def static final KOTLIN_VERSION = '1.3.61'
+
 
     @Test
     void smokeTest_oldKotlin(SettingsExtensionObject settingsSetup) throws IOException {
-        checkSmokeTest(settingsSetup, "kotlin")
+        checkSmokeTest(settingsSetup, "kotlin", '1.3.61')
     }
 
     @Test
     void smokeTest_OldJvmPlatform(SettingsExtensionObject settingsSetup) throws IOException {
-        checkSmokeTest(settingsSetup, "kotlin-platform-jvm")
+        checkSmokeTest(settingsSetup, "kotlin-platform-jvm", '1.6.21')
     }
 
 
-    @Test
-    void smokeTest_JvmPlatform(SettingsExtensionObject settingsSetup) throws IOException {
-        checkSmokeTest(settingsSetup, "org.jetbrains.kotlin.jvm")
+    @ParameterizedTest
+    @MethodSource("kotlinVersionAndGradle")
+    void smokeTest_JvmPlatform(String kotlinVersion, String gradleVersion, SettingsExtensionObject settingsSetup) throws IOException {
+        checkSmokeTest(settingsSetup, "org.jetbrains.kotlin.jvm", kotlinVersion, gradleVersion)
     }
 
-    private static void checkSmokeTest(SettingsExtensionObject settingsSetup, String kotlinPlugin) {
+    static List<Arguments> kotlinVersionAndGradle() {
+        return ['1.3.61', '1.4.10', '1.5.21', '1.6.20', '1.7.20', '1.8.10'].collectMany { kotlinVersion ->
+            def gradleVersions = ['6.9.4', '7.6.1'] + (kotlinVersion.matches("^1\\.[7-9].*\$") ? ['8.0'] : [])
+            gradleVersions.collect { gradleVersion ->
+                Arguments.of(kotlinVersion, gradleVersion)
+            }
+        }
+    }
+
+    private static void checkSmokeTest(SettingsExtensionObject settingsSetup, String kotlinPlugin, String kotlinVersion, String gradleVersion = null) {
         //arrange
         settingsSetup.settings << """
         rootProject.name='test-project'
         """
         settingsSetup.buildGradle << """
-        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+        ${settingsSetup.buildscriptWithKotlin(kotlinVersion)}
         apply plugin: '$kotlinPlugin'
         apply plugin: 'ch.tutteli.gradle.plugins.spek'
         spek.version = '2.0.15'
@@ -61,25 +75,17 @@ class SpekPluginIntTest {
         })
         """
         //act
-        def result = GradleRunner.create()
+        def builder = GradleRunner.create()
+        if (gradleVersion != null) {
+            builder = builder.withGradleVersion(gradleVersion)
+        }
+        def result = builder
             .withProjectDir(settingsSetup.tmp)
             .withArguments("build")
             .build()
         //assert
         assertTrue(result.output.contains("was here"), "println in output:\n" + result.output)
-        Asserts.assertStatusOk(result,
-            [
-                ":inspectClassesForKotlinIC",
-                ":jar",
-                ":assemble",
-                ":compileTestKotlin",
-                ":test",
-                ":jacocoTestReport",
-                ":check",
-                ":build"
-            ],
-            [],
-            [":classes", ":testClasses"]
-        )
+        def failed = result.taskPaths(TaskOutcome.FAILED)
+        assertTrue(failed.empty, 'FAILED is empty but was not: ' + failed)
     }
 }
