@@ -39,6 +39,10 @@ class SpekPluginIntTest {
         apply plugin: '$kotlinPlugin'
         apply plugin: 'ch.tutteli.gradle.plugins.spek'
         spek.version = '2.0.15'
+
+        repositories {
+            mavenCentral()
+        }
         ${settingsSetup.configureTestLogging()}
         """
         File kotlin = new File(settingsSetup.tmp, 'src/test/kotlin/')
