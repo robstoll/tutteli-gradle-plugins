@@ -3,7 +3,7 @@ import com.gradle.publish.PluginBundleExtension
 val kotlinVersion by extra("1.5.21")
 val dokkaVersion by extra("1.8.10")
 
-val junitJupiterVersion by extra("5.9.2")
+val junitJupiterVersion by extra("5.9.3")
 val junitPlatformVersion by extra("1.9.1")
 
 val spekVersion by extra("2.0.15")
