@@ -20,10 +20,6 @@ class SpekPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.pluginManager.apply(JunitJacocoPlugin)
 
-        project.repositories {
-            mavenCentral()
-        }
-
         def extension = project.extensions.create(EXTENSION_NAME, SpekPluginExtension)
         project.afterEvaluate {
             String spekVersion = extension.version
