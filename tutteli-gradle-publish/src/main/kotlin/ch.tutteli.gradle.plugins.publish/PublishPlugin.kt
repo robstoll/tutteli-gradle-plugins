@@ -37,12 +37,6 @@ class PublishPlugin : Plugin<Project> {
         project.plugins.apply(MavenPublishPlugin::class.java)
         project.plugins.apply(SigningPlugin::class.java)
 
-        if (!project.hasProperty("sourceSets")) throw IllegalStateException(
-            "The project ${project.name} does not have any sources. We currently require a project to have sources in order to publish it." +
-                "\nPlease make sure you do not apply the ch.tutteli.$EXTENSION_NAME plugin before the plugin which provides the sourceSets (e.g. kotlin or java and the like)" +
-                "\nPlease open an issue if you would like to publish projects without sources: https://github.com/robstoll/tutteli-gradle-plugins/issues/new"
-        )
-
         val extension = project.extensions.create<PublishPluginExtension>(EXTENSION_NAME, project)
 
         val validateBeforePublish = project.tasks.register<ValidateBeforePublishTask>(TASK_NAME_VALIDATE_PUBLISH)

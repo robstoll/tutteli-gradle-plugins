@@ -1,8 +1,6 @@
 package ch.tutteli.gradle.plugins.publish
 
 import org.gradle.api.Project
-import org.gradle.api.internal.plugins.PluginApplicationException
-import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 
@@ -11,22 +9,6 @@ import static ch.tutteli.gradle.plugins.test.Asserts.assertThrowsProjectConfigEx
 import static org.junit.jupiter.api.Assertions.*
 
 class PublishPluginValidationTest {
-
-    @Test
-    void apply_noSourceSets_throwsIllegalStateException() {
-        //arrange
-        Project project = ProjectBuilder.builder()
-            .withName(ARTIFACT_ID)
-            .build()
-        //act && assert
-        def exception = assertThrows(PluginApplicationException) {
-            project.plugins.apply(PublishPlugin)
-        }
-        //assert
-        assertEquals(IllegalStateException, exception.cause.class)
-        def message = "The project $project.name does not have any sources"
-        assertTrue(exception.cause.message.contains(message), "cause.message contains $message:\n$exception.cause.message")
-    }
 
     @Test
     void evaluate_versionUnspecified_throwsIllegalStateException() {
