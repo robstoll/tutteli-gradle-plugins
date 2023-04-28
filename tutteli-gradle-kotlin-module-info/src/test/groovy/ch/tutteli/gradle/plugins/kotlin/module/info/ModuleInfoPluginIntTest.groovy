@@ -68,6 +68,9 @@ class ModuleInfoPluginIntTest {
             if (!Files.exists(javaSrcDir)) {
                 javaSrcDir = settingsSetup.tmpPath.resolve("sub1/src/main/java")
             }
+            if (!Files.exists(javaSrcDir)) {
+                javaSrcDir = settingsSetup.tmpPath.resolve("src/jvmMain/java")
+            }
             String moduleInfoContent = null
             if (Files.exists(javaSrcDir)) {
                 def moduleInfo = javaSrcDir.resolve("module-info.java")
@@ -250,7 +253,8 @@ class ModuleInfoPluginIntTest {
         def module = new File(settingsSetup.tmp, kotlinPlugin == MULTIPLATFORM_PLUGIN ? "src/jvmMain/java" : "src/main/java")
         module.mkdirs()
         def moduleInfo = new File(module, 'module-info.java')
-        moduleInfo << "module ch.tutteli.test { $moduleInfoContent }"
+        def moduleInfoId = (projectName.replace(".", "_") + "_" + UUID.randomUUID().toString()).replace('-', '_')
+        moduleInfo << "module ch.tutteli.$moduleInfoId { $moduleInfoContent }"
         def kotlin = new File(settingsSetup.tmp, kotlinPlugin == MULTIPLATFORM_PLUGIN ? "src/jvmMain/kotlin" : "src/main/kotlin")
         kotlin.mkdirs()
         def test = new File(kotlin, 'test.kt')
@@ -299,7 +303,8 @@ class ModuleInfoPluginIntTest {
         def module = new File(settingsSetup.tmp, 'sub1/src/main/java/')
         module.mkdirs()
         def moduleInfo = new File(module, 'module-info.java')
-        moduleInfo << "module ch.tutteli.${(projectName.replace(".", "_") + "_" + UUID.randomUUID().toString()).replace('-', '_')} { $moduleInfoContent }"
+        def moduleInfoId = (projectName.replace(".", "_") + "_" + UUID.randomUUID().toString()).replace('-', '_')
+        moduleInfo << "module ch.tutteli.${ moduleInfoId} { $moduleInfoContent }"
         def kotlin = new File(settingsSetup.tmp, 'sub1/src/main/kotlin')
         kotlin.mkdirs()
         def test = new File(kotlin, 'test.kt')
