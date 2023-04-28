@@ -70,7 +70,6 @@ class SpekPlugin implements Plugin<Project> {
         try {
             version = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
         } catch (MissingMethodException e) {
-            e.printStackTrace()
             // KotlinPluginWrapperKt (source where extension method getKotlinPluginVersion is defined) might not exist
             // if no kotlin plugin was applied or an old one or an old gradle version is used where the extension
             // method on Project does not exist yet
