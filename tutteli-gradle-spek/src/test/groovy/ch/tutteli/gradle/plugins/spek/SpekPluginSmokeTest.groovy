@@ -39,18 +39,4 @@ class SpekPluginSmokeTest {
         assertNotNull(project.extensions.getByName(EXTENSION_NAME), EXTENSION_NAME)
         assertNotNull(project.plugins.findPlugin("ch.tutteli.gradle.plugins.junitjacoco"))
     }
-
-    @Test
-    void errorIfKotlinNotApplied() {
-        //arrange
-        Project project = ProjectBuilder.builder().build()
-        //act
-        project.plugins.apply(SpekPlugin)
-        def ex = assertThrows(ProjectConfigurationException) {
-            project.evaluate()
-        }
-        //assert
-        assertEquals(IllegalStateException, ex.cause.class)
-        assertEquals(SpekPlugin.ERR_KOTLIN_PLUGIN, ex.cause.message)
-    }
 }

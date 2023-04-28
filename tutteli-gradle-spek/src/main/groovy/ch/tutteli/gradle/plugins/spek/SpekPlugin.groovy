@@ -13,9 +13,10 @@ class SpekPluginExtension {
 
 class SpekPlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = 'spek'
-    protected static
-    final String ERR_KOTLIN_PLUGIN = "You need to apply a JVM compliant kotlin plugin before applying the ch.tutteli.spek plugin." +
-        "\n For instance, the 'kotlin' or the 'kotlin-platform-jvm' plugin."
+
+    // TODO remove once we define gradle 7.0 and Kotlin 1.5 as minimum requirement
+    protected static final String ERR_KOTLIN_PLUGIN = "You need to apply a JVM compliant kotlin plugin." +
+        "\n For instance, the 'org.jetbrains.kotlin.jvm' or the 'org.jetbrains.kotlin.multiplatform' plugin."
 
     @Override
     void apply(Project project) {
@@ -39,7 +40,6 @@ class SpekPlugin implements Plugin<Project> {
     private static configureForJvm(Project project, String spekVersion) {
 
         def kotlinVersion = getKotlinVersion(project)
-
         project.test {
             options {
                 includeEngines 'spek2'
@@ -69,7 +69,7 @@ class SpekPlugin implements Plugin<Project> {
         def version
         try {
             version = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
-        } catch (MissingMethodException e) {
+        } catch (MissingMethodException _) {
             // KotlinPluginWrapperKt (source where extension method getKotlinPluginVersion is defined) might not exist
             // if no kotlin plugin was applied or an old one or an old gradle version is used where the extension
             // method on Project does not exist yet
