@@ -135,10 +135,13 @@ open class PublishPluginExtension(private val project: Project) {
         licenses.add(license)
     }
 
-
     fun developer(developer: Action<Developer>) {
         val newDeveloper = project.objects.newInstance(Developer::class.java)
         developer.execute(newDeveloper)
         developers.add(newDeveloper)
     }
+
+    fun determineRepoDomainAndPath(): String =
+        "github.com/${githubUser.get()}/${project.rootProject.name}"
+
 }

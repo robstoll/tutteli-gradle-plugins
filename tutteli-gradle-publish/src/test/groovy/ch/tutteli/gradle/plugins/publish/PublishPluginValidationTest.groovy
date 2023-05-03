@@ -2,7 +2,6 @@ package ch.tutteli.gradle.plugins.publish
 
 import org.gradle.api.Project
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.function.Executable
 
 import static ch.tutteli.gradle.plugins.publish.SetUp.*
 import static ch.tutteli.gradle.plugins.test.Asserts.assertThrowsProjectConfigExceptionWithCause
@@ -108,13 +107,6 @@ class PublishPluginValidationTest {
         project.evaluate()
 
         assertTrue(getPluginExtension(project).signWithGpg.get())
-    }
-
-    private static void assertThrowsIllegalState(String what, Executable executable) {
-        def exception = assertThrows(IllegalStateException) {
-            executable.execute()
-        }
-        assertEquals(getExceptionMessage(what), exception.message)
     }
 
     private static void assertThrowsProjectConfigWithCauseIllegalStateNotDefined(String what, Project project) {
