@@ -9,11 +9,16 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.plugins.signing.SigningExtension
 
 
-open class ValidateBeforePublishTask : DefaultTask() {
+abstract class ValidateBeforePublishTask : DefaultTask() {
 
     @TaskAction
     fun validate() {
         val extension = project.extensions.getByType<PublishPluginExtension>()
+
+        checkExtensionPropertyPresentAndNotBlank(extension.envNameGpgPassphrase, "envNameGpgPassphrase")
+        checkExtensionPropertyPresentAndNotBlank(extension.envNameGpgKeyId, "envNameGpgKeyId")
+        checkExtensionPropertyPresentAndNotBlank(extension.envNameGpgKeyRing, "envNameGpgKeyRing")
+        checkExtensionPropertyPresentAndNotBlank(extension.envNameGpgSigningKey, "envNameGpgSigningKey")
 
         if (extension.signWithGpg.get()) {
             configureSigningForSigningPlugin(extension)
@@ -41,10 +46,10 @@ open class ValidateBeforePublishTask : DefaultTask() {
                 )
             } else {
                 if ((project.extra.get("signing.keyId") as? CharSequence).isNullOrBlank()) {
-                    throwIllegalState("you are not allowed to specify an in memory GPG singing key (via $envNameGpgSigningKey) as well as signing.keyId on project.extra")
+                    throwIllegalStateException("you are not allowed to specify an in memory GPG singing key (via $envNameGpgSigningKey) as well as signing.keyId on project.extra")
                 }
                 if ((project.extra.get("signing.secretKeyRingFile") as? CharSequence).isNullOrBlank()) {
-                    throwIllegalState("you are not allowed to specify an in memory GPG singing key (via $envNameGpgSigningKey) as well as signing.secretKeyRingFile on project.extra")
+                    throwIllegalStateException("you are not allowed to specify an in memory GPG singing key (via $envNameGpgSigningKey) as well as signing.secretKeyRingFile on project.extra")
                 }
                 val signingExtension = project.extensions.getByType<SigningExtension>()
                 signingExtension.useInMemoryPgpKeys(signingKey, signingPassword)
@@ -84,7 +89,7 @@ open class ValidateBeforePublishTask : DefaultTask() {
     ): String {
         val property = project.extra.get(projectExtra)
         val value = (property as? CharSequence)?.toString()
-        if (value.isNullOrBlank()) throwIllegalState(
+        if (value.isNullOrBlank()) throwIllegalStateException(
             "property with name ${propName.get()} or System.env variable with name ${envName.get()}"
         )
         return value

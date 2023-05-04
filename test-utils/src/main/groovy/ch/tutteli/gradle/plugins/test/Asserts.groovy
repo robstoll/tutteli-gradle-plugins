@@ -1,10 +1,11 @@
 package ch.tutteli.gradle.plugins.test
 
+
+import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.function.Executable
-
 
 import static org.junit.jupiter.api.Assertions.*
 
@@ -78,5 +79,15 @@ class Asserts {
         //assert
         assertEquals(cause, exception.cause.class)
         assertEquals(message, exception.cause.message)
+    }
+
+    static void assertTaskExists(Project project, String taskName) {
+        def task = project.tasks.findByName(taskName)
+        if (task == null) {
+            fail("could not find task $taskName")
+            //TODO 5.0.0 check if we can use the following with gradle 8.1.x, instead of the above,
+            // currently we cannot due to the following bug https://github.com/gradle/gradle/issues/20301
+//            fail("could not find task $taskName, there were ${project.tasks.collect { it.name }.join(",")}")
+        }
     }
 }

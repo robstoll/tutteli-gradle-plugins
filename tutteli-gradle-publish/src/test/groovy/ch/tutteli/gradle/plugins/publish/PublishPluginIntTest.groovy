@@ -35,7 +35,7 @@ class PublishPluginIntTest {
     }
 
     @Test
-    void smokeTestJava_6x(SettingsExtensionObject settingsSetup) throws IOException {
+    void smokeTestJava_gradle6x(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         def version = '1.0.0'
         checkSmokeTestJava("smoke1", settingsSetup, version, "6.9.4")
@@ -74,7 +74,6 @@ class PublishPluginIntTest {
             }
         }
 
-        // has to be before ch.tutteli.publish
         apply plugin: 'java'
         apply plugin: 'ch.tutteli.gradle.plugins.publish'
 
@@ -163,6 +162,7 @@ class PublishPluginIntTest {
             .withProjectDir(settingsSetup.tmp)
             .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
+
         //assert
         assertTrue(result.output.contains("Some licenses were duplicated. Please check if you made a mistake."), "should contain warning about duplicated licenses:\n$result.output")
 
@@ -227,7 +227,7 @@ class PublishPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        // has to be before ch.tutteli.publish
+
         apply plugin: 'java'
         apply plugin: 'ch.tutteli.gradle.plugins.publish'
 
@@ -243,10 +243,10 @@ class PublishPluginIntTest {
             // gpg passphrase not defined via property or something
         }
         """
-        //act
+        // still able to generate a pom, the GPG-key is only used for publishing
         GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("tasks", "--stacktrace")
+            .withArguments("tasks", "generatePom", "--stacktrace")
             .build()
         //assert
         def exception = assertThrows(UnexpectedBuildFailure) {
@@ -265,12 +265,12 @@ class PublishPluginIntTest {
     }
 
     @Test
-    void subproject_6_x(SettingsExtensionObject settingsSetup) throws IOException {
+    void subproject_gradle6x(SettingsExtensionObject settingsSetup) throws IOException {
         checkSubproject(settingsSetup, "6.9.4")
     }
 
     private void checkSubproject(SettingsExtensionObject settingsSetup, String gradleVersion = null) {
-//arrange
+        //arrange
         def rootProjectName = 'rootProject'
         def subprojectName = "test-sub-jvm"
         def dependentName = 'dependent'
@@ -362,7 +362,6 @@ class PublishPluginIntTest {
             .withProjectDir(settingsSetup.tmp)
             .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
-
 
         //assert
         assertSigning(result, gpgPassphrase, gpgKeyId, "${settingsSetup.tmpPath.toRealPath()}/$gpgKeyRing")
@@ -624,7 +623,7 @@ class PublishPluginIntTest {
     }
 
     @Test
-    void withKotlinMultiplatformApplied_Kotlin1_8(SettingsExtensionObject settingsSetup) throws IOException {
+    void withKotlinMultiplatformApplied_Kotlin1_7(SettingsExtensionObject settingsSetup) throws IOException {
         checkKotlinMultiplatform('mpp-kotlin-1.7.0', settingsSetup, false, "1.7.0")
     }
 
@@ -737,7 +736,7 @@ class PublishPluginIntTest {
         }
         def result = builder
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishAllPublicationsToMavenRepository", "printSigning")
+            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
             .build()
 
         Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")

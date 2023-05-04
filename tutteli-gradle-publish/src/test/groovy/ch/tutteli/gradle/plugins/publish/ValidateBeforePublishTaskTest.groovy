@@ -4,8 +4,10 @@ import org.gradle.api.Project
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 
-import static ch.tutteli.gradle.plugins.publish.SetUp.*
-import static org.junit.jupiter.api.Assertions.*
+import static ch.tutteli.gradle.plugins.publish.SetUp.getPluginExtension
+import static ch.tutteli.gradle.plugins.publish.SetUp.setUp
+import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertThrows
 
 class ValidateBeforePublishTaskTest {
 

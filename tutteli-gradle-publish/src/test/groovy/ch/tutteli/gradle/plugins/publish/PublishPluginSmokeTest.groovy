@@ -1,5 +1,6 @@
 package ch.tutteli.gradle.plugins.publish
 
+import ch.tutteli.gradle.plugins.test.Asserts
 import org.apache.maven.model.Developer
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
@@ -15,9 +16,8 @@ class PublishPluginSmokeTest {
     @Test
     void smokeTest_TasksAndExtensionPresent() {
         Project project = setUp()
-        //assert
-        assertExtensionAndTaskDefined(project)
         project.evaluate()
+        assertExtensionAndTaskDefined(project)
     }
 
     @Test
@@ -31,10 +31,10 @@ class PublishPluginSmokeTest {
         assertExtensionAndTaskDefinedAfterEvaluate(project)
     }
 
-    private static void assertExtensionAndTaskDefinedAfterEvaluate(Project project) {
-        assertExtensionAndTaskDefined(project)
-        project.tasks.getByName(PublishPlugin.TASK_GENERATE_POM)
-        project.tasks.getByName(PublishPlugin.TASK_GENERATE_GRADLE_METADATA)
+    private static void assertExtensionAndTaskDefinedAfterEvaluate(Project project, String jarTaskName = "jar") {
+        assertExtensionAndTaskDefined(project, jarTaskName)
+        project.tasks.named(PublishPlugin.TASK_GENERATE_POM)
+        project.tasks.named(PublishPlugin.TASK_GENERATE_GRADLE_METADATA)
     }
 
     @Test
@@ -83,7 +83,7 @@ class PublishPluginSmokeTest {
         }
         project.evaluate()
         //assert
-        assertExtensionAndTaskDefinedAfterEvaluate(project)
+        assertExtensionAndTaskDefinedAfterEvaluate(project, "jsJar")
     }
 
     @Test
@@ -116,9 +116,8 @@ class PublishPluginSmokeTest {
         }
         project.evaluate()
         //assert
-        assertExtensionAndTaskDefined(project)
+        assertExtensionAndTaskDefined(project, "metadataJar")
         assertNull(project.tasks.findByName(PublishPlugin.TASK_GENERATE_POM), "task ${PublishPlugin.TASK_GENERATE_POM} exists even though we use the new MPP plugin")
-
     }
 
     @Test
@@ -159,14 +158,13 @@ class PublishPluginSmokeTest {
         }
     }
 
-    private void assertPom(MavenPublication pub, StandardLicenses standardLicense, String expectedDistribution) {
+    private static void assertPom(MavenPublication pub, StandardLicenses standardLicense, String expectedDistribution) {
         def pom = pub.pom as MavenPomInternal
         assertEquals(pom.description.get(), DESCRIPTION, "description differs")
         def domainAndPath = "github.com/$GITHUB_USER/$ARTIFACT_ID"
-        assertEquals(pom.url.get(), "https://$domainAndPath".toString(), "url differs")
-        assertEquals(pom.licenses.size(), 1, "one license")
+        assertEquals("https://$domainAndPath".toString(), pom.url.get(), "url differs")
+        assertEquals(1, pom.licenses.size(), "one license")
         def license = pom.licenses.get(0)
-
 
         assertEquals(standardLicense.longName, license.name.get(), "longname")
         assertEquals(standardLicense.url.toString(), license.url.get(), "url")
@@ -179,11 +177,12 @@ class PublishPluginSmokeTest {
         assertEquals("https://$domainAndPath".toString(), pom.scm.url.get(), "scm url")
     }
 
-    private static void assertExtensionAndTaskDefined(Project project) {
+    private static void assertExtensionAndTaskDefined(Project project, String jarTaskName = "jar") {
         project.extensions.getByName(PublishPlugin.EXTENSION_NAME)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_INCLUDE_TIME)
-        project.tasks.getByName(PublishPlugin.TASK_NAME_VALIDATE_PUBLISH)
+        Asserts.assertTaskExists(project, PublishPlugin.TASK_NAME_PREFIX_AUGMENT_MANIFEST_IN_JAR + jarTaskName)
+        Asserts.assertTaskExists(project, PublishPlugin.TASK_NAME_VALIDATE_PUBLISH)
     }
+
 
     private static PublishPluginExtension getPluginExtension(Project project) {
         return project.extensions.getByType(PublishPluginExtension)

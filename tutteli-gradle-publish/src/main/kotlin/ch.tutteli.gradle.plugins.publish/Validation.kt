@@ -5,19 +5,19 @@ import org.gradle.api.provider.Property
 
 
 fun checkNotNullNorBlank(value: Any?, valueDescription: String) {
-    if ((value as? CharSequence).isNullOrBlank()) throwIllegalState(valueDescription)
+    if ((value as? CharSequence).isNullOrBlank()) throwIllegalStateException(valueDescription)
 }
 
 fun checkExtensionPropertyPresentAndNotBlank(property: Property<String>, propertyName: String) {
-    if (property.orNull.isNullOrBlank()) newIllegalStateForProperty(propertyName)
+    if (property.orNull.isNullOrBlank()) throwIllegalStateExceptionForProperty(propertyName)
 }
 
 fun checkExtensionPropertyPresentNotEmpty(property: ListProperty<*>, propertyName: String) {
-    if ((property.isPresent && property.get().isNotEmpty()).not()) newIllegalStateForProperty(propertyName)
+    if ((property.isPresent && property.get().isNotEmpty()).not()) throwIllegalStateExceptionForProperty(propertyName)
 }
 
-fun newIllegalStateForProperty(propertyName: String): Nothing =
-    throwIllegalState("${PublishPlugin.EXTENSION_NAME}.$propertyName")
+fun throwIllegalStateExceptionForProperty(propertyName: String): Nothing =
+    throwIllegalStateException("${PublishPlugin.EXTENSION_NAME}.$propertyName")
 
-fun throwIllegalState(description: String): Nothing =
+fun throwIllegalStateException(description: String): Nothing =
     throw IllegalStateException("You need to define $description for publishing (empty or blank is considered to be undefined)")
