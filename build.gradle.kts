@@ -13,8 +13,8 @@ val mavenModelVersion by extra("3.8.7")
 val jacocoToolVersion by extra("0.8.8")
 
 buildscript {
-    val version = "4.7.2"
-    val previousVersion = "4.7.1"
+    val version = "4.8.0"
+    val previousVersion = "4.7.2"
 
     rootProject.version = version
     rootProject.group = "ch.tutteli"
