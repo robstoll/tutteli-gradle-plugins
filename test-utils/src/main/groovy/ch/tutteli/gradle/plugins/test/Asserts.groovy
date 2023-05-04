@@ -84,10 +84,7 @@ class Asserts {
     static void assertTaskExists(Project project, String taskName) {
         def task = project.tasks.findByName(taskName)
         if (task == null) {
-            fail("could not find task $taskName")
-            //TODO 5.0.0 check if we can use the following with gradle 8.1.x, instead of the above,
-            // currently we cannot due to the following bug https://github.com/gradle/gradle/issues/20301
-//            fail("could not find task $taskName, there were ${project.tasks.collect { it.name }.join(",")}")
+            fail("could not find task $taskName, following where defined:\n${project.tasks.getNames().join("\n")}")
         }
     }
 }
