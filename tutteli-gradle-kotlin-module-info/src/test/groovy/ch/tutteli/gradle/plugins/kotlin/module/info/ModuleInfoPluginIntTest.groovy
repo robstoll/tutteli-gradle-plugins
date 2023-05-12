@@ -304,7 +304,7 @@ class ModuleInfoPluginIntTest {
         module.mkdirs()
         def moduleInfo = new File(module, 'module-info.java')
         def moduleInfoId = (projectName.replace(".", "_") + "_" + UUID.randomUUID().toString()).replace('-', '_')
-        moduleInfo << "module ch.tutteli.${ moduleInfoId} { $moduleInfoContent }"
+        moduleInfo << "module ch.tutteli.${moduleInfoId} { $moduleInfoContent }"
         def kotlin = new File(settingsSetup.tmp, 'sub1/src/main/kotlin')
         kotlin.mkdirs()
         def test = new File(kotlin, 'test.kt')
@@ -332,5 +332,36 @@ class ModuleInfoPluginIntTest {
             }
             """
     }
+
+    @Test
+    void worksIfOneHasAppliedJavaToolchain(SettingsExtensionObject settingsSetup) {
+        def projectName="java-toolchain"
+        settingsSetup.settings << "rootProject.name='$projectName'"
+        settingsSetup.buildGradle << """
+            ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+
+            apply plugin: 'org.jetbrains.kotlin.jvm'
+            apply plugin: 'ch.tutteli.gradle.plugins.kotlin.module.info'
+
+            repositories {
+                mavenCentral()
+            }
+
+            project.version = '1.2.3'
+
+            java {
+                toolchain {
+                     languageVersion.set(JavaLanguageVersion.of(11))
+                }
+            }
+            """
+        def module = new File(settingsSetup.tmp, 'src/main/java/')
+        module.mkdirs()
+        def moduleInfo = new File(module, 'module-info.java')
+        def moduleInfoId = (projectName.replace(".", "_") + "_" + UUID.randomUUID().toString()).replace('-', '_')
+        moduleInfo << "module ch.tutteli.$moduleInfoId { requires java.base; }"
+        def result = runGradleModuleBuild(settingsSetup, null, "build")
+    }
+
 
 }
