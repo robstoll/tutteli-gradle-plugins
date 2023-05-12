@@ -3,6 +3,8 @@ package ch.tutteli.gradle.plugins.kotlin.module.info
 import ch.tutteli.gradle.plugins.test.Asserts
 import ch.tutteli.gradle.plugins.test.SettingsExtension
 import ch.tutteli.gradle.plugins.test.SettingsExtensionObject
+import org.gradle.api.JavaVersion
+import org.gradle.internal.impldep.com.google.common.reflect.Types
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
@@ -155,6 +157,8 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoSucceeds_MultiplatformPlugin_Gradle6_9_3(SettingsExtensionObject settingsSetup) {
+        def javaVersion = JavaVersion.toVersion(System.getProperty("java.version"))
+        assumeFalse(javaVersion >= JavaVersion.VERSION_15)
         checkSucceeds("mpp-6.9.3-success", settingsSetup, "6.9.3", MULTIPLATFORM_PLUGIN,
             """
             kotlin {
@@ -213,8 +217,10 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoInSubproject_gradle6x_Succeeds(SettingsExtensionObject settingsSetup) {
-        //not for jdk8
-        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
+        //not for jdk8, and gradle 6.9.3 is not compatible with
+        def javaVersion = JavaVersion.toVersion(System.getProperty("java.version"))
+        assumeFalse(javaVersion <= JavaVersion.VERSION_1_8)
+        assumeFalse(javaVersion >= JavaVersion.VERSION_15)
         //arrange
         setupModuleInfoInSubproject("sub-jvm-6.9.3-success", settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
         try {
@@ -335,7 +341,7 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void worksIfOneHasAppliedJavaToolchain(SettingsExtensionObject settingsSetup) {
-        def projectName="java-toolchain"
+        def projectName = "java-toolchain"
         settingsSetup.settings << "rootProject.name='$projectName'"
         settingsSetup.buildGradle << """
             ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}

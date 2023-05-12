@@ -48,7 +48,7 @@ In case you should use Spek as your engine, then you might want to have a look a
 # ch.tutteli.gradle.plugins.kotlin.module.info [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.kotlin.module.info/4.8.0)
 
 Intended to be used in a kotlin project where either module-info.java is the single java source file or where >= jdk 11 is used.
-It sets up compileJava accordingly and configures the java extension to use jdk 11 for `sourceCompatibility`/`targetCompatibility` if not already set or higher. 
+It sets up compileJava accordingly and configures JavaCompile tasks to use jdk 11 for `sourceCompatibility`/`targetCompatibility` if not already set or higher. 
 
 Per default, it reads the module name (which is used for `--patch-module`) from the defined module-info.java. 
 You can speed up this process (in case you have many java files) by defining `moduleName` on `project.extra`.
@@ -81,7 +81,7 @@ If not set, it automatically propagates `version` and `group` from `rootProject`
 (`group` of subprojects are set to "" when plugin is applied, would default to `rootProject.name`).
 
 If no MavenPublication is defined, then it creates one which:
-- automatically uses `project.components.java` if available -- apply the `java` or `kotlin` plugin (or similar) first.
+- automatically uses `project.components.java` if available.
 - includes all Jar Tasks into the publication
 
 Regardless if there was one or several existing MavenPublications or one was created by the plugin.

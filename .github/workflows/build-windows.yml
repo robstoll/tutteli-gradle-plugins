@@ -8,8 +8,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # re-add 17 once we update gradle, yet windows had problems with module-info tests when two jobs run at the same time
-        java_version: [ 11, 14 ]
+        java_version: [ 11, 17 ]
 
     steps:
       - uses: actions/checkout@v3
@@ -19,6 +18,8 @@ jobs:
           distribution: 'adopt'
           java-version: ${{ matrix.java_version }}
       - name: build
+        env:
+          JAVA_VERSION: ${{ matrix.java_version }}
         run: ./gradlew build
       - name: Upload build code coverage
         uses: codecov/codecov-action@v3.1.3

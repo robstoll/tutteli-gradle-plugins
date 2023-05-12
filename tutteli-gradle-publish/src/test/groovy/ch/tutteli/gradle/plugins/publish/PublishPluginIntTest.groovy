@@ -3,6 +3,7 @@ package ch.tutteli.gradle.plugins.publish
 import ch.tutteli.gradle.plugins.test.Asserts
 import ch.tutteli.gradle.plugins.test.SettingsExtension
 import ch.tutteli.gradle.plugins.test.SettingsExtensionObject
+import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.UnexpectedBuildFailure
@@ -19,6 +20,8 @@ import static ch.tutteli.gradle.plugins.test.Asserts.NL_INDENT
 import static ch.tutteli.gradle.plugins.test.Asserts.assertContainsNotRegex
 import static ch.tutteli.gradle.plugins.test.Asserts.assertContainsRegex
 import static org.junit.jupiter.api.Assertions.*
+import static org.junit.jupiter.api.Assumptions.assumeFalse
+import static org.junit.jupiter.api.Assumptions.assumeFalse
 
 @ExtendWith(SettingsExtension)
 class PublishPluginIntTest {
@@ -29,14 +32,14 @@ class PublishPluginIntTest {
 
     @Test
     void smokeTestJava(SettingsExtensionObject settingsSetup) throws IOException {
-        //arrange
         def version = '1.0.0'
         checkSmokeTestJava("smoke1", settingsSetup, version, null)
     }
 
     @Test
     void smokeTestJava_gradle6x(SettingsExtensionObject settingsSetup) throws IOException {
-        //arrange
+        def javaVersion = JavaVersion.toVersion(System.getProperty("java.version"))
+        assumeFalse(javaVersion >= JavaVersion.VERSION_15)
         def version = '1.0.0'
         checkSmokeTestJava("smoke1", settingsSetup, version, "6.9.4")
     }
@@ -266,6 +269,8 @@ class PublishPluginIntTest {
 
     @Test
     void subproject_gradle6x(SettingsExtensionObject settingsSetup) throws IOException {
+        def javaVersion = JavaVersion.toVersion(System.getProperty("java.version"))
+        assumeFalse(javaVersion >= JavaVersion.VERSION_15)
         checkSubproject(settingsSetup, "6.9.4")
     }
 
@@ -629,6 +634,8 @@ class PublishPluginIntTest {
 
     @Test
     void withKotlinMultiplatformApplied_gradle_6_x(SettingsExtensionObject settingsSetup) throws IOException {
+        def javaVersion = JavaVersion.toVersion(System.getProperty("java.version"))
+        assumeFalse(javaVersion >= JavaVersion.VERSION_15)
         checkKotlinMultiplatform('mpp-gradle-6.9.4', settingsSetup, false, KOTLIN_VERSION, "6.9.4")
     }
 
