@@ -99,16 +99,25 @@ subprojects {
     version = rootProject.version
     group = rootProject.group
 
-    with(the<JavaPluginExtension>()) {
-        // TODO change to JDK11 with 5.0.0
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
     repositories {
         mavenCentral()
     }
+
+    java {
+        toolchain {
+            // reading JAVA_VERSION from env to enable jdk17 build in CI
+            val jdkVersion = System.getenv("JAVA_VERSION")?.toIntOrNull() ?: 11
+            languageVersion.set(JavaLanguageVersion.of(jdkVersion))
+        }
+    }
+
+    tasks.withType<JavaCompile> {
+        sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+        targetCompatibility = JavaVersion.VERSION_1_8.toString()
+    }
 }
+
+
 
 val pluginProjects = subprojects - project(":test-utils")
 configure(pluginProjects) {

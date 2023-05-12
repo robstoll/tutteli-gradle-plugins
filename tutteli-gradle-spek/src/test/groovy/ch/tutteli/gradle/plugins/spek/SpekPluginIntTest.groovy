@@ -2,6 +2,7 @@ package ch.tutteli.gradle.plugins.spek
 
 import ch.tutteli.gradle.plugins.test.SettingsExtension
 import ch.tutteli.gradle.plugins.test.SettingsExtensionObject
+import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Test
@@ -12,6 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource
 
 
 import static org.junit.jupiter.api.Assertions.assertTrue
+import static org.junit.jupiter.api.Assumptions.assumeFalse
 
 @ExtendWith(SettingsExtension)
 class SpekPluginIntTest {
@@ -35,8 +37,9 @@ class SpekPluginIntTest {
     }
 
     static List<Arguments> kotlinVersionAndGradle() {
+        def javaVersion = JavaVersion.toVersion(System.getProperty("java.version"))
         return ['1.3.61', '1.4.10', '1.5.21', '1.6.20', '1.7.20', '1.8.10'].collectMany { kotlinVersion ->
-            def gradleVersions = ['6.9.4', '7.6.1'] + (kotlinVersion.matches("^1\\.[7-9].*\$") ? ['8.0'] : [])
+            def gradleVersions = ((javaVersion < JavaVersion.VERSION_15) ? ['6.9.4', '7.6.1'] : ['7.6.1']) + (kotlinVersion.matches("^1\\.[7-9].*\$") ? ['8.0'] : [])
             gradleVersions.collect { gradleVersion ->
                 Arguments.of(kotlinVersion, gradleVersion)
             }

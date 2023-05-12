@@ -42,7 +42,7 @@ class ModuleInfoPlugin : Plugin<Project> {
             val moduleInfo = javaFiles.find { it.name == "module-info.java" }
                 ?: throw IllegalStateException(
                     "no module-info.java found in compileJava.source of project ${project.name}, following the first 10 files:\n${
-                        javaFiles.take(10).let{ it.ifEmpty { null } }?.joinToString("\n") ?: "no lines"
+                        javaFiles.take(10).let { it.ifEmpty { null } }?.joinToString("\n") ?: "no lines"
                     }"
                 )
 
@@ -59,9 +59,9 @@ class ModuleInfoPlugin : Plugin<Project> {
             moduleName
         }
         val java = project.the<JavaPluginExtension>()
-        with(javaCompile) {
+        javaCompile.apply {
             inputs.property("moduleName", moduleName)
-            with(options) {
+            options.apply {
                 javaModuleVersion.set(project.provider { project.rootProject.version as String })
                 val modulePath =
                     try {
@@ -69,27 +69,30 @@ class ModuleInfoPlugin : Plugin<Project> {
                     } catch (e: NoSuchMethodError) {
                         //maybe a gradle 6.x user
                         @Suppress("DEPRECATION" /* JavaPluginConvention is deprecated but not yet in 6.x */)
-                        project.convention.getPlugin(org.gradle.api.plugins.JavaPluginConvention::class.java).sourceSets.getByName("main").output.asPath
+                        project.convention.getPlugin(org.gradle.api.plugins.JavaPluginConvention::class.java)
+                            .sourceSets.getByName("main")
+                            .output
+                            .asPath
                     }
                 compilerArgs = listOf("--patch-module", "$moduleName=$modulePath")
+            }
+            if (JavaVersion.toVersion(sourceCompatibility) <= JavaVersion.VERSION_11) {
+                checkOnlyModuleInfoInSrc(javaFiles)
+                sourceCompatibility = JavaVersion.VERSION_11.toString()
+            }
+            if (JavaVersion.toVersion(targetCompatibility) <= JavaVersion.VERSION_11) {
+                checkOnlyModuleInfoInSrc(javaFiles)
+                targetCompatibility = JavaVersion.VERSION_11.toString()
             }
         }
         with(java) {
             modularity.inferModulePath.set(true)
-            if (sourceCompatibility <= JavaVersion.VERSION_11) {
-                checkOnlyModuleInfoInSrc(javaFiles)
-                sourceCompatibility = JavaVersion.VERSION_11
-            }
-            if (targetCompatibility <= JavaVersion.VERSION_11) {
-                checkOnlyModuleInfoInSrc(javaFiles)
-                targetCompatibility = JavaVersion.VERSION_11
-            }
         }
     }
 
     private fun checkOnlyModuleInfoInSrc(javaFiles: Set<File>) {
         if (javaFiles.size > 1) throw IllegalStateException(
-            "tutteli-gradle-kotlin-module-info assumes you either have set source/targetCompatibility >= 11 or only have module-info.java to compile"
+            "tutteli-gradle-kotlin-module-info assumes you either have set either java.toolchain.languageVersion or source/targetCompatibility >= 11 and in case not only have module-info.java to compile"
         )
     }
 }
