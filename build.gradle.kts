@@ -13,8 +13,8 @@ val mavenModelVersion by extra("3.8.7")
 val jacocoToolVersion by extra("0.8.8")
 
 buildscript {
-    val version = "4.8.0"
-    val previousVersion = "4.7.2"
+    val version = "4.9.0"
+    val previousVersion = "4.8.0"
 
     rootProject.version = version
     rootProject.group = "ch.tutteli"
@@ -118,7 +118,6 @@ subprojects {
 }
 
 
-
 val pluginProjects = subprojects - project(":test-utils")
 configure(pluginProjects) {
     apply(plugin = "java-gradle-plugin")
@@ -172,7 +171,7 @@ configure(pluginProjects) {
 
     afterEvaluate {
 
-        with(the<GradlePluginDevelopmentExtension>()) {
+        configure<GradlePluginDevelopmentExtension> {
             plugins {
                 register("tutteliPlugin") {
                     val pluginId: String by subproject.extra
@@ -183,7 +182,7 @@ configure(pluginProjects) {
             }
         }
 
-        with(the<PluginBundleExtension>()) {
+        configure<PluginBundleExtension> {
             website = "https://github.com/robstoll/tutteli-gradle-plugins"
             vcsUrl = "https://github.com/robstoll/tutteli-gradle-plugins.git"
 
