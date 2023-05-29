@@ -21,12 +21,13 @@ open class DokkaPlugin : Plugin<Project> {
         val extension = project.extensions.create<DokkaPluginExtension>(EXTENSION_NAME, project)
         val rootProject = project.rootProject;
 
+        val docDirName = "kdoc"
         val docsDir = if (project == rootProject) {
             extension.modeSimple.map { usesSimpleDocs ->
                 if (usesSimpleDocs) {
-                    rootProject.projectDir.resolve("docs/kdoc")
+                    rootProject.projectDir.resolve("docs/$docDirName")
                 } else {
-                    rootProject.projectDir.resolve("../${rootProject.name}-gh-pages/${rootProject.version}/kdoc")
+                    rootProject.projectDir.resolve("../${rootProject.name}-gh-pages/${rootProject.version}/$docDirName")
                 }
             }
         } else {
@@ -73,11 +74,11 @@ open class DokkaPlugin : Plugin<Project> {
                 if (isReleaseVersion(rootProject)) {
                     externalDocumentationLink {
                         url.set(extension.githubUser.flatMap { githubUser ->
-                            extension.modeSimple.map { usesSimpleDocs ->
+                            rootProject.the<DokkaPluginExtension>().modeSimple.map { usesSimpleDocs ->
                                 if (usesSimpleDocs) {
-                                    URL("https://$githubUser.github.io/${rootProject.name}/kdoc/${rootProject.name}/")
+                                    URL("https://$githubUser.github.io/${rootProject.name}/$docDirName/${rootProject.name}/")
                                 } else {
-                                    URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/doc/${rootProject.name}/")
+                                    URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/$docDirName/")
                                 }
                             }
                         })
