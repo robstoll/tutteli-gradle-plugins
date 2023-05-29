@@ -84,7 +84,7 @@ class SpekPluginIntTest {
         }
         def result = builder
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("build")
+            .withArguments("clean", "build")
             .build()
         //assert
         assertTrue(result.output.contains("was here"), "println in output:\n" + result.output)
