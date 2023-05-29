@@ -86,7 +86,7 @@ class DokkaPluginSmokeTest {
         assertEquals('#L', sourceLink.remoteLineSuffix.get())
 
         GradleExternalDocumentationLinkBuilder externalDocLInk = getSingleMainExternalDocumentationLink(dokkaTask)
-        assertEquals("https://${githubUser}.github.io/$projectName/$version/doc/$projectName/".toString(), externalDocLInk.url.get().toString())
+        assertEquals("https://${githubUser}.github.io/$projectName/$version/kdoc/".toString(), externalDocLInk.url.get().toString())
 
         project.evaluate()
         assertEquals("https://github.com/$githubUser/$projectName/tree/v$version/src/main/kotlin".toString(), sourceLink.remoteUrl.get().toString())

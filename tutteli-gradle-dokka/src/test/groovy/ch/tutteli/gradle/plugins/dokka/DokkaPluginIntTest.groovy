@@ -256,8 +256,8 @@ class DokkaPluginIntTest {
         //assert
         assertTrue(result.output.contains("main: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/main/kotlin"), "url should be in output:\n" + result.output)
         assertTrue(result.output.contains("test: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/test/kotlin"), "url should be in output:\n" + result.output)
-        assertTrue(result.output.contains("main: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc/test-project"), "extLink should be in output:\n" + result.output)
-        assertTrue(result.output.contains("test: was here extLink: https://robstoll.github.io/test-project/1.0.0/doc/test-project"), "extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("main: was here extLink: https://robstoll.github.io/test-project/1.0.0/kdoc"), "extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("test: was here extLink: https://robstoll.github.io/test-project/1.0.0/kdoc"), "extLink should be in output:\n" + result.output)
     }
 
     @Test
