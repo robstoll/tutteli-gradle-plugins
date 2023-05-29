@@ -17,6 +17,7 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: ${{ matrix.java_version }}
+          cache: 'gradle'
       - name: build
         env:
           JAVA_VERSION: ${{ matrix.java_version }}
