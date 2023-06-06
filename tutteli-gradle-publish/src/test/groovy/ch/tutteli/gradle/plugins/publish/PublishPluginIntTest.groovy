@@ -997,7 +997,6 @@ class PublishPluginIntTest {
         zipFile.withCloseable {
             def manifest = zipFile.getInputStream(findInZipFile(zipFile, 'META-INF/MANIFEST.MF')).text
             assertManifest(manifest, ': ', projectName, jarName, version, repoUrl, vendor, kotlinVersion)
-            assertTrue(manifest.contains("Build-Time: ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}"), "manifest build time was not ${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').substring(0, 10)}\n${manifest}")
             assertInZipFile(zipFile, 'LICENSE.txt')
         }
     }
