@@ -6,6 +6,7 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.signing.SigningExtension
@@ -90,6 +91,15 @@ class PublishPlugin : Plugin<Project> {
                         publication.artifact(javadocJar)
                     }
                 }
+            }
+
+            tasks.withType<AbstractArchiveTask>().configureEach {
+                // Ensure builds are reproducible, see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives
+                // as well as https://github.com/gradle/gradle/issues/10900
+                isPreserveFileTimestamps = false
+                isReproducibleFileOrder = true
+                dirMode = "775".toInt(8)
+                fileMode = "664".toInt(8)
             }
         }
     }
