@@ -35,7 +35,6 @@ abstract class AugmentManifestInJarTask : DefaultTask() {
 
                         "Implementation-Version" to project.version,
                         "Implementation-URL" to "https://$repoUrl",
-                        "Build-Time" to ZonedDateTime.now().format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
                     ) + getVendorIfAvailable(extension) + getImplementationKotlinVersionIfAvailable(project)
                 )
                 listOf("LICENSE.txt", "LICENSE", "LICENSE.md", "LICENSE.rst").forEach { fileName ->
