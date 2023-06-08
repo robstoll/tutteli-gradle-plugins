@@ -2,15 +2,18 @@ package ch.tutteli.gradle.plugins.dokka
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.jvm.tasks.Jar
-import org.jetbrains.dokka.gradle.DokkaPlugin as JetbrainsDokkaPlugin
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
-import org.jetbrains.dokka.gradle.AbstractDokkaParentTask
+import org.jetbrains.dokka.gradle.AbstractDokkaTask
 import org.jetbrains.dokka.gradle.DokkaTask
 import java.io.File
 import java.net.URL
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
+import org.jetbrains.dokka.gradle.DokkaPlugin as JetbrainsDokkaPlugin
 
 open class DokkaPlugin : Plugin<Project> {
 
@@ -25,9 +28,9 @@ open class DokkaPlugin : Plugin<Project> {
         val docsDir = if (project == rootProject) {
             extension.modeSimple.map { usesSimpleDocs ->
                 if (usesSimpleDocs) {
-                    rootProject.projectDir.resolve("docs/$docDirName")
+                    rootProject.layout.projectDirectory.dir("docs/$docDirName")
                 } else {
-                    rootProject.projectDir.resolve("../${rootProject.name}-gh-pages/${rootProject.version}/$docDirName")
+                    rootProject.layout.projectDirectory.dir("../${rootProject.name}-gh-pages/${rootProject.version}/$docDirName")
                 }
             }
         } else {
@@ -44,17 +47,23 @@ open class DokkaPlugin : Plugin<Project> {
         }
 
         if (docsDir != null) {
-            project.tasks.withType<AbstractDokkaParentTask>().configureEach {
-                outputDirectory.set(docsDir)
+            project.tasks.withType<AbstractDokkaTask> {
+                try {
+                    outputDirectory.set(docsDir)
+                } catch (e: NoSuchMethodError) {
+                    // maybe a dokka 1.8.10 user where dokka used a Property<File> instead of DirectoryProperty
+                    @Suppress("UNCHECKED_CAST")
+                    val outputDir = (this::class.memberProperties
+                        .first { it.name == "outputDirectory" }
+                        as KProperty1<AbstractDokkaTask, Property<File>>).get(this)
+
+                    outputDir.set(docsDir.get().asFile)
+                }
             }
         }
 
         // we want to configure DokkaTask as well as DokkaPartialTask
-        project.tasks.withType<AbstractDokkaLeafTask>().configureEach {
-            // custom output directory
-            if (docsDir != null) {
-                outputDirectory.set(docsDir)
-            }
+        project.tasks.withType<AbstractDokkaLeafTask> {
 
             dokkaSourceSets.configureEach {
                 val sourceSet = this

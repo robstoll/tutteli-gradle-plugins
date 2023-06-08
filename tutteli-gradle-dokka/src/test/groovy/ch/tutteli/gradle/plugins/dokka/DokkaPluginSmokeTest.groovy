@@ -39,7 +39,7 @@ class DokkaPluginSmokeTest {
         //assert
         DokkaTask dokkaTask = getDokkaTask(project)
         assertEquals(projectName, dokkaTask.moduleName.get())
-        assertEquals("$project.projectDir${s}docs${s}kdoc".toString(), dokkaTask.outputDirectory.get().absolutePath)
+        assertEquals("$project.projectDir${s}docs${s}kdoc".toString(), dokkaTask.outputDirectory.get().asFile.absolutePath)
 
         Jar javadocTask = project.tasks.getByName(DokkaPlugin.TASK_NAME_JAVADOC) as Jar
         assertNotNull(javadocTask, DokkaPlugin.TASK_NAME_JAVADOC)
@@ -75,7 +75,7 @@ class DokkaPluginSmokeTest {
         //assert
         DokkaTask dokkaTask = getDokkaTask(project)
         assertEquals(projectName, dokkaTask.moduleName.get())
-        assertEquals("$project.projectDir${s}..${s}$projectName-gh-pages${s}$version${s}kdoc".toString(), dokkaTask.outputDirectory.get().absolutePath)
+        assertEquals("${project.projectDir.toPath().resolve("..").normalize()}${s}$projectName-gh-pages${s}$version${s}kdoc".toString(), dokkaTask.outputDirectory.get().asFile.absolutePath)
 
         Jar javadocTask = project.tasks.getByName(DokkaPlugin.TASK_NAME_JAVADOC) as Jar
         assertNotNull(javadocTask, DokkaPlugin.TASK_NAME_JAVADOC)
@@ -115,7 +115,7 @@ class DokkaPluginSmokeTest {
         //assert
         DokkaTask dokkaTask = getDokkaTask(project)
         assertEquals(projectName, dokkaTask.moduleName.get())
-        assertEquals("$project.projectDir${s}..${s}$projectName-gh-pages${s}$version${s}kdoc".toString(), dokkaTask.outputDirectory.get().absolutePath)
+        assertEquals("${project.projectDir.toPath().resolve("..").normalize()}${s}$projectName-gh-pages${s}$version${s}kdoc".toString(), dokkaTask.outputDirectory.get().asFile.absolutePath)
 
         Jar javadocTask = project.tasks.getByName(DokkaPlugin.TASK_NAME_JAVADOC) as Jar
         assertNotNull(javadocTask, DokkaPlugin.TASK_NAME_JAVADOC)
@@ -154,7 +154,7 @@ class DokkaPluginSmokeTest {
         //assert
         DokkaTask dokkaTask = getDokkaTask(project)
         assertEquals(projectName, dokkaTask.moduleName.get())
-        assertEquals("$project.projectDir${s}..${s}$projectName-gh-pages${s}$version${s}kdoc".toString(), dokkaTask.outputDirectory.get().absolutePath)
+        assertEquals("${project.projectDir.toPath().resolve("..").normalize()}${s}$projectName-gh-pages${s}$version${s}kdoc".toString(), dokkaTask.outputDirectory.get().asFile.absolutePath)
 
         Jar javadocTask = project.tasks.getByName(DokkaPlugin.TASK_NAME_JAVADOC) as Jar
         assertNotNull(javadocTask, DokkaPlugin.TASK_NAME_JAVADOC)
