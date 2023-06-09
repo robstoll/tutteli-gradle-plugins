@@ -485,12 +485,79 @@ class DokkaPluginIntTest {
         assertTrue(result.output.contains("sub test: was here extLink: $extLink"), "sub test extLink ($extLink) should be in output:\n" + result.output)
     }
 
+    @Test
+    void smokeTestUsingDokka1_8_10_whereProviderFileWasUsed_modeNotSimple(SettingsExtensionObject settingsSetup) throws IOException {
+        //arrange
+        settingsSetup.settings << """
+            pluginManagement {
+                resolutionStrategy {
+                    eachPlugin {
+                        if (requested.id.namespace == 'org.jetbrains.dokka') {
+                            useModule('org.jetbrains.dokka:dokka-gradle-plugin:1.8.10')
+                        }
+                    }
+                }
+            }
+            rootProject.name='test-project'
+        """
+
+        settingsSetup.buildGradle << """
+        import org.gradle.api.tasks.testing.logging.TestLogEvent
+        buildscript {
+            repositories {
+                maven { url "https://plugins.gradle.org/m2/" }
+            }
+            dependencies {
+                classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.8.10'
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
+                classpath files(${settingsSetup.pluginClasspath.findAll { !it.contains("org.jetbrains.dokka") }})
+            }
+        }
+        repositories {
+            mavenCentral()
+        }
+        project.version = '1.0.0'
+
+        apply plugin: 'org.jetbrains.dokka'
+        apply plugin: 'org.jetbrains.kotlin.jvm'
+
+        project.afterEvaluate {
+            project.tasks.withType(org.jetbrains.dokka.gradle.AbstractDokkaLeafTask).configureEach {
+                // custom output directory
+                println("outputDirectoryClass is: \${outputDirectory.getClass().name}")
+            }
+        }
+
+        apply plugin: 'ch.tutteli.gradle.plugins.dokka'
+
+        tutteliDokka {
+            //uses the githubUser to create the repo url as well as the externalDocumentationLink if one uses a release version (x.y.z)
+            githubUser = 'robstoll'
+            modeSimple = false
+        }
+        ${ printInfo() }
+        """
+        new File(settingsSetup.tmp, "src/main/kotlin").mkdirs()
+        new File(settingsSetup.tmp, "src/test/kotlin").mkdirs()
+        //act
+        def result = GradleRunner.create()
+            .withProjectDir(settingsSetup.tmp)
+            .withArguments("dokkaHtml", "--stacktrace")
+            .build()
+
+        //assert
+        assertTrue(result.output.contains("outputDirectoryClass is: org.gradle.api.internal.provider.DefaultProperty"))
+        assertTrue(result.output.contains("main: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/main/kotlin"), "url should be in output:\n" + result.output)
+        assertTrue(result.output.contains("test: was here url: https://github.com/robstoll/test-project/tree/v1.0.0/src/test/kotlin"), "url should be in output:\n" + result.output)
+        assertTrue(result.output.contains("main: was here extLink: https://robstoll.github.io/test-project/1.0.0/kdoc"), "extLink should be in output:\n" + result.output)
+        assertTrue(result.output.contains("test: was here extLink: https://robstoll.github.io/test-project/1.0.0/kdoc"), "extLink should be in output:\n" + result.output)
+    }
 
     private static String printInfo() {
         """
         project.afterEvaluate {
-            dokkaHtml.dokkaSourceSets.each { set -> set.sourceLinks.get().each { println("\$project.name \$set.name: was here url: \${it.remoteUrl.get()}") }}
-            dokkaHtml.dokkaSourceSets.each { set -> set.externalDocumentationLinks.get().each{ println("\$project.name \$set.name: was here extLink: \${it.url.get()}") }}
+            dokkaHtml.dokkaSourceSets.each { set -> set.sourceLinks.get().each { println("\$project.name \$set.name: was here url: \${it.remoteUrl.get()}") } }
+            dokkaHtml.dokkaSourceSets.each { set -> set.externalDocumentationLinks.get().each { println("\$project.name \$set.name: was here extLink: \${it.url.get()}") } }
         }
         """
     }
