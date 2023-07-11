@@ -47,7 +47,7 @@ open class DokkaPlugin : Plugin<Project> {
         }
 
         if (docsDir != null) {
-            project.tasks.withType<AbstractDokkaTask> {
+            project.tasks.withType<AbstractDokkaTask>().configureEach {
                 try {
                     outputDirectory.set(docsDir)
                 } catch (e: NoSuchMethodError) {
@@ -63,7 +63,7 @@ open class DokkaPlugin : Plugin<Project> {
         }
 
         // we want to configure DokkaTask as well as DokkaPartialTask
-        project.tasks.withType<AbstractDokkaLeafTask> {
+        project.tasks.withType<AbstractDokkaLeafTask>().configureEach {
 
             dokkaSourceSets.configureEach {
                 val sourceSet = this

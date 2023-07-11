@@ -111,7 +111,7 @@ subprojects {
         }
     }
 
-    tasks.withType<JavaCompile> {
+    tasks.withType<JavaCompile>().configureEach {
         sourceCompatibility = JavaVersion.VERSION_1_8.toString()
         targetCompatibility = JavaVersion.VERSION_1_8.toString()
     }
@@ -132,7 +132,7 @@ configure(pluginProjects) {
         reports.html.required.set(true)
     }
 
-    tasks.withType<Test> {
+    tasks.withType<Test>().configureEach {
         reports {
             html.outputLocation.set(file("${buildDir}/reports/junit"))
         }

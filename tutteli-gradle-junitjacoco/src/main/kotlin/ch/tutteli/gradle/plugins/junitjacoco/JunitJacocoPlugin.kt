@@ -15,6 +15,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.withType
 import java.io.File
 
 class JunitJacocoPlugin : Plugin<Project> {
@@ -26,7 +27,7 @@ class JunitJacocoPlugin : Plugin<Project> {
 
         val extension = project.extensions.create<JunitJacocoPluginExtension>(EXTENSION_NAME, project)
 
-        project.tasks.withType(Test::class.java) {
+        project.tasks.withType<Test>().configureEach {
             useJUnitPlatform()
             reports.junitXml.required.set(false)
         }
@@ -77,7 +78,7 @@ class JunitJacocoPlugin : Plugin<Project> {
 
     private fun configureTestTasks(project: Project, extension: JunitJacocoPluginExtension) {
 
-        project.tasks.withType(AbstractTestTask::class.java) {
+        project.tasks.withType<AbstractTestTask>().configureEach {
             testLogging {
                 events(
                     TestLogEvent.FAILED,
@@ -112,7 +113,10 @@ class JunitJacocoPlugin : Plugin<Project> {
             })
         }
         project.afterEvaluate {
-            project.tasks.withType(AbstractTestTask::class.java).forEach { testTask ->
+            // TODO 5.0.0 check if really still needed (maybe fixed in newer gradle versions) and if so, then find a
+            // way that we can still use configureEach instead of all in order that we can use configuration-cache
+            project.tasks.withType<AbstractTestTask>().all {
+                val testTask = this
                 if (testTask.doesNotFailIfFailedBefore) {
                     testTask.finalizedBy(failIfTestFailedLastTimeTask(project, testTask))
                 }

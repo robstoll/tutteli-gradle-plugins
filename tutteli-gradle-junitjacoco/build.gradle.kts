@@ -35,7 +35,7 @@ val generateDependencyVersions = tasks.register("generateHardCodedDependencies")
         )
     }
 }
-tasks.withType<KotlinCompile>{
+tasks.withType<KotlinCompile>().configureEach {
     dependsOn(generateDependencyVersions)
 }
 afterEvaluate {
