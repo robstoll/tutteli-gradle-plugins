@@ -52,12 +52,8 @@ class JunitJacocoPlugin : Plugin<Project> {
                     "src/jvmMain"
                 )
 
-                val classFiles = File("${project.buildDir}/classes/kotlin/jvm/main")
-                    .walkBottomUp()
-                    .toSet()
-
-                classDirectories.setFrom(classFiles)
-                sourceDirectories.setFrom(project.files(coverageSourceDirs))
+                sourceDirectories.from(project.files(coverageSourceDirs))
+                classDirectories.from(project.layout.buildDirectory.map { it.dir("classes/kotlin/jvm/main").asFileTree })
 
                 executionData.setFrom(project.files("${project.buildDir}/jacoco/jvmTest.exec"))
                 dependsOn(project.tasks.named("jvmTest"))
