@@ -16,7 +16,6 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.withType
-import java.io.File
 
 class JunitJacocoPlugin : Plugin<Project> {
 
@@ -31,33 +30,34 @@ class JunitJacocoPlugin : Plugin<Project> {
             useJUnitPlatform()
             reports.junitXml.required.set(false)
         }
-        @Suppress("UNCHECKED_CAST")
-        val jacocoReportTask = project.tasks.named(JACOCO_TASK_NAME) as TaskProvider<JacocoReport>
-        project.tasks.named("check") {
-            dependsOn(jacocoReportTask)
-        }
-        defaultConfig(project, jacocoReportTask)
+
+        defaultConfig(project, extension)
         configureTestTasks(project, extension)
     }
 
-    private fun defaultConfig(target: Project, jacocoReportTask: TaskProvider<JacocoReport>) {
+    private fun defaultConfig(target: Project, extension: JunitJacocoPluginExtension) {
+        @Suppress("UNCHECKED_CAST")
+        val jacocoReportTask = target.tasks.named(JACOCO_TASK_NAME) as TaskProvider<JacocoReport>
+        target.tasks.named("check") {
+            dependsOn(jacocoReportTask)
+        }
         val jacocoPluginExtension = target.extensions.getByType(JacocoPluginExtension::class.java)
         jacocoPluginExtension.toolVersion = Dependencies.jacocoToolsVersion
 
         jacocoReportTask.configure {
 
-            if (project.plugins.findPlugin("org.jetbrains.kotlin.multiplatform") != null) {
-                val coverageSourceDirs = arrayOf(
-                    "src/commonMain",
-                    "src/jvmMain"
-                )
+            if (target.plugins.findPlugin("org.jetbrains.kotlin.multiplatform") != null) {
 
-                sourceDirectories.from(project.files(coverageSourceDirs))
-                classDirectories.from(project.layout.buildDirectory.map { it.dir("classes/kotlin/jvm/main").asFileTree })
+                configureProjectSources(target)
 
-                executionData.setFrom(project.files("${project.buildDir}/jacoco/jvmTest.exec"))
-                dependsOn(project.tasks.named("jvmTest"))
+                executionData.setFrom(target.files("${target.buildDir}/jacoco/jvmTest.exec"))
+                dependsOn(target.tasks.named("jvmTest"))
             }
+
+            extension.additionalProjectSources.get().forEach { otherProject ->
+                configureProjectSources(otherProject)
+            }
+
             reports {
                 csv.required.set(false)
                 xml.required.set(true)
@@ -71,6 +71,10 @@ class JunitJacocoPlugin : Plugin<Project> {
         }
     }
 
+    private fun JacocoReport.configureProjectSources(project: Project) {
+        sourceDirectories.from(project.files(coverageSourceDirs))
+        classDirectories.from(project.layout.buildDirectory.map { it.dir("classes/kotlin/jvm/main").asFileTree })
+    }
 
     private fun configureTestTasks(project: Project, extension: JunitJacocoPluginExtension) {
 
@@ -154,5 +158,11 @@ class JunitJacocoPlugin : Plugin<Project> {
     companion object {
         const val JACOCO_TASK_NAME = "jacocoTestReport"
         const val EXTENSION_NAME = "junitjacoco"
+        private val coverageSourceDirs = arrayOf(
+            "src/commonMain",
+            "src/jvmMain",
+            "src/main"
+        )
+
     }
 }
