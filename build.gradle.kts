@@ -73,7 +73,7 @@ plugins {
     // necessary in order that we can use sourceSets / implementation and such within a dependencies block
     id("java-library")
     //TODO 5.0.0 update to 1.1.0
-    id("com.gradle.plugin-publish") version "0.21.0" apply false
+    id("com.gradle.plugin-publish") version "1.2.1" apply false
 }
 
 configurations {
