@@ -20,5 +20,6 @@ class JunitJacocoPluginTest {
         project.evaluate()
         //assert
         assertEquals(["jsBrowserTest"], extension.allowedTestTasksWithoutTests.get())
+        assertEquals([], extension.additionalProjectSources.get())
     }
 }
