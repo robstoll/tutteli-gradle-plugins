@@ -13,8 +13,8 @@ val mavenModelVersion by extra("3.8.7")
 val jacocoToolVersion by extra("0.8.8")
 
 buildscript {
-    val version = "4.10.0"
-    val previousVersion = "4.8.0"
+    val version = "4.10.1"
+    val previousVersion = "4.10.0"
 
     rootProject.version = version
     rootProject.group = "ch.tutteli"
@@ -257,7 +257,7 @@ Release & deploy
         1) update version of the badges in README (except for codecov)
         2) search for `tree/master` in README and replace it with `tree/vX.Y.Z`
     b) change `version` in build.gradle to X.Y.Z (remove -SNAPSHOT)
-    c) search for old version and replace by new with the *exception* of previous_version in build.gradle
+    c) search for old version and replace by new with the *exception* of previous_version in build.gradle.kts
     c) commit & push (modified README.md and build.gradle.kts)
     d) git tag vX.Y.Z
     e) git push origin vX.Y.Z
