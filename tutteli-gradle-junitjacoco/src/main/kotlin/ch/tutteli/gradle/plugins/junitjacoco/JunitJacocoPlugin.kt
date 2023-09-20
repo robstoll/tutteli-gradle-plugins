@@ -54,10 +54,6 @@ class JunitJacocoPlugin : Plugin<Project> {
                 dependsOn(target.tasks.named("jvmTest"))
             }
 
-            extension.additionalProjectSources.get().forEach { otherProject ->
-                configureProjectSources(otherProject)
-            }
-
             reports {
                 csv.required.set(false)
                 xml.required.set(true)
@@ -67,6 +63,13 @@ class JunitJacocoPlugin : Plugin<Project> {
                 csv.outputLocation.set(reportDir.resolve("report.csv"))
                 xml.outputLocation.set(reportDir.resolve("report.xml"))
                 html.outputLocation.set(reportDir.resolve("html/"))
+            }
+        }
+        target.afterEvaluate {
+            jacocoReportTask.configure {
+                extension.additionalProjectSources.get().forEach { otherProject ->
+                    configureProjectSources(otherProject)
+                }
             }
         }
     }

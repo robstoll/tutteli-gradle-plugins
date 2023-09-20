@@ -110,6 +110,9 @@ class ModuleInfoPluginIntTest {
             if (!Files.exists(kotlinSrcDir)) {
                 kotlinSrcDir = settingsSetup.tmpPath.resolve("sub1/src/main/kotlin")
             }
+            if (!Files.exists(kotlinSrcDir)) {
+                kotlinSrcDir = settingsSetup.tmpPath.resolve("src/jvmMain/kotlin")
+            }
             String testKtContent = null
             if (Files.exists(kotlinSrcDir)) {
                 def moduleInfo = kotlinSrcDir.resolve("test.kt")
