@@ -1,7 +1,7 @@
 import com.gradle.publish.PluginBundleExtension
 
 val kotlinVersion by extra("1.5.21")
-val dokkaVersion by extra("1.9.0")
+val dokkaVersion by extra("1.9.10")
 
 val junitJupiterVersion by extra("5.10.0")
 val junitPlatformVersion by extra("1.9.1")
