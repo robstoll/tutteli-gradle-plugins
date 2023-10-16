@@ -3,7 +3,6 @@ package ch.tutteli.gradle.plugins.dokka
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.findByType
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 
 open class DokkaPluginExtension(project: Project) {
@@ -13,7 +12,13 @@ open class DokkaPluginExtension(project: Project) {
     /**
      * true: kdoc included in docs/kdoc without versioning vs false: gh-pages branch with version/kdoc/
      */
+    @Deprecated("will be removed with 5.0.0 at the latest", ReplaceWith("this.writeToDocs"))
     val modeSimple: Property<Boolean> = project.objects.property()
+
+    /**
+     * true: kdoc included in docs/kdoc without versioning vs false: gh-pages branch with version/kdoc/
+     */
+    val writeToDocs: Property<Boolean> = project.objects.property()
 
     init {
         if (isTutteliProject(project) || isTutteliProject(project.rootProject)) {
@@ -29,6 +34,7 @@ open class DokkaPluginExtension(project: Project) {
             takeOverValueFromRoot(rootExtension.githubUser, githubUser)
         }
         modeSimple.convention(true)
+        writeToDocs.convention(true)
     }
 
     private fun <T> takeOverValueFromRoot(rootProperty: Property<T>, property: Property<T>) {

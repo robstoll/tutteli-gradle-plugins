@@ -29,7 +29,7 @@ class SpekPlugin implements Plugin<Project> {
                 throw new IllegalStateException("spek 1 is no longer supported by this plugin.")
             }
 
-            if (project.plugins.findPlugin('org.jetbrains.kotlin.multiplatform') != null) {
+            if (project.plugins.hasPlugin('org.jetbrains.kotlin.multiplatform')) {
                 configureForMpp(project, spekVersion)
             } else {
                 configureForJvm(project, spekVersion)

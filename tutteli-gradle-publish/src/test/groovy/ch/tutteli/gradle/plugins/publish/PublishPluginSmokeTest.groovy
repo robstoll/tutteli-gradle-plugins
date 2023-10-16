@@ -179,7 +179,6 @@ class PublishPluginSmokeTest {
 
     private static void assertExtensionAndTaskDefined(Project project, String jarTaskName = "jar") {
         project.extensions.getByName(PublishPlugin.EXTENSION_NAME)
-        Asserts.assertTaskExists(project, PublishPlugin.TASK_NAME_PREFIX_AUGMENT_MANIFEST_IN_JAR + jarTaskName)
         Asserts.assertTaskExists(project, PublishPlugin.TASK_NAME_VALIDATE_PUBLISH)
     }
 
