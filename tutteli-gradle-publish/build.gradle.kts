@@ -13,9 +13,14 @@ repositories {
 
 val mavenModelVersion: String by rootProject.extra
 val kotlinVersion: String by rootProject.extra
+val dokkaVersion: String by rootProject.extra
 
 dependencies {
     implementation("org.apache.maven:maven-model:$mavenModelVersion")
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    compileOnly("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion"){
+        exclude("com.jetbrains.kotlin")
+    }
 }

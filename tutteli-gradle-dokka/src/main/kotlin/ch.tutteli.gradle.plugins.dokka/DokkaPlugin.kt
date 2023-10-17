@@ -4,11 +4,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
-import org.jetbrains.dokka.gradle.DokkaTask
 import java.io.File
 import java.net.URL
 import kotlin.reflect.KProperty1
@@ -26,24 +24,17 @@ open class DokkaPlugin : Plugin<Project> {
 
         val docDirName = "kdoc"
         val docsDir = if (project == rootProject) {
-            extension.modeSimple.map { usesSimpleDocs ->
-                if (usesSimpleDocs) {
-                    rootProject.layout.projectDirectory.dir("docs/$docDirName")
-                } else {
-                    rootProject.layout.projectDirectory.dir("../${rootProject.name}-gh-pages/${rootProject.version}/$docDirName")
+            extension.modeSimple.flatMap { modeSimple ->
+                extension.writeToDocs.map { writeToDocs ->
+                    if (modeSimple && writeToDocs) {
+                        rootProject.layout.projectDirectory.dir("docs/$docDirName")
+                    } else {
+                        rootProject.layout.projectDirectory.dir("../${rootProject.name}-gh-pages/${rootProject.version}/$docDirName")
+                    }
                 }
             }
         } else {
             null
-        }
-
-        project.tasks.register<Jar>(TASK_NAME_JAVADOC) {
-            archiveClassifier.set("javadoc")
-            val dokkaHtml = project.tasks.named<DokkaTask>("dokkaHtml")
-            dependsOn(dokkaHtml)
-            doFirst {
-                from(dokkaHtml.map { it.outputDirectory })
-            }
         }
 
         if (docsDir != null) {
@@ -83,11 +74,13 @@ open class DokkaPlugin : Plugin<Project> {
                 if (isReleaseVersion(rootProject)) {
                     externalDocumentationLink {
                         url.set(extension.githubUser.flatMap { githubUser ->
-                            rootProject.the<DokkaPluginExtension>().modeSimple.map { usesSimpleDocs ->
-                                if (usesSimpleDocs) {
-                                    URL("https://$githubUser.github.io/${rootProject.name}/$docDirName/${rootProject.name}/")
-                                } else {
-                                    URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/$docDirName/")
+                            rootProject.the<DokkaPluginExtension>().modeSimple.flatMap { usesSimpleDocs ->
+                                extension.writeToDocs.map { writeToDocs ->
+                                    if (usesSimpleDocs && writeToDocs) {
+                                        URL("https://$githubUser.github.io/${rootProject.name}/$docDirName/${rootProject.name}/")
+                                    } else {
+                                        URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/$docDirName/")
+                                    }
                                 }
                             }
                         })

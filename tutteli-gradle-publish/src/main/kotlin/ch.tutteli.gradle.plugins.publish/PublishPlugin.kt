@@ -1,9 +1,12 @@
 package ch.tutteli.gradle.plugins.publish
 
-import org.gradle.api.*
+import org.gradle.api.NamedDomainObjectCollection
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.internal.PublicationInternal
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
@@ -11,6 +14,7 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
+import org.jetbrains.dokka.gradle.DokkaTask
 
 class PublishPlugin : Plugin<Project> {
 
@@ -18,7 +22,6 @@ class PublishPlugin : Plugin<Project> {
         val LOGGER: Logger = Logging.getLogger(PublishPlugin::class.java)
         const val EXTENSION_NAME = "tutteliPublish"
         private const val PUBLICATION_NAME = "tutteli"
-        const val TASK_NAME_PREFIX_AUGMENT_MANIFEST_IN_JAR = "augmentManifestIn-"
         const val TASK_NAME_VALIDATE_PUBLISH = "validateBeforePublish"
         val TASK_GENERATE_POM = "generatePomFileFor${PUBLICATION_NAME.capitalize()}Publication"
         val TASK_GENERATE_GRADLE_METADATA = "generateMetadataFileFor${PUBLICATION_NAME.capitalize()}Publication"
@@ -30,6 +33,26 @@ class PublishPlugin : Plugin<Project> {
         project.plugins.apply(SigningPlugin::class.java)
 
         val extension = project.extensions.create<PublishPluginExtension>(EXTENSION_NAME, project)
+        val manifestAugmenter = ManifestAugmenter(project, extension)
+        val pomAugmenter = PomAugmenter(project, extension)
+
+        project.tasks.withType<AbstractArchiveTask>().configureEach {
+            // Ensure builds are reproducible, see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives
+            // as well as https://github.com/gradle/gradle/issues/10900
+            isPreserveFileTimestamps = false
+            isReproducibleFileOrder = true
+            dirMode = "775".toInt(8)
+            fileMode = "664".toInt(8)
+        }
+
+        project.tasks.withType<Jar>()
+            .matching { jar -> extension.artifactFilter.map { it(jar) }.getOrElse(true) }
+            .configureEach {
+                val jar = this
+                doFirst {
+                    manifestAugmenter.augment(jar)
+                }
+            }
 
         project.afterEvaluate {
             project.version = determineVersion(project) ?: determineVersion(project.rootProject) ?: ""
@@ -41,74 +64,88 @@ class PublishPlugin : Plugin<Project> {
             checkExtensionPropertyPresentAndNotBlank(extension.githubUser, "githubUser")
             checkExtensionPropertyPresentNotEmpty(extension.licenses, "licenses")
 
-            jarTasks(project, extension) {
-                val jarTask = this
-                val augmentTaskName = TASK_NAME_PREFIX_AUGMENT_MANIFEST_IN_JAR + jarTask.name
-                val augmentTask = project.tasks.register<AugmentManifestInJarTask>(augmentTaskName) {
-                    this.jarTask.set(jarTask)
-                }
-                jarTask.dependsOn(augmentTask)
-            }
+            val validateBeforePublish = project.tasks.register<ValidateBeforePublishTask>(TASK_NAME_VALIDATE_PUBLISH)
+            val signingExtension = project.the<SigningExtension>()
 
-            var publications = getMavenPublications(project)
-            val usesOwnPublications = publications.isNotEmpty()
-            if (!usesOwnPublications) {
+            val publications = getMavenPublications(project)
+
+            val needToCreateOwnPublication = publications.isEmpty()
+
+            if (needToCreateOwnPublication) {
                 // we only create the tutteli publication in case there is not already one
                 // (e.g. MPP creates own publications)
                 registerTutteliPublication(project, extension)
-                publications = getMavenPublications(project)
             }
 
-            val signingExtension = project.the<SigningExtension>()
-            val validateBeforePublish = project.tasks.register<ValidateBeforePublishTask>(TASK_NAME_VALIDATE_PUBLISH)
+            addJavadocJarBasedOnDokkaIfPresent(project, publications, needToCreateOwnPublication)
 
-            val pomAugmenter = PomAugmenter(project, extension)
             publications.configureEach {
                 val publication = this
-                pomAugmenter.augment(this)
-
-                val taskSuffix = "${publication.name.capitalize()}Publication"
+                pomAugmenter.augment(publication)
 
                 // creates the sign task -- tasks if we would pass more than one publication
                 signingExtension.sign(publication).forEach { signTask ->
                     signTask.dependsOn(validateBeforePublish)
-
-                    project.tasks.named("publish${taskSuffix}ToMavenLocal").configure {
-                        dependsOn(signTask)
-                    }
                 }
-
-                // in case we generate a javadocJar (e.g. via tutteli's dokka plugin) then we add it to each publication
-                // but only if it is not a ...-relocation publication
-                // and only if the project has defined own publications and the new MPP plugin is available. Because
-                // we fear that other plugins might add javadoc as magically as we do it here and we only want to
-                // do it if MPP is available (doesn't mean there could not be another plugin which still does magic stuff)
-                if (!publication.name.endsWith("-relocation") &&
-                    usesOwnPublications &&
-                    project.plugins.findPlugin("org.jetbrains.kotlin.multiplatform") != null
-                ) {
-                    project.tasks.findByName("javadocJar")?.let { javadocJar ->
-                        publication.artifact(javadocJar)
-                    }
-                }
-            }
-
-            tasks.withType<AbstractArchiveTask>().configureEach {
-                // Ensure builds are reproducible, see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives
-                // as well as https://github.com/gradle/gradle/issues/10900
-                isPreserveFileTimestamps = false
-                isReproducibleFileOrder = true
-                dirMode = "775".toInt(8)
-                fileMode = "664".toInt(8)
             }
         }
     }
 
-    private fun jarTasks(project: Project, extension: PublishPluginExtension, action: Action<Jar>): Unit =
-        project.tasks.withType<Jar>()
-            .matching { !extension.artifactFilter.isPresent || extension.artifactFilter.get().invoke(it) }
-            //TODO 5.0.0 check if we can use configureEach with gradle 8.x
-            .all(action)
+    private fun addJavadocJarBasedOnDokkaIfPresent(
+        project: Project,
+        publications: NamedDomainObjectCollection<MavenPublication>,
+        needToCreateOwnPublication: Boolean
+    ) {
+        val isKotlinMultiPlatform = project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")
+
+        project.plugins.findPlugin("org.jetbrains.dokka")?.run {
+            publications.forEach { publication ->
+
+                // we only add a javadoc-jar if we don't deal with a relocation publication
+                if (!publication.name.endsWith("-relocation")) {
+                    val javadocJar = if (isKotlinMultiPlatform) {
+                        val publicationNameCapitalized = publication.name.capitalize()
+                        val customDokkaHtml =
+                            project.tasks.register<DokkaTask>("dokkaHtml${publicationNameCapitalized}") {
+                                outputDirectory.set(project.layout.buildDirectory.map { it.dir("dokka/${publication.name}") })
+                                dokkaSourceSets.matching {
+                                    // we only want to include the corresponding platform + common
+                                    it.name.startsWith(publication.name).not()
+                                        && it.name.startsWith("common").not()
+                                }.configureEach {
+                                    suppress.set(true)
+                                }
+                            }
+
+                        project.tasks.register<Jar>("javadocJar$publicationNameCapitalized") {
+                            archiveClassifier.set("javadoc")
+                            // otherwise it looks like kotlin overwrites the javadoc.jar it creates within the
+                            // build directory as it only append the js/jvm archiveAppendix during publication
+                            archiveAppendix.set(publication.name)
+                            dependsOn(customDokkaHtml)
+                            doFirst {
+                                from(customDokkaHtml)
+                            }
+                        }
+                    } else {
+                        project.tasks.register<Jar>("javadocJar") {
+                            archiveClassifier.set("javadoc")
+                            val dokkaHtml = project.tasks.named<DokkaTask>("dokkaHtml")
+                            dependsOn(dokkaHtml)
+                            doFirst {
+                                from(dokkaHtml)
+                            }
+                        }
+                    }
+                    if (needToCreateOwnPublication.not()) {
+                        // if we create an own publication, then we add automatically all jars as artifact and
+                        // we don't need to add it here again (otherwise we add the same artifact twice)
+                        publication.artifact(javadocJar)
+                    }
+                }
+            }
+        }
+    }
 
     private fun getMavenPublications(project: Project): NamedDomainObjectCollection<MavenPublication> =
         project.the<PublishingExtension>().publications.withType<MavenPublication>()
@@ -143,9 +180,15 @@ class PublishPlugin : Plugin<Project> {
                         }
                     }
                 }
-                jarTasks(project, extension) {
-                    artifact(this)
-                }
+                project.tasks.withType<Jar>()
+                    .matching { jar ->
+                        extension.artifactFilter.map { it(jar) }.getOrElse(true)
+                    }
+                    // we need to use all here as configureEach will not add jar and kotlinSourcesJar to the publication
+                    // no idea why though (maybe because we are within an project.afterEvaluate?
+                    .all {
+                        artifact(this)
+                    }
             }
         }
     }

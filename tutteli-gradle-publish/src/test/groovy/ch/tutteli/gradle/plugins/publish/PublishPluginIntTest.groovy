@@ -3,6 +3,7 @@ package ch.tutteli.gradle.plugins.publish
 import ch.tutteli.gradle.plugins.test.Asserts
 import ch.tutteli.gradle.plugins.test.SettingsExtension
 import ch.tutteli.gradle.plugins.test.SettingsExtensionObject
+import groovy.io.FileType
 import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -16,18 +17,15 @@ import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-import static ch.tutteli.gradle.plugins.test.Asserts.NL_INDENT
-import static ch.tutteli.gradle.plugins.test.Asserts.assertContainsNotRegex
-import static ch.tutteli.gradle.plugins.test.Asserts.assertContainsRegex
+import static ch.tutteli.gradle.plugins.test.Asserts.*
 import static org.junit.jupiter.api.Assertions.*
-import static org.junit.jupiter.api.Assumptions.assumeFalse
 import static org.junit.jupiter.api.Assumptions.assumeFalse
 
 @ExtendWith(SettingsExtension)
 class PublishPluginIntTest {
     //TODO remove once we drop support for old MPP plugins
     def static final OLD_KOTLIN_VERSION = '1.3.71'
-    def static final KOTLIN_VERSION = '1.5.21'
+    def static final KOTLIN_VERSION = '1.8.22'
     def static final ATRIUM_VERSION = '0.14.0'
 
     @Test
@@ -510,7 +508,22 @@ class PublishPluginIntTest {
 
     @Test
     void withKotlinJvmApplied(SettingsExtensionObject settingsSetup) throws IOException {
-        def projectName = 'kotlin-jvm'
+        checkKotlinJvmApplied(settingsSetup, false)
+    }
+
+    @Test
+    void withKotlinJvmApplied_andDokka(SettingsExtensionObject settingsSetup) throws IOException {
+        checkKotlinJvmApplied(settingsSetup, true)
+    }
+
+    void checkKotlinJvmApplied(SettingsExtensionObject settingsSetup, Boolean withDokka) {
+        String projectName
+        if (withDokka) {
+            projectName = 'kotlin-jvm-with-dokka'
+        } else {
+            projectName = 'kotlin-jvm'
+        }
+
         settingsSetup.settings << "rootProject.name='$projectName'"
         def groupId = 'com.example'
         def version = '1.0.0'
@@ -518,6 +531,16 @@ class PublishPluginIntTest {
         def gpgPassphrase = 'bla'
         def gpgKeyId = 'A5875B96'
         def gpgKeyRing = 'keyring.gpg'
+        def dokkaDependency = ""
+        def dokkaPlugin = ""
+        if (withDokka) {
+            dokkaDependency = """
+            dependencies {
+                classpath 'org.jetbrains.dokka:org.jetbrains.dokka.gradle.plugin:1.9.0'
+            }
+            """
+            dokkaPlugin = "apply plugin: 'org.jetbrains.dokka'"
+        }
 
         settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
 
@@ -530,13 +553,16 @@ class PublishPluginIntTest {
                 gpgKeyRing = '$gpgKeyRing'
                 gpgKeyId = '$gpgKeyId'
             }
+            $dokkaDependency
+
         }
         repositories {
             mavenCentral()
         }
 
         apply plugin: 'org.jetbrains.kotlin.jvm'
-       apply plugin: 'ch.tutteli.gradle.plugins.publish'
+        $dokkaPlugin
+        apply plugin: 'ch.tutteli.gradle.plugins.publish'
 
         project.with {
             group = '$groupId'
@@ -608,6 +634,11 @@ class PublishPluginIntTest {
             ".jar",
             "-sources.jar",
         )
+        if (withDokka) {
+            assertJarsWithLicenseAndManifest(releasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, pomName,
+                "-javadoc.jar"
+            )
+        }
         new ZipFile(releasePath.resolve("$projectName-${version}.jar").toFile()).withCloseable { zipFile ->
             assertInZipFile(zipFile, 'a.txt')
         }
@@ -617,32 +648,22 @@ class PublishPluginIntTest {
         assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
     }
 
-    @Test
-    void withKotlinMultiplatformApplied_enableGranularSourceSetsMetadataIsTrue(SettingsExtensionObject settingsSetup) throws IOException {
-        checkKotlinMultiplatform('mpp-enabled-granular', settingsSetup, true)
-    }
-
-    @Test
-    void withKotlinMultiplatformApplied_enableGranularSourceSetsMetadataIsFalse(SettingsExtensionObject settingsSetup) throws IOException {
-        checkKotlinMultiplatform('mpp-enabled-non-granular', settingsSetup, false)
-    }
 
     @Test
     void withKotlinMultiplatformApplied_Kotlin1_7(SettingsExtensionObject settingsSetup) throws IOException {
-        checkKotlinMultiplatform('mpp-kotlin-1.7.0', settingsSetup, false, "1.7.0")
+        checkKotlinMultiplatform('mpp-kotlin-1.7.0', settingsSetup, "1.7.0")
     }
 
     @Test
     void withKotlinMultiplatformApplied_gradle_6_x(SettingsExtensionObject settingsSetup) throws IOException {
         def javaVersion = JavaVersion.toVersion(System.getProperty("java.version"))
         assumeFalse(javaVersion >= JavaVersion.VERSION_15)
-        checkKotlinMultiplatform('mpp-gradle-6.9.4', settingsSetup, false, KOTLIN_VERSION, "6.9.4")
+        checkKotlinMultiplatform('mpp-gradle-6.9.4', settingsSetup, KOTLIN_VERSION, "6.9.4")
     }
 
     static void checkKotlinMultiplatform(
         String projectName,
         SettingsExtensionObject settingsSetup,
-        boolean enableGranularSourceSetsMetadata,
         String kotlinVersion = KOTLIN_VERSION,
         String gradleVersion = null
     ) {
@@ -728,13 +749,6 @@ class PublishPluginIntTest {
         File kt = new File(tutteli.toFile(), 'a.kt')
         kt << 'package ch.tutteli.atrium'
 
-        if (enableGranularSourceSetsMetadata) {
-            File gradleProperties = new File(settingsSetup.tmpPath.toFile(), 'gradle.properties')
-            gradleProperties << """
-            kotlin.mpp.enableGranularSourceSetsMetadata=true
-            """
-        }
-
         //act
 
         def builder = GradleRunner.create()
@@ -748,9 +762,6 @@ class PublishPluginIntTest {
 
         Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")
         Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_POM")
-        if (enableGranularSourceSetsMetadata) {
-            Asserts.assertTaskRunSuccessfully(result, ":allMetadataJar")
-        }
         assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
 
 
@@ -763,14 +774,6 @@ class PublishPluginIntTest {
             ".jar",
             "-sources.jar",
         )
-        if (enableGranularSourceSetsMetadata) {
-            assertJarsWithLicenseAndManifest(rootReleasePath, projectName, version, repoUrl, null, kotlinVersion, rootPomName,
-                "-all.jar",
-            )
-        } else {
-            Path path = rootReleasePath.resolve("$projectName-${version}-all.jar")
-            assertFalse(Files.exists(path), "${path} found even though enableGranularSourceSetsMetadata is set to false")
-        }
 
         def jsReleasePath = getReleasePath(settingsSetup, projectName + "-js", groupId, version)
         def (_2, jsPomName) = getPomInclFileNameAndAssertBasicPomProperties(jsReleasePath, projectName + "-js", groupId, version, githubUser, projectName)
@@ -833,12 +836,16 @@ class PublishPluginIntTest {
                 gpgKeyRing = '$gpgKeyRing'
                 gpgKeyId = '$gpgKeyId'
             }
+            dependencies {
+                classpath 'org.jetbrains.dokka:org.jetbrains.dokka.gradle.plugin:1.9.0'
+            }
         }
         repositories {
             mavenCentral()
         }
 
         apply plugin: 'org.jetbrains.kotlin.multiplatform'
+        apply plugin: 'org.jetbrains.dokka'
         apply plugin: 'ch.tutteli.gradle.plugins.publish'
 
         project.with {
@@ -851,14 +858,9 @@ class PublishPluginIntTest {
             githubUser = '$githubUser'
         }
 
-        // simulate dokka's javadocJar task
-        project.tasks.register("javadocJar", org.gradle.jvm.tasks.Jar) {
-            archiveClassifier.set("javadoc")
-        }
-
         kotlin {
            jvm { }
-           js { browser { } }
+           js(LEGACY) { browser { } }
 
            sourceSets {
                commonMain { }
@@ -878,6 +880,9 @@ class PublishPluginIntTest {
         Path commonTutteli = Files.createDirectories(commonMain.resolve("kotlin").resolve('ch').resolve('tutteli').resolve('atrium'))
         File commonKt = new File(commonTutteli.toFile(), 'common.kt')
         commonKt << """package ch.tutteli.atrium
+                    /**
+                     * the variable a.
+                     */
                     val a = 1"""
 
         Path jvmMain = Files.createDirectories(settingsSetup.tmpPath.resolve('src').resolve('jvmMain'))
@@ -890,6 +895,7 @@ class PublishPluginIntTest {
 
         //act
         def result = GradleRunner.create()
+//            .withGradleVersion("8.1.1")
             .withProjectDir(settingsSetup.tmp)
             .withArguments("publishAllPublicationsToMavenRepository", "printSigning")
             .build()
@@ -907,7 +913,6 @@ class PublishPluginIntTest {
         assertJarsWithLicenseAndManifest(rootReleasePath, projectName, version, repoUrl, null, KOTLIN_VERSION, rootPomName,
             ".jar",
             "-sources.jar",
-            "-javadoc.jar"
         )
         Path path = rootReleasePath.resolve("$projectName-${version}-all.jar")
         assertFalse(Files.exists(path), "${path} found even though enableGranularSourceSetsMetadata is set to false")
@@ -993,7 +998,15 @@ class PublishPluginIntTest {
     }
 
     private static void assertJarWithLicenseAndManifest(Path releasePath, String jarName, String projectName, String version, String repoUrl, String vendor, String kotlinVersion) {
-        def zipFile = new ZipFile(releasePath.resolve(jarName).toFile())
+        def jarPath = releasePath.resolve(jarName).toFile()
+        if (!jarPath.exists()) {
+            def list = []
+            jarPath.getParentFile().eachFileRecurse(FileType.FILES) { file ->
+                list << file
+            }
+            throw new AssertionError("$jarPath does not exist. Found following files in this folder: ${list.join("\n")}")
+        }
+        def zipFile = new ZipFile(jarPath)
         zipFile.withCloseable {
             def manifest = zipFile.getInputStream(findInZipFile(zipFile, 'META-INF/MANIFEST.MF')).text
             assertManifest(manifest, ': ', projectName, jarName, version, repoUrl, vendor, kotlinVersion)
