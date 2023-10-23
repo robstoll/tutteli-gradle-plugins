@@ -100,7 +100,7 @@ The conventions:
     | gpgPassphrase   | GPG_PASSPHRASE     |
     | gpgKeyRing      | GPG_KEY_RING       | 
     | gpgKeyId        | GPG_KEY_ID         | 
-- The private gpg key can also be provided via GPG_SIGNING_KEY instead of pointing to a file via gpgKeyRing    
+- The private gpg key can also be provided via GPG_SIGNING_KEY instead of pointing to a file via gpgKeyRing and specifying a gpgKeyId
 
 # ch.tutteli.gradle.plugins.spek [🔗](https://plugins.gradle.org/plugin/ch.tutteli.spek/4.11.0)
 -> will most likely be removed with 5.0.0 (spek is no longer a reliable test runner IMO regarding maintenance)
