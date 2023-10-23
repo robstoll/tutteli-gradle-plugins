@@ -43,32 +43,6 @@ It sets up compileJava accordingly and configures JavaCompile tasks to use jdk 1
 Per default, it reads the module name (which is used for `--patch-module`) from the defined module-info.java.
 You can speed up this process (in case you have many java files) by defining `moduleName` on `project.extra`.
 
-# ch.tutteli.gradle.plugins.kotlin.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.kotlin.utils/4.11.0)
--> will most likely be removed with 5.0.0
-
-Provides some utility functions to declare dependencies on kotlin projects, to configure projects as well as utility functions to exclude kotlin.
-Requires that `kotlinutils.kotlinVersion` (property on the extension) is configured.
-
-Following a list of functions it supports:
-- declare dependencies on libs: `kotlinStdlib()`, `kotlinStdlibJs()`, `kotlinStdlibCommon()`, `kotlinReflect()`, `kotlinTestJs()`, `kotlinTestCommon()`, , `kotlinTestAnotationsCommon()`
-- exclude dependencies: `excludeKotlin`, `excludeKbox`, `excludeAtriumVerbs` (see example)
-- configure projects: `configureCommonProjects`, `configureJsProjects`, `configureJvmProjects`
-- `getCommonProjects()`, `getJsProjects()`, `getJvmProjects()`, `getProjectNameWithoutSuffix(project)`
-
-Moreover, it turns warnings into errors if one of the env variables `CI` or `WARN_AS_ERROR` is set to `true`.
-
-You find an example in [KotlinUtilsPluginIntTest](https://github.com/robstoll/tutteli-gradle-plugins/tree/main/tutteli-gradle-kotlin-utils/src/test/groovy/ch/tutteli/gradle/kotlin/KotlinUtilsPluginIntTest.groovy#L45).
-
-# ch.tutteli.gradle.plugins.project.utils [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.project.utils/4.11.0)
--> will most likely be removed with 5.0.0
-This plugin adds utility functions to `Project` 
-
-Currently, it provides the following functions:
-- `prefixedProject(name)` which is a shortcut for `project("${rootProject.name}-$name")`.
-   You find an example in the [build.gradle of the spek plugin](https://github.com/robstoll/tutteli-gradle-plugins/tree/v4.11.0/tutteli-gradle-spek/build.gradle#L20).
-- `createTestJarTask` creates a task named `testJar` which creates a jar containing your test binaries
-- `createTestSourcesJarTask` creates a task named `testSourcesJar` which creates a jar containing your test sources
-
 # ch.tutteli.gradle.plugins.publish [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.publish/4.11.0)
 
 Applies the `maven-publish` and `signing` plugin and 
@@ -103,7 +77,7 @@ The conventions:
 - The private gpg key can also be provided via GPG_SIGNING_KEY instead of pointing to a file via gpgKeyRing and specifying a gpgKeyId
 
 # ch.tutteli.gradle.plugins.spek [🔗](https://plugins.gradle.org/plugin/ch.tutteli.spek/4.11.0)
--> will most likely be removed with 5.0.0 (spek is no longer a reliable test runner IMO regarding maintenance)
+-> will most likely be removed with 6.0.0 (spek is no longer a reliable test runner IMO regarding maintenance)
 
 Applies the junitjacoco plugin (which itself applies the junit and jacoco plugin, see two sections above) 
 and sets up [Spek](http://spekframework.org/) as junit engine.
