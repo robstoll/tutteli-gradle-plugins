@@ -24,13 +24,11 @@ open class DokkaPlugin : Plugin<Project> {
 
         val docDirName = "kdoc"
         val docsDir = if (project == rootProject) {
-            extension.modeSimple.flatMap { modeSimple ->
-                extension.writeToDocs.map { writeToDocs ->
-                    if (modeSimple && writeToDocs) {
-                        rootProject.layout.projectDirectory.dir("docs/$docDirName")
-                    } else {
-                        rootProject.layout.projectDirectory.dir("../${rootProject.name}-gh-pages/${rootProject.version}/$docDirName")
-                    }
+            extension.writeToDocs.map { writeToDocs ->
+                if (writeToDocs) {
+                    rootProject.layout.projectDirectory.dir("docs/$docDirName")
+                } else {
+                    rootProject.layout.projectDirectory.dir("../${rootProject.name}-gh-pages/${rootProject.version}/$docDirName")
                 }
             }
         } else {
@@ -55,7 +53,6 @@ open class DokkaPlugin : Plugin<Project> {
 
         // we want to configure DokkaTask as well as DokkaPartialTask
         project.tasks.withType<AbstractDokkaLeafTask>().configureEach {
-
             dokkaSourceSets.configureEach {
                 val sourceSet = this
 
@@ -74,13 +71,11 @@ open class DokkaPlugin : Plugin<Project> {
                 if (isReleaseVersion(rootProject)) {
                     externalDocumentationLink {
                         url.set(extension.githubUser.flatMap { githubUser ->
-                            rootProject.the<DokkaPluginExtension>().modeSimple.flatMap { usesSimpleDocs ->
-                                extension.writeToDocs.map { writeToDocs ->
-                                    if (usesSimpleDocs && writeToDocs) {
-                                        URL("https://$githubUser.github.io/${rootProject.name}/$docDirName/${rootProject.name}/")
-                                    } else {
-                                        URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/$docDirName/")
-                                    }
+                            extension.writeToDocs.map { writeToDocs ->
+                                if (writeToDocs) {
+                                    URL("https://$githubUser.github.io/${rootProject.name}/$docDirName/${rootProject.name}/")
+                                } else {
+                                    URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/$docDirName/")
                                 }
                             }
                         })
@@ -143,7 +138,6 @@ open class DokkaPlugin : Plugin<Project> {
 
     companion object {
         const val EXTENSION_NAME = "tutteliDokka"
-        const val TASK_NAME_JAVADOC = "javadocJar"
     }
 }
 

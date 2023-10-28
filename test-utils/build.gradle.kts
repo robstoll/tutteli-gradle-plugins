@@ -1,7 +1,13 @@
-val junitJupiterVersion: String by rootProject.extra
+plugins {
+    id("build-logic.kotlin-jvm")
+    groovy
+}
 
 dependencies {
-    implementation(gradleApi())
-    implementation(gradleTestKit())
-    implementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+    api(gradleApi())
+    api(gradleTestKit())
+    api(libs.junit.jupiter.api)
+    api(libs.mockito)
+    api(libs.json.path.assert)
+    api(libs.atrium)
 }

@@ -1,0 +1,22 @@
+[versions]
+atrium = "1.0.0"
+dokka = "1.9.0"
+jacocoTool = "0.8.8"
+jsonPathAssert = "2.7.0"
+junitJupiter = "5.10.0"
+junitPlatform = "1.9.1"
+mavenModel = "3.8.7"
+mockito = "5.6.0"
+spek = "2.0.15"
+
+[libraries]
+atrium = { module = "ch.tutteli.atrium:atrium-api-fluent", version.ref = "atrium" }
+dokka-plugin = { module = "org.jetbrains.dokka:org.jetbrains.dokka.gradle.plugin", version.ref = "dokka" }
+json-path-assert = { module = "com.jayway.jsonpath:json-path-assert", version.ref = "jsonPathAssert" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junitJupiter" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junitJupiter" }
+# on purpose without version, kotlin version is specified by the kotlin version used by gradle-version the user uses
+kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin" }
+maven-model = { module = "org.apache.maven:maven-model", version.ref = "mavenModel" }
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }

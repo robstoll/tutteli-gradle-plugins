@@ -1,0 +1,15 @@
+[versions]
+publish = "0.21.0"
+task-tree = "2.1.1"
+vlsi = "1.90"
+
+[libraries]
+publish = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "publish" }
+taskTree = { module = "com.dorongold.plugins:task-tree", version.ref = "task-tree" }
+vlsi-crlf = { module = "com.github.vlsi.crlf:com.github.vlsi.crlf.gradle.plugin", version.ref = "vlsi" }
+vlsi-gradle = { module = "com.github.vlsi.gradle-extensions:com.github.vlsi.gradle-extensions.gradle.plugin", version.ref = "vlsi" }
+
+
+[plugins]
+build-parameters = { id = "org.gradlex.build-parameters", version = "1.4.3" }
+

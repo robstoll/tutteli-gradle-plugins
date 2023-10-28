@@ -84,42 +84,6 @@ class DokkaPluginSmokeTest {
         assertEquals("https://github.com/$githubUser/$projectName/tree/v$version/src/main/kotlin".toString(), sourceLink.remoteUrl.get().toString())
     }
 
-    //TODO 5.0.0 remove
-    @Test
-    void smokeTestGhPages_viaModeSimple_ReleaseVersion() {
-        //arrange
-        def githubUser = 'robstoll'
-        def projectName = 'atrium'
-        def version = '0.6.0'
-        Project project = ProjectBuilder.builder()
-            .withName(projectName)
-            .build()
-        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
-        //act
-        project.version = version
-        project.plugins.apply('org.jetbrains.kotlin.jvm')
-        project.plugins.apply(DokkaPlugin)
-        def extension = getExtension(project)
-        extension.githubUser.set(githubUser)
-        extension.getModeSimple().set(false)
-        project.evaluate()
-
-        //assert
-        DokkaTask dokkaTask = getDokkaTask(project)
-        assertEquals(projectName, dokkaTask.moduleName.get())
-        assertEquals("${project.projectDir.toPath().resolve("..").normalize()}${s}$projectName-gh-pages${s}$version${s}kdoc".toString(), dokkaTask.outputDirectory.get().asFile.absolutePath)
-
-        GradleSourceLinkBuilder sourceLink = getSingleMainSourceLink(dokkaTask)
-        assertEquals("$project.projectDir${s}src${s}main${s}kotlin".toString(), sourceLink.localDirectory.get().absolutePath)
-        assertEquals('#L', sourceLink.remoteLineSuffix.get())
-
-        GradleExternalDocumentationLinkBuilder externalDocLInk = getSingleMainExternalDocumentationLink(dokkaTask)
-        assertEquals("https://${githubUser}.github.io/$projectName/$version/kdoc/".toString(), externalDocLInk.url.get().toString())
-
-        project.evaluate()
-        assertEquals("https://github.com/$githubUser/$projectName/tree/v$version/src/main/kotlin".toString(), sourceLink.remoteUrl.get().toString())
-    }
-
     @Test
     void smokeTestGhPages_RcVersion() {
         def version = '0.6.0-RC.1'
@@ -138,42 +102,6 @@ class DokkaPluginSmokeTest {
         def extension = getExtension(project)
         extension.githubUser.set(githubUser)
         extension.getWriteToDocs().set(false)
-        project.evaluate()
-
-        //assert
-        DokkaTask dokkaTask = getDokkaTask(project)
-        assertEquals(projectName, dokkaTask.moduleName.get())
-        assertEquals("${project.projectDir.toPath().resolve("..").normalize()}${s}$projectName-gh-pages${s}$version${s}kdoc".toString(), dokkaTask.outputDirectory.get().asFile.absolutePath)
-
-        GradleSourceLinkBuilder sourceLink = getSingleMainSourceLink(dokkaTask)
-        assertEquals("$project.projectDir${s}src${s}main${s}kotlin".toString(), sourceLink.localDirectory.get().absolutePath)
-        assertEquals('#L', sourceLink.remoteLineSuffix.get())
-
-        assertHasNoExternalDocumentationLinksDefined(dokkaTask)
-
-        project.evaluate()
-        assertEquals("https://github.com/$githubUser/$projectName/tree/v$version/src/main/kotlin".toString(), sourceLink.remoteUrl.get().toString())
-    }
-
-    // TODO remove with 5.0.0
-    @Test
-    void smokeTestGhPages_viaModeSimple_RcVersion() {
-        def version = '0.6.0-RC.1'
-        //arrange
-        def githubUser = 'robstoll'
-        def projectName = 'atrium'
-
-        Project project = ProjectBuilder.builder()
-            .withName(projectName)
-            .build()
-        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
-        //act
-        project.version = version
-        project.plugins.apply('org.jetbrains.kotlin.jvm')
-        project.plugins.apply(DokkaPlugin)
-        def extension = getExtension(project)
-        extension.githubUser.set(githubUser)
-        extension.getModeSimple().set(false)
         project.evaluate()
 
         //assert
@@ -225,45 +153,6 @@ class DokkaPluginSmokeTest {
         project.evaluate()
         assertEquals("https://github.com/$githubUser/$projectName/tree/main/src/main/kotlin".toString(), sourceLink.remoteUrl.get().toString())
     }
-
-
-
-    @Test
-    void smokeTestGhPages_viaModeSimple_SnapshotVersion() {
-        def version = '0.6.0-SNAPSHOT'
-        //arrange
-        def githubUser = 'robstoll'
-        def projectName = 'atrium'
-
-        Project project = ProjectBuilder.builder()
-            .withName(projectName)
-            .build()
-        Files.createDirectories(project.projectDir.toPath().resolve("src/main/kotlin"))
-        //act
-        project.version = version
-        project.plugins.apply('org.jetbrains.kotlin.jvm')
-        project.plugins.apply(DokkaPlugin)
-        def extension = getExtension(project)
-        extension.githubUser.set(githubUser)
-        extension.getModeSimple().set(false)
-        project.evaluate()
-
-        //assert
-        DokkaTask dokkaTask = getDokkaTask(project)
-        assertEquals(projectName, dokkaTask.moduleName.get())
-        assertEquals("${project.projectDir.toPath().resolve("..").normalize()}${s}$projectName-gh-pages${s}$version${s}kdoc".toString(), dokkaTask.outputDirectory.get().asFile.absolutePath)
-
-        GradleSourceLinkBuilder sourceLink = getSingleMainSourceLink(dokkaTask)
-        assertEquals("$project.projectDir${s}src${s}main${s}kotlin".toString(), sourceLink.localDirectory.get().absolutePath)
-        assertEquals('#L', sourceLink.remoteLineSuffix.get())
-
-        assertHasNoExternalDocumentationLinksDefined(dokkaTask)
-
-        project.evaluate()
-        assertEquals("https://github.com/$githubUser/$projectName/tree/main/src/main/kotlin".toString(), sourceLink.remoteUrl.get().toString())
-    }
-
-
 
     @Test
     void repoUrlExplicitlySet() {

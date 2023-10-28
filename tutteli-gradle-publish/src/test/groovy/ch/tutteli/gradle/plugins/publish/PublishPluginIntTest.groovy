@@ -23,10 +23,8 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse
 
 @ExtendWith(SettingsExtension)
 class PublishPluginIntTest {
-    //TODO remove once we drop support for old MPP plugins
-    def static final OLD_KOTLIN_VERSION = '1.3.71'
     def static final KOTLIN_VERSION = '1.8.22'
-    def static final ATRIUM_VERSION = '0.14.0'
+    def static final ATRIUM_VERSION = '1.0.0'
 
     @Test
     void smokeTestJava(SettingsExtensionObject settingsSetup) throws IOException {
@@ -295,8 +293,8 @@ class PublishPluginIntTest {
         buildscript {
             repositories { maven { url "https://plugins.gradle.org/m2/" } }
             dependencies {
-                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$OLD_KOTLIN_VERSION'
-                classpath files($settingsSetup.pluginClasspath)
+                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
+                classpath 'ch.tutteli:tutteli-gradle-publish:4.11.0'
             }
             ext {
                 // required since we don't set the System.env variables.
@@ -315,11 +313,11 @@ class PublishPluginIntTest {
             it.description = 'test project'
 
             repositories {  mavenCentral(); }
-            apply plugin: 'kotlin'
+            apply plugin: 'org.jetbrains.kotlin.jvm'
 
             task('testJar', type: Jar) {
                 from sourceSets.test.output
-                classifier = 'tests'
+                archiveClassifier = 'tests'
             }
 
            apply plugin: 'ch.tutteli.gradle.plugins.publish'
@@ -327,12 +325,12 @@ class PublishPluginIntTest {
             // still included in publish, use the artifactFilter to exclude a jar as artifact
             task('testSourcesJar', type: Jar) {
                 from sourceSets.test.allSource
-                classifier = 'testsources'
+                archiveClassifier = 'testsources'
             }
 
             task('testSourcesJarFiltered', type: Jar) {
                 from sourceSets.test.allSource
-                classifier = 'testsources-filtered'
+                archiveClassifier = 'testsources-filtered'
             }
 
             tutteliPublish {
@@ -350,7 +348,7 @@ class PublishPluginIntTest {
 
         configure(project(':$dependentName')) {
             dependencies {
-                compile rootProject.project(':$subprojectName')
+                api rootProject.project(':$subprojectName')
             }
         }
         """
@@ -395,6 +393,12 @@ class PublishPluginIntTest {
             "<scope>compile</scope>$NL_INDENT" +
             "</dependency>$NL_INDENT" +
             "<dependency>$NL_INDENT" +
+            "<groupId>org.jetbrains.kotlin</groupId>$NL_INDENT" +
+            "<artifactId>kotlin-stdlib-jdk8</artifactId>$NL_INDENT" +
+            "<version>$KOTLIN_VERSION</version>$NL_INDENT" +
+            "<scope>compile</scope>$NL_INDENT" +
+            "</dependency>$NL_INDENT" +
+            "<dependency>$NL_INDENT" +
             "<groupId>$groupId</groupId>$NL_INDENT" +
             "<artifactId>$subprojectName</artifactId>$NL_INDENT" +
             "<version>$version</version>$NL_INDENT" +
@@ -405,8 +409,7 @@ class PublishPluginIntTest {
 
         def repoUrl = "https://github.com/$githubUser/$rootProjectName"
 
-
-        assertJarsWithLicenseAndManifest(dependentReleasePath, dependentName, version, repoUrl, vendor, OLD_KOTLIN_VERSION, dependentPomName,
+        assertJarsWithLicenseAndManifest(dependentReleasePath, dependentName, version, repoUrl, vendor, KOTLIN_VERSION, dependentPomName,
             ".jar",
             "-sources.jar",
             "-tests.jar"
@@ -415,95 +418,12 @@ class PublishPluginIntTest {
 
         def subReleasePath = getReleasePath(settingsSetup, subprojectName, groupId, version, subprojectName)
         def (_, subPomName) = getPomInclFileNameAndAssertBasicPomProperties(subReleasePath, subprojectName, groupId, version, githubUser, rootProjectName)
-        assertJarsWithLicenseAndManifest(subReleasePath, subprojectName, version, repoUrl, vendor, OLD_KOTLIN_VERSION, subPomName,
+        assertJarsWithLicenseAndManifest(subReleasePath, subprojectName, version, repoUrl, vendor, KOTLIN_VERSION, subPomName,
             ".jar",
             "-sources.jar",
             "-tests.jar"
         )
         assertModuleExists(subReleasePath, subprojectName, version)
-    }
-
-    @Test
-    void withOldKotlinApplied(SettingsExtensionObject settingsSetup) throws IOException {
-        def projectName = 'kotlin-jvm-old'
-        settingsSetup.settings << "rootProject.name='$projectName'"
-        def groupId = 'com.example'
-        def version = '1.0.0'
-        def githubUser = 'robstoll'
-        def gpgPassphrase = 'bla'
-        def gpgKeyId = 'A5875B96'
-        def gpgKeyRing = 'keyring.gpg'
-
-        settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
-
-        settingsSetup.buildGradle << """
-        ${settingsSetup.buildscriptWithKotlin(OLD_KOTLIN_VERSION)}
-        buildscript {
-            ext {
-                // required since we don't set the System.env variables.
-                gpgPassphrase = '$gpgPassphrase'
-                gpgKeyRing = '$gpgKeyRing'
-                gpgKeyId = '$gpgKeyId'
-            }
-        }
-        repositories {
-            mavenCentral()
-        }
-
-        apply plugin: 'kotlin'
-       apply plugin: 'ch.tutteli.gradle.plugins.publish'
-
-        project.with {
-            group = '$groupId'
-            version = '$version'
-            description = 'test project'
-        }
-        tutteliPublish {
-            //minimal setup required for local publish, all other things are only needed if not the default is used
-            githubUser = '$githubUser'
-        }
-        ${publishingRepo()}
-        ${taskPrintSigning()}
-        """
-        File license = new File(settingsSetup.tmp, 'LICENSE.txt')
-        license << 'Copyright...'
-        Path main = Files.createDirectories(settingsSetup.tmpPath.resolve('src').resolve('main'))
-        Path resources = Files.createDirectory(main.resolve('resources'))
-        File txt = new File(resources.toFile(), 'a.txt')
-        txt << 'dummy'
-        Path tutteli = Files.createDirectories(main.resolve('kotlin').resolve('ch').resolve('tutteli').resolve('atrium'))
-        File kt = new File(tutteli.toFile(), 'a.kt')
-        kt << 'package ch.tutteli.atrium'
-
-        //act
-        def result = GradleRunner.create()
-            .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishAllPublicationsToMavenRepository", "printSigning")
-            .build()
-
-        assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
-
-        Asserts.assertTaskRunSuccessfully(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")
-        Asserts.assertTaskRunSuccessfully(result, ":$PublishPlugin.TASK_GENERATE_POM")
-        Asserts.assertTaskRunSuccessfully(result, ":signTutteliPublication")
-        Asserts.assertTaskRunSuccessfully(result, ":publishTutteliPublicationToMavenRepository")
-
-        def repoUrl = "https://github.com/$githubUser/$projectName"
-
-        def releasePath = getReleasePath(settingsSetup, projectName, groupId, version)
-        def (_, pomFileName) = getPomInclFileNameAndAssertBasicPomProperties(releasePath, projectName, groupId, version, githubUser)
-
-        assertModuleExists(releasePath, projectName, version)
-        assertJarsWithLicenseAndManifest(releasePath, projectName, version, repoUrl, null, OLD_KOTLIN_VERSION, pomFileName,
-            ".jar",
-            "-sources.jar",
-        )
-        new ZipFile(releasePath.resolve("$projectName-${version}.jar").toFile()).withCloseable { zipFile ->
-            assertInZipFile(zipFile, 'a.txt')
-        }
-        new ZipFile(releasePath.resolve("$projectName-${version}-sources.jar").toFile()).withCloseable { zipFile ->
-            assertInZipFile(zipFile, 'main/ch/tutteli/atrium/a.kt')
-        }
     }
 
     @Test
@@ -574,7 +494,7 @@ class PublishPluginIntTest {
             githubUser = '$githubUser'
         }
         dependencies {
-            implementation 'ch.tutteli.atrium:atrium-fluent-en_GB:$ATRIUM_VERSION'
+            implementation 'ch.tutteli.atrium:atrium-fluent:$ATRIUM_VERSION'
         }
 
         ${publishingRepo()}
@@ -621,7 +541,7 @@ class PublishPluginIntTest {
             "</dependency>$NL_INDENT" +
             "<dependency>$NL_INDENT" +
             "<groupId>ch.tutteli.atrium</groupId>$NL_INDENT" +
-            "<artifactId>atrium-fluent-en_GB</artifactId>$NL_INDENT" +
+            "<artifactId>atrium-fluent-jvm</artifactId>$NL_INDENT" +
             "<version>$ATRIUM_VERSION</version>$NL_INDENT" +
             "<scope>runtime</scope>$NL_INDENT" +
             "</dependency>$NL_INDENT" +

@@ -5,6 +5,10 @@ import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.property
 
+//sealed interface DokkaDestination
+//object WriteToDocs: DokkaDestination
+//object WriteToGhPages: DokkaDestination
+
 open class DokkaPluginExtension(project: Project) {
     val repoUrl: Property<String> = project.objects.property()
     val githubUser: Property<String> = project.objects.property()
@@ -12,8 +16,7 @@ open class DokkaPluginExtension(project: Project) {
     /**
      * true: kdoc included in docs/kdoc without versioning vs false: gh-pages branch with version/kdoc/
      */
-    @Deprecated("will be removed with 5.0.0 at the latest", ReplaceWith("this.writeToDocs"))
-    val modeSimple: Property<Boolean> = project.objects.property()
+//    val writeTo: Property<DokkaDestination> = project.objects.property()
 
     /**
      * true: kdoc included in docs/kdoc without versioning vs false: gh-pages branch with version/kdoc/
@@ -33,7 +36,6 @@ open class DokkaPluginExtension(project: Project) {
             takeOverValueFromRoot(rootExtension.repoUrl, repoUrl)
             takeOverValueFromRoot(rootExtension.githubUser, githubUser)
         }
-        modeSimple.convention(true)
         writeToDocs.convention(true)
     }
 

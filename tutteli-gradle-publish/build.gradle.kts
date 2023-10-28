@@ -1,26 +1,26 @@
 plugins {
-    `kotlin-dsl`
-}
-val pluginId by extra("ch.tutteli.gradle.plugins.publish")
-val pluginClass by extra("ch.tutteli.gradle.plugins.publish.PublishPlugin")
-val pluginName by extra("Tutteli Publish Plugin")
-val pluginDescription by extra("Applies maven-publish as well as io.github.gradle-nexus.publish-plugin and configures them according to tutteli\"s publish conventions.")
-val pluginTags by extra(listOf("publish", "kotlin"))
-
-repositories {
-    gradlePluginPortal()
+    id("build-logic.published-gradle-plugin")
+    groovy
 }
 
-val mavenModelVersion: String by rootProject.extra
-val kotlinVersion: String by rootProject.extra
-val dokkaVersion: String by rootProject.extra
+gradlePlugin {
+    plugins {
+        register("publish") {
+            id = "ch.tutteli.gradle.plugins.publish"
+            displayName = "Tutteli Publish Plugin"
+            description = "Applies maven-publish and configures it according to tutteli\"s publish conventions."
+            tags.set(listOf("publish", "kotlin"))
+            implementationClass = "ch.tutteli.gradle.plugins.publish.PublishPlugin"
+        }
+    }
+}
+
 
 dependencies {
-    implementation("org.apache.maven:maven-model:$mavenModelVersion")
-    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    compileOnly("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion"){
+    implementation(libs.maven.model)
+    compileOnly(libs.kotlin)
+    testImplementation(libs.kotlin)
+    compileOnly(libs.dokka.plugin) {
         exclude("com.jetbrains.kotlin")
     }
 }
