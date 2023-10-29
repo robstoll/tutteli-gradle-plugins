@@ -38,30 +38,6 @@ configure(pluginProjects) {
     }
 }
 
-configure(pluginProjects) {
-    val createClasspathManifest = tasks.register("createClasspathManifest") {
-        val outputDir = file("${buildDir}/${name}")
-
-        inputs.files(sourceSets.main.get().runtimeClasspath)
-        outputs.dir(outputDir)
-
-        doLast {
-            outputDir.mkdirs()
-            file("${outputDir}/plugin-classpath.txt").writeText(sourceSets.main.get().runtimeClasspath.joinToString("\n"))
-        }
-    }
-    tasks.named("test") {
-        dependsOn(createClasspathManifest)
-    }
-
-    dependencies {
-        testImplementation(project(":test-utils")) {
-            exclude(group = "org.codehaus.groovy")
-        }
-
-        testRuntimeOnly(files(createClasspathManifest)) //required for tests
-    }
-}
 
 /*
 Release & deploy
