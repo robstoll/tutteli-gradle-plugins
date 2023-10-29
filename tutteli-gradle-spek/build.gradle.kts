@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("build-logic.published-gradle-plugin")
     groovy
@@ -24,13 +26,15 @@ dependencies {
     implementation(prefixedProject("junitjacoco"))
 }
 
+
+val generated = project.files("src/main/generated/groovy/ch/tutteli/gradle/plugins/spek/generated")
+
 val generateHardCodedDependencies = tasks.register("generateHardCodedDependencies") {
     group = "build"
+
     doLast {
-        val folder =
-            File("${projectDir}/src/main/groovy/ch/tutteli/gradle/plugins/spek/generated")
-        mkdir(folder)
-        File(folder, "Dependencies.groovy").writeText(
+        mkdir(generated.asPath)
+        File(generated.asPath, "Dependencies.groovy").writeText(
             """
                 package ch.tutteli.gradle.plugins.spek.generated
                 class Dependencies {
@@ -43,6 +47,19 @@ val generateHardCodedDependencies = tasks.register("generateHardCodedDependencie
         )
     }
 }
-tasks.named("compileGroovy").configure {
+project.files(generated).builtBy(generateHardCodedDependencies)
+tasks.withType<GroovyCompile>().configureEach {
     dependsOn(generateHardCodedDependencies)
+}
+afterEvaluate {
+    tasks.named<Jar>("sourcesJar").configure {
+        dependsOn(generateHardCodedDependencies)
+    }
+}
+sourceSets {
+    main {
+        groovy {
+            srcDirs("src/main/generated/")
+        }
+    }
 }
