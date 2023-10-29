@@ -14,7 +14,6 @@ class SpekPluginExtension {
 class SpekPlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = 'spek'
 
-    // TODO remove once we define gradle 7.0 and Kotlin 1.5 as minimum requirement
     protected static final String ERR_KOTLIN_PLUGIN = "You need to apply a JVM compliant kotlin plugin." +
         "\n For instance, the 'org.jetbrains.kotlin.jvm' or the 'org.jetbrains.kotlin.multiplatform' plugin."
 
@@ -80,12 +79,7 @@ class SpekPlugin implements Plugin<Project> {
             def plugins = project.plugins
             def kotlinPlugin =
                 // TODO drop once we no longer support the old kotlin plugins and old gradle version
-                plugins.findPlugin("kotlin")
-                    ?: plugins.findPlugin("kotlin2js")
-                    ?: plugins.findPlugin("kotlin-platform-jvm")
-                    ?: plugins.findPlugin("kotlin-platform-js")
-                    ?: plugins.findPlugin("kotlin-common")
-                    ?: plugins.findPlugin("org.jetbrains.kotlin.multiplatform")
+                plugins.findPlugin("org.jetbrains.kotlin.multiplatform")
                     ?: plugins.findPlugin("org.jetbrains.kotlin.jvm")
                     ?: plugins.findPlugin("org.jetbrains.kotlin.js")
             version = kotlinPlugin?.getKotlinPluginVersion()
