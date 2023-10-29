@@ -5,9 +5,9 @@ import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.property
 
-//sealed interface DokkaDestination
-//object WriteToDocs: DokkaDestination
-//object WriteToGhPages: DokkaDestination
+sealed interface DokkaDestination
+object Docs : DokkaDestination
+object GhPages : DokkaDestination
 
 open class DokkaPluginExtension(project: Project) {
     val repoUrl: Property<String> = project.objects.property()
@@ -16,12 +16,7 @@ open class DokkaPluginExtension(project: Project) {
     /**
      * true: kdoc included in docs/kdoc without versioning vs false: gh-pages branch with version/kdoc/
      */
-//    val writeTo: Property<DokkaDestination> = project.objects.property()
-
-    /**
-     * true: kdoc included in docs/kdoc without versioning vs false: gh-pages branch with version/kdoc/
-     */
-    val writeToDocs: Property<Boolean> = project.objects.property()
+    val writeTo: Property<DokkaDestination> = project.objects.property()
 
     init {
         if (isTutteliProject(project) || isTutteliProject(project.rootProject)) {
@@ -36,7 +31,7 @@ open class DokkaPluginExtension(project: Project) {
             takeOverValueFromRoot(rootExtension.repoUrl, repoUrl)
             takeOverValueFromRoot(rootExtension.githubUser, githubUser)
         }
-        writeToDocs.convention(true)
+        writeTo.convention(Docs)
     }
 
     private fun <T> takeOverValueFromRoot(rootProperty: Property<T>, property: Property<T>) {

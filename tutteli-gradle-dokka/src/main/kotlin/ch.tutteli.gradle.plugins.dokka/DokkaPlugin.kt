@@ -24,12 +24,12 @@ open class DokkaPlugin : Plugin<Project> {
 
         val docDirName = "kdoc"
         val docsDir = if (project == rootProject) {
-            extension.writeToDocs.map { writeToDocs ->
-                if (writeToDocs) {
-                    rootProject.layout.projectDirectory.dir("docs/$docDirName")
-                } else {
-                    rootProject.layout.projectDirectory.dir("../${rootProject.name}-gh-pages/${rootProject.version}/$docDirName")
+            extension.writeTo.map { writeToDocs ->
+                val relativePathFromProjectDir = when (writeToDocs) {
+                    Docs -> "docs/$docDirName"
+                    GhPages -> "../${rootProject.name}-gh-pages/${rootProject.version}/$docDirName"
                 }
+                rootProject.layout.projectDirectory.dir(relativePathFromProjectDir)
             }
         } else {
             null
@@ -71,12 +71,12 @@ open class DokkaPlugin : Plugin<Project> {
                 if (isReleaseVersion(rootProject)) {
                     externalDocumentationLink {
                         url.set(extension.githubUser.flatMap { githubUser ->
-                            extension.writeToDocs.map { writeToDocs ->
-                                if (writeToDocs) {
-                                    URL("https://$githubUser.github.io/${rootProject.name}/$docDirName/${rootProject.name}/")
-                                } else {
-                                    URL("https://$githubUser.github.io/${rootProject.name}/${rootProject.version}/$docDirName/")
+                            extension.writeTo.map { writeToDocs ->
+                                val path = when (writeToDocs) {
+                                    Docs -> "$docDirName/${rootProject.name}/"
+                                    GhPages -> "${rootProject.version}/$docDirName/"
                                 }
+                                URL("https://$githubUser.github.io/${rootProject.name}/$path")
                             }
                         })
                     }

@@ -225,7 +225,7 @@ class DokkaPluginIntTest {
     }
 
     @Test
-    void smokeTestNotWriteToDocs_githubUserAndReleaseVersion(SettingsExtensionObject settingsSetup) throws IOException {
+    void smokeTestWriteToGhPages_githubUserAndReleaseVersion(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << "rootProject.name='test-project'"
 
@@ -242,7 +242,7 @@ class DokkaPluginIntTest {
         tutteliDokka {
             //uses the githubUser to create the repo url as well as the externalDocumentationLink if one uses a release version (x.y.z)
             githubUser = 'robstoll'
-            writeToDocs = false
+            writeTo = ch.tutteli.gradle.plugins.dokka.GhPages.INSTANCE
         }
         ${printInfo()}
         """
@@ -533,7 +533,7 @@ class DokkaPluginIntTest {
         tutteliDokka {
             //uses the githubUser to create the repo url as well as the externalDocumentationLink if one uses a release version (x.y.z)
             githubUser = 'robstoll'
-            writeToDocs = false
+            writeTo = ch.tutteli.gradle.plugins.dokka.GhPages.INSTANCE
         }
         ${ printInfo() }
         """
