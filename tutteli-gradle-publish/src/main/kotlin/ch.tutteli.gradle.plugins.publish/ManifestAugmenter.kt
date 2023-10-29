@@ -48,17 +48,17 @@ class ManifestAugmenter(
             // method on Project does not exist yet
             null
         }
-        return version ?: (project.plugins.let<PluginContainer, Plugin<*>?> {
-            // TODO 5.0.0 drop once we no longer support the old kotlin plugins and old gradle version
-            it.findPlugin("kotlin") ?: it.findPlugin("kotlin2js") ?: it.findPlugin("kotlin-platform-jvm")
-            ?: it.findPlugin("kotlin-platform-js") ?: it.findPlugin("kotlin-common")
-            ?: it.findPlugin("org.jetbrains.kotlin.multiplatform") ?: it.findPlugin("org.jetbrains.kotlin.jvm")
-            ?: it.findPlugin("org.jetbrains.kotlin.js")
-        }?.let {
-            val value = it::class.memberProperties.find { property ->
-                property.name == "kotlinPluginVersion"
-            }?.call(it)
-            (value as? CharSequence)?.toString()
-        })
+
+        return version
+        //TODO 6.0.0 drop once we no longer support gradle < 8 ?
+            ?: (project.plugins.let<PluginContainer, Plugin<*>?> {
+                it.findPlugin("org.jetbrains.kotlin.multiplatform") ?: it.findPlugin("org.jetbrains.kotlin.jvm")
+                ?: it.findPlugin("org.jetbrains.kotlin.js")
+            }?.let {
+                val value = it::class.memberProperties.find { property ->
+                    property.name == "kotlinPluginVersion"
+                }?.call(it)
+                (value as? CharSequence)?.toString()
+            })
     }
 }

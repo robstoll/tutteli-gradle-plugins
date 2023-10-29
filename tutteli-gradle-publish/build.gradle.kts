@@ -17,7 +17,7 @@ gradlePlugin {
 
 
 dependencies {
-    implementation(libs.maven.model)
+    api(libs.maven.model)
     compileOnly(libs.kotlin)
     testImplementation(libs.kotlin)
     compileOnly(libs.dokka.plugin) {

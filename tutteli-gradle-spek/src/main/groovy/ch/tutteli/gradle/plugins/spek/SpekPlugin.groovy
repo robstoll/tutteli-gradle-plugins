@@ -75,10 +75,10 @@ class SpekPlugin implements Plugin<Project> {
             version = null
         }
 
+        //TODO 6.0.0 drop once we no longer support gradle < 8 ?
         if (version == null) {
             def plugins = project.plugins
             def kotlinPlugin =
-                // TODO drop once we no longer support the old kotlin plugins and old gradle version
                 plugins.findPlugin("org.jetbrains.kotlin.multiplatform")
                     ?: plugins.findPlugin("org.jetbrains.kotlin.jvm")
                     ?: plugins.findPlugin("org.jetbrains.kotlin.js")
