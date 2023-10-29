@@ -16,6 +16,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.withType
+import java.util.*
 
 class JunitJacocoPlugin : Plugin<Project> {
 
@@ -50,7 +51,7 @@ class JunitJacocoPlugin : Plugin<Project> {
 
                 configureProjectSources(target)
 
-                executionData.setFrom(target.files("${target.buildDir}/jacoco/jvmTest.exec"))
+                executionData.setFrom(target.layout.buildDirectory.file("jacoco/jvmTest.exec"))
                 dependsOn(target.tasks.named("jvmTest"))
             }
 
@@ -128,7 +129,7 @@ class JunitJacocoPlugin : Plugin<Project> {
     }
 
     private fun determineMemoizeTestFile(project: Project, testTask: AbstractTestTask) =
-        project.file("${project.buildDir}/test-results/memoize-previous-state-${testTask.name}.txt")
+        project.layout.buildDirectory.file("test-results/memoize-previous-state-${testTask.name}.txt").get().asFile
 
 
     private fun failIfTestFailedLastTimeTask(

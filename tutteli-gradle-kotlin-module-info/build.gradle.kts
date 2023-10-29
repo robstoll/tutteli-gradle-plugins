@@ -1,8 +1,16 @@
 plugins {
-    `kotlin-dsl`
+    id("build-logic.published-gradle-plugin")
+    groovy
 }
-val pluginId by extra("ch.tutteli.gradle.plugins.kotlin.module.info")
-val pluginClass by extra("ch.tutteli.gradle.plugins.kotlin.module.info.ModuleInfoPlugin")
-val pluginName by extra("Tutteli Kotlin module-info.java Plugin")
-val pluginDescription by extra("Provides a way to use module-info.java in kotlin projects.")
-val pluginTags by extra(listOf("kotlin", "module-info", "jigsaw"))
+
+gradlePlugin {
+    plugins {
+        register("module-info") {
+            id = "ch.tutteli.gradle.plugins.kotlin.module.info"
+            displayName = "Tutteli Kotlin module-info.java Plugin"
+            description = "Provides a way to use module-info.java in kotlin projects."
+            tags.set(listOf("kotlin", "module-info", "jigsaw"))
+            implementationClass = "ch.tutteli.gradle.plugins.kotlin.module.info.ModuleInfoPlugin"
+        }
+    }
+}

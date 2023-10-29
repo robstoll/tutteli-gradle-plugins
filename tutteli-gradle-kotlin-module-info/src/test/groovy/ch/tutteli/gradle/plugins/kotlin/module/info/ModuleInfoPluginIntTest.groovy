@@ -21,8 +21,8 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse
 
 @ExtendWith(SettingsExtension)
 class ModuleInfoPluginIntTest {
-    private static final String KOTLIN_VERSION = '1.5.21'
-    private static final String ATRIUM_VERSION = '0.17.0'
+    private static final String KOTLIN_VERSION = '1.8.22'
+    private static final String ATRIUM_VERSION = '1.0.0'
     private static final String MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 
     @Test
@@ -242,7 +242,7 @@ class ModuleInfoPluginIntTest {
         def configuration = kotlinPlugin == MULTIPLATFORM_PLUGIN ? "jvmMainImplementation" : "implementation"
         return """
         dependencies {
-            $configuration "ch.tutteli.atrium:atrium-fluent-en_GB:$ATRIUM_VERSION"
+            $configuration "ch.tutteli.atrium:atrium-fluent:$ATRIUM_VERSION"
             constraints {
                 implementation "org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"
                 implementation "org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"
@@ -268,11 +268,11 @@ class ModuleInfoPluginIntTest {
         kotlin.mkdirs()
         def test = new File(kotlin, 'test.kt')
         test << """
-            import ch.tutteli.atrium.api.fluent.en_GB.toBe
+            import ch.tutteli.atrium.api.fluent.en_GB.toEqual
             import ch.tutteli.atrium.api.verbs.expect
 
             fun foo() {
-                expect(1).toBe(1)
+                expect(1).toEqual(1)
             }
             """
         settingsSetup.buildGradle << """
@@ -318,11 +318,11 @@ class ModuleInfoPluginIntTest {
         kotlin.mkdirs()
         def test = new File(kotlin, 'test.kt')
         test << """
-            import ch.tutteli.atrium.api.fluent.en_GB.toBe
+            import ch.tutteli.atrium.api.fluent.en_GB.toEqual
             import ch.tutteli.atrium.api.verbs.expect
 
             fun foo() {
-                expect(1).toBe(1)
+                expect(1).toEqual(1)
             }
             """
         settingsSetup.buildGradle << """
@@ -370,6 +370,8 @@ class ModuleInfoPluginIntTest {
         def moduleInfoId = (projectName.replace(".", "_") + "_" + UUID.randomUUID().toString()).replace('-', '_')
         moduleInfo << "module ch.tutteli.$moduleInfoId { requires java.base; }"
         def result = runGradleModuleBuild(settingsSetup, null, "build")
+        //assert
+        Asserts.assertTaskRunSuccessfully(result, ":compileJava")
     }
 
 

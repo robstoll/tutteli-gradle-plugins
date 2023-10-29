@@ -38,17 +38,6 @@ class PublishPluginSmokeTest {
     }
 
     @Test
-    void kotlinJs_TasksAndExtensionPresent() {
-        //arrange & act
-        Project project = setUp { project ->
-            project.plugins.apply('kotlin2js')
-        }
-        project.evaluate()
-        //assert
-        assertExtensionAndTaskDefinedAfterEvaluate(project)
-    }
-
-    @Test
     void kotlinPlatformJvm_TasksAndExtensionPresent() {
         //arrange & act
         Project project = setUp { project ->
@@ -76,7 +65,7 @@ class PublishPluginSmokeTest {
         Project project = setUp { project ->
             project.plugins.apply('org.jetbrains.kotlin.js')
             project.extensions.configure('kotlin') {
-                it.js {
+                it.js(it.LEGACY) {
                     nodejs()
                 }
             }

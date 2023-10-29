@@ -1,18 +1,23 @@
-plugins{
-    `kotlin-dsl`
+plugins {
+    id("build-logic.published-gradle-plugin")
+    groovy
 }
-val pluginId by extra("ch.tutteli.gradle.plugins.dokka")
-val pluginClass by extra("ch.tutteli.gradle.plugins.dokka.DokkaPlugin")
-val pluginName by extra("Tutteli Dokka Plugin")
-val pluginDescription by extra("Applies JetBrain's dokka plugin, configures it by conventions and provides a javadocJar task.")
-val pluginTags by extra(listOf("dokka", "kotlin"))
 
-val dokkaVersion: String by rootProject.extra
-val kotlinVersion: String by rootProject.extra
+gradlePlugin {
+    plugins {
+        register("dokka") {
+            id = "ch.tutteli.gradle.plugins.dokka"
+            displayName = "Tutteli Dokka Plugin"
+            description = "Applies JetBrain's dokka plugin, configures it by conventions"
+            tags.set(listOf("dokka", "kotlin"))
+            implementationClass = "ch.tutteli.gradle.plugins.dokka.DokkaPlugin"
+        }
+    }
+}
 
 dependencies {
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion"){
+    implementation(libs.dokka.plugin) {
         exclude("com.jetbrains.kotlin")
     }
-    testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    testImplementation(libs.kotlin)
 }

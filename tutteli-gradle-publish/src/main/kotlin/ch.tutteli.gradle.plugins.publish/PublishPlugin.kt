@@ -6,7 +6,6 @@ import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.internal.PublicationInternal
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.bundling.AbstractArchiveTask

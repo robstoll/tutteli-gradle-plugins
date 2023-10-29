@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
 class DokkaPluginIntTest {
-    def static final KOTLIN_VERSION = '1.5.30'
+    def static final KOTLIN_VERSION = '1.6.10'
 
     @Test
     void smokeTest_usesSimple_noVersionDefined_NoExtLink(SettingsExtensionObject settingsSetup) throws IOException {
@@ -30,7 +30,7 @@ class DokkaPluginIntTest {
        apply plugin: 'ch.tutteli.gradle.plugins.dokka'
 
         tutteliDokka {
-            repoUrl = '$url'
+            repoUrl.set("$url")
         }
         ${printInfo()}
         """
@@ -225,7 +225,7 @@ class DokkaPluginIntTest {
     }
 
     @Test
-    void smokeTestNotModeSimple_githubUserAndReleaseVersion(SettingsExtensionObject settingsSetup) throws IOException {
+    void smokeTestNotWriteToDocs_githubUserAndReleaseVersion(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << "rootProject.name='test-project'"
 
@@ -242,7 +242,7 @@ class DokkaPluginIntTest {
         tutteliDokka {
             //uses the githubUser to create the repo url as well as the externalDocumentationLink if one uses a release version (x.y.z)
             githubUser = 'robstoll'
-            modeSimple = false
+            writeToDocs = false
         }
         ${printInfo()}
         """
@@ -486,7 +486,7 @@ class DokkaPluginIntTest {
     }
 
     @Test
-    void smokeTestUsingDokka1_8_10_whereProviderFileWasUsed_modeNotSimple(SettingsExtensionObject settingsSetup) throws IOException {
+    void smokeTestUsingDokka1_8_10_whereProviderFileWasUsed_writeToGhPages(SettingsExtensionObject settingsSetup) throws IOException {
         //arrange
         settingsSetup.settings << """
             pluginManagement {
@@ -533,7 +533,7 @@ class DokkaPluginIntTest {
         tutteliDokka {
             //uses the githubUser to create the repo url as well as the externalDocumentationLink if one uses a release version (x.y.z)
             githubUser = 'robstoll'
-            modeSimple = false
+            writeToDocs = false
         }
         ${ printInfo() }
         """

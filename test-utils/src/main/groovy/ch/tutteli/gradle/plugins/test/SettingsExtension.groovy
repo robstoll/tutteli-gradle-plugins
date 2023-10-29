@@ -39,7 +39,7 @@ class SettingsExtensionObject {
         import org.gradle.api.tasks.testing.logging.TestLogEvent
         buildscript {
             repositories {
-                maven { url "https://plugins.gradle.org/m2/" }
+                gradlePluginPortal()
             }
             dependencies {
                 classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'

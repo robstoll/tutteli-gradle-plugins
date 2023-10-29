@@ -26,6 +26,6 @@ class JunitJacocoPluginSmokeTest {
         assertFalse(jacocoReport.reports.html.required.get(), 'jacoco html report should be disabled by default')
 
         project.evaluate()
-        assertFalse(project.test.reports.junitXml.enabled, "junitXml report should be disabled per default")
+        assertFalse(project.test.reports.junitXml.required.get(), "junitXml report should be disabled per default")
     }
 }

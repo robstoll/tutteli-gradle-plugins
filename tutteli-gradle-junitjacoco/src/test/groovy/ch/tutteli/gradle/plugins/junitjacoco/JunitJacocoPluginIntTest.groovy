@@ -4,18 +4,17 @@ import ch.tutteli.gradle.plugins.test.Asserts
 import ch.tutteli.gradle.plugins.test.SettingsExtension
 import ch.tutteli.gradle.plugins.test.SettingsExtensionObject
 import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 import java.nio.file.Files
 
-import static org.junit.jupiter.api.Assertions.*
-import static org.junit.jupiter.api.Assumptions.assumeFalse
+import static org.junit.jupiter.api.Assertions.assertFalse
+import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
 class JunitJacocoPluginIntTest {
-    private static final String KOTLIN_VERSION = '1.5.21'
+    private static final String KOTLIN_VERSION = '1.8.22'
     private static final String MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 
     @Test
@@ -125,7 +124,7 @@ class JunitJacocoPluginIntTest {
     static def runGradleModuleBuild(SettingsExtensionObject settingsSetup, String... tasks) {
         return GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments(tasks.toList() + "--stacktrace")
+            .withArguments(tasks.toList() + ["--stacktrace", "--info"])
             .build()
     }
 }

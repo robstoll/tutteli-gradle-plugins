@@ -20,11 +20,6 @@ class SpekPluginIntTest {
 
 
     @Test
-    void smokeTest_oldKotlin(SettingsExtensionObject settingsSetup) throws IOException {
-        checkSmokeTest(settingsSetup, "kotlin", '1.3.61')
-    }
-
-    @Test
     void smokeTest_OldJvmPlatform(SettingsExtensionObject settingsSetup) throws IOException {
         checkSmokeTest(settingsSetup, "kotlin-platform-jvm", '1.6.21')
     }
