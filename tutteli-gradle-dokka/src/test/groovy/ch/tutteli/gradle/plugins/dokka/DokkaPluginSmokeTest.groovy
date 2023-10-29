@@ -1,7 +1,6 @@
 package ch.tutteli.gradle.plugins.dokka
 
 import org.gradle.api.Project
-import org.gradle.jvm.tasks.Jar
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.dokka.gradle.GradleExternalDocumentationLinkBuilder
@@ -65,7 +64,7 @@ class DokkaPluginSmokeTest {
         project.plugins.apply(DokkaPlugin)
         def extension = getExtension(project)
         extension.githubUser.set(githubUser)
-        extension.getWriteToDocs().set(false)
+        extension.writeTo.set(GhPages.INSTANCE)
         project.evaluate()
 
         //assert
@@ -101,7 +100,7 @@ class DokkaPluginSmokeTest {
         project.plugins.apply(DokkaPlugin)
         def extension = getExtension(project)
         extension.githubUser.set(githubUser)
-        extension.getWriteToDocs().set(false)
+        extension.writeTo.set(GhPages.INSTANCE)
         project.evaluate()
 
         //assert
@@ -136,7 +135,7 @@ class DokkaPluginSmokeTest {
         project.plugins.apply(DokkaPlugin)
         def extension = getExtension(project)
         extension.githubUser.set(githubUser)
-        extension.getWriteToDocs().set(false)
+        extension.writeTo.set(GhPages.INSTANCE)
         project.evaluate()
 
         //assert
