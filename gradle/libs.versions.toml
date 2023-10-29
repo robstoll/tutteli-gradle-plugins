@@ -1,6 +1,6 @@
 [versions]
 atrium = "1.0.0"
-dokka = "1.9.0"
+dokka = "1.9.10"
 jacocoTool = "0.8.8"
 jsonPathAssert = "2.7.0"
 junitJupiter = "5.10.0"
