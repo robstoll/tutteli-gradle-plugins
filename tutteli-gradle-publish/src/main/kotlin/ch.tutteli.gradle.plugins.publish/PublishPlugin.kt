@@ -14,6 +14,7 @@ import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaTask
+import java.util.*
 
 class PublishPlugin : Plugin<Project> {
 
@@ -22,8 +23,8 @@ class PublishPlugin : Plugin<Project> {
         const val EXTENSION_NAME = "tutteliPublish"
         private const val PUBLICATION_NAME = "tutteli"
         const val TASK_NAME_VALIDATE_PUBLISH = "validateBeforePublish"
-        val TASK_GENERATE_POM = "generatePomFileFor${PUBLICATION_NAME.capitalize()}Publication"
-        val TASK_GENERATE_GRADLE_METADATA = "generateMetadataFileFor${PUBLICATION_NAME.capitalize()}Publication"
+        const val TASK_GENERATE_POM = "generatePomFileForTutteliPublication"
+        const val TASK_GENERATE_GRADLE_METADATA = "generateMetadataFileForTutteliPublication"
     }
 
     override fun apply(project: Project) {
@@ -103,7 +104,9 @@ class PublishPlugin : Plugin<Project> {
                 // we only add a javadoc-jar if we don't deal with a relocation publication
                 if (!publication.name.endsWith("-relocation")) {
                     val javadocJar = if (isKotlinMultiPlatform) {
-                        val publicationNameCapitalized = publication.name.capitalize()
+                        val publicationNameCapitalized = publication.name.replaceFirstChar {
+                            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                        }
                         val customDokkaHtml =
                             project.tasks.register<DokkaTask>("dokkaHtml${publicationNameCapitalized}") {
                                 outputDirectory.set(project.layout.buildDirectory.map { it.dir("dokka/${publication.name}") })

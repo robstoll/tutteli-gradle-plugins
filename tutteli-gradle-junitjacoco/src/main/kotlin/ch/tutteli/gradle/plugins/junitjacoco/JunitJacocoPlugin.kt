@@ -117,7 +117,7 @@ class JunitJacocoPlugin : Plugin<Project> {
             })
         }
         project.afterEvaluate {
-            // TODO 5.0.0 check if really still needed (maybe fixed in newer gradle versions) and if so, then find a
+            // TODO 6.0.0 check if really still needed (maybe fixed in newer gradle versions) and if so, then find a
             // way that we can still use configureEach instead of all in order that we can use configuration-cache
             project.tasks.withType<AbstractTestTask>().all {
                 val testTask = this
@@ -147,8 +147,11 @@ class JunitJacocoPlugin : Plugin<Project> {
                         testTask.reports.html.entryPoint
                     }
                     val projectPrefix = if (project == project.rootProject) "" else ":${project.name}"
+                    val taskName = "clean" + testTask.name.replaceFirstChar {
+                        if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                    }
                     throw GradleException(
-                        "test failed in last run, execute ${projectPrefix}clean${testTask.name.capitalize()} to force its execution\n" +
+                        "test failed in last run, execute ${projectPrefix}$taskName to force its execution\n" +
                             "See the following report for more information:\nfile://${reportFile.absolutePath}"
                     )
                 }

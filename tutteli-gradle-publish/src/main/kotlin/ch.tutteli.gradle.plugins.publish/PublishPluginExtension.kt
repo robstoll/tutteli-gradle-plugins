@@ -75,7 +75,7 @@ open class PublishPluginExtension(private val project: Project) {
 
     /**
      * Resets all previously set licenses and adds the given - can be used to override the default license.
-     * Use {@link #license(java.lang.String)} to specify additional licenses.
+     * Use [PublishPluginExtension.licenses] to specify additional licenses.
      */
     fun resetLicenses(license: String) {
         resetLicenses(license, DEFAULT_DISTRIBUTION)
@@ -83,7 +83,7 @@ open class PublishPluginExtension(private val project: Project) {
 
     /**
      * Resets all previously set licenses and adds the given - can be used to override the default license.
-     * Use {@link #license(java.lang.String, java.lang.String)} to specify additional licenses.
+     * Use [PublishPluginExtension.licenses] to specify additional licenses.
      */
     fun resetLicenses(license: String, distribution: String) {
         resetLicenses(StandardLicenses.fromShortName(license), distribution)
@@ -91,7 +91,7 @@ open class PublishPluginExtension(private val project: Project) {
 
     /**
      * Resets all previously set licenses and adds the given - can be used to override the default license.
-     * Use {@link #license(StandardLicense)} to specify additional licenses.
+     * Use [PublishPluginExtension.licenses] to specify additional licenses.
      */
     fun resetLicenses(standardLicense: StandardLicenses) {
         resetLicenses(standardLicense, DEFAULT_DISTRIBUTION)
@@ -99,7 +99,7 @@ open class PublishPluginExtension(private val project: Project) {
 
     /**
      * Resets all previously set licenses and adds the given - can be used to override the default license.
-     * Use {@link #license(StandardLicense, java.lang.String)} to specify additional licenses.
+     * Use [PublishPluginExtension.licenses] to specify additional licenses.
      */
     fun resetLicenses(standardLicense: StandardLicenses, distribution: String) {
         resetLicenses(License(standardLicense, distribution))
@@ -107,7 +107,7 @@ open class PublishPluginExtension(private val project: Project) {
 
     /**
      * Resets all previously set licenses and adds the given - can be used to override the default license.
-     * Use {@link #license(org.gradle.api.Action)} to specify additional licenses.
+     * Use [PublishPluginExtension.licenses] to specify additional licenses.
      */
     fun resetLicenses(newLicense: License) {
         val licenses = ArrayList<License>(5)
@@ -115,28 +115,29 @@ open class PublishPluginExtension(private val project: Project) {
         this.licenses.set(licenses)
     }
 
-    fun license(additionalLicense: String) {
-        license(additionalLicense, DEFAULT_DISTRIBUTION)
+    fun addLicense(additionalLicense: String) {
+        addLicense(additionalLicense, DEFAULT_DISTRIBUTION)
     }
 
-    fun license(additionalLicense: String, distribution: String) {
-        license(StandardLicenses.fromShortName(additionalLicense), distribution)
+    fun addLicense(additionalLicense: String, distribution: String) {
+        addLicense(StandardLicenses.fromShortName(additionalLicense), distribution)
     }
 
-    fun license(standardLicense: StandardLicenses) {
-        license(standardLicense, DEFAULT_DISTRIBUTION)
+    fun addLicense(standardLicense: StandardLicenses) {
+        addLicense(standardLicense, DEFAULT_DISTRIBUTION)
     }
 
-    fun license(standardLicense: StandardLicenses, distribution: String) {
-        license(License(standardLicense, distribution))
+    fun addLicense(standardLicense: StandardLicenses, distribution: String) {
+        addLicense(License(standardLicense, distribution))
     }
 
-    fun license(license: License) {
+    fun addLicense(license: License) {
         licenses.add(license)
     }
 
-    fun developer(developer: Action<Developer>) {
+    fun addDeveloper(developer: Action<Developer>) {
         val newDeveloper = project.objects.newInstance(Developer::class.java)
+        newDeveloper.organization
         developer.execute(newDeveloper)
         developers.add(newDeveloper)
     }

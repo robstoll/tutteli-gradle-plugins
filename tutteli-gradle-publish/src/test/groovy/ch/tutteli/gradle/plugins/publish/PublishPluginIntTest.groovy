@@ -105,11 +105,11 @@ class PublishPluginIntTest {
             )
 
             // different ways to add additional licenses
-            license 'Apache-2.0'
-            license 'Apache-2.0', 'manually'
-            license ch.tutteli.gradle.plugins.publish.StandardLicenses.APACHE_2_0
-            license ch.tutteli.gradle.plugins.publish.StandardLicenses.APACHE_2_0, 'somethingElse'
-            license(new ch.tutteli.gradle.plugins.publish.License(
+            addLicense 'Apache-2.0'
+            addLicense 'Apache-2.0', 'manually'
+            addLicense ch.tutteli.gradle.plugins.publish.StandardLicenses.APACHE_2_0
+            addLicense ch.tutteli.gradle.plugins.publish.StandardLicenses.APACHE_2_0, 'somethingElse'
+            addLicense(new ch.tutteli.gradle.plugins.publish.License(
                 'Lic-1.2',
                 'License 1.2',
                 'https://license.com',
@@ -117,13 +117,13 @@ class PublishPluginIntTest {
             ))
 
             // you can add multiple developers if required
-            developer {
+            addDeveloper {
                 id = 'robstoll'
                 name = 'Robert Stoll'
                 email = 'rstoll@tutteli.ch'
                 url = 'tutteli.ch'
             }
-            developer {
+            addDeveloper {
                 id = 'robstoll_tutteli'
                 name = 'Robert Stoll'
                 email = 'rstoll@tutteli.ch'
