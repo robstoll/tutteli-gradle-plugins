@@ -22,15 +22,23 @@ dependencies {
     implementation(libs.junit.jupiter.api)
 }
 
+val generated = project.files("src/main/generated/kotlin/ch/tutteli/gradle/plugins/junitjacoco/generated")
+
+kotlin {
+    sourceSets {
+        main {
+            kotlin.srcDir(generated)
+        }
+    }
+}
+
 val generateDependencyVersions = tasks.register("generateHardCodedDependencies") {
     group = "build"
     description = "dependency version as code"
 
-    val generated = project.projectDir.resolve("src/main/kotlin/ch/tutteli/gradle/plugins/junitjacoco/generated")
-    outputs.dir(generated)
     doLast {
-        mkdir(generated)
-        generated.resolve("Dependencies.kt").writeText(
+        mkdir(generated.asPath)
+        File(generated.asPath, "Dependencies.kt").writeText(
             """
             package ch.tutteli.gradle.plugins.junitjacoco.generated
 
@@ -41,12 +49,12 @@ val generateDependencyVersions = tasks.register("generateHardCodedDependencies")
         )
     }
 }
+project.files(generated).builtBy(generateDependencyVersions)
 tasks.withType<KotlinCompile>().configureEach {
     dependsOn(generateDependencyVersions)
 }
-
 afterEvaluate {
-    tasks.named("publishPluginJar").configure {
+    tasks.named<Jar>("sourcesJar").configure {
         dependsOn(generateDependencyVersions)
     }
 }
