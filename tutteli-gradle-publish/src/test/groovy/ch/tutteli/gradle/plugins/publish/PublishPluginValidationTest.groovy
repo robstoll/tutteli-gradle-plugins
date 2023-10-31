@@ -64,42 +64,6 @@ class PublishPluginValidationTest {
     }
 
     @Test
-    void evaluate_setEnvNameGpgPassphraseToNull_usesConvention() {
-        //arrange
-        Project project = setUp()
-        getPluginExtension(project).envNameGpgPassphrase.set(null)
-        //act
-        project.evaluate()
-        //assert
-        assertEquals("GPG_PASSPHRASE", getPluginExtension(project).envNameGpgPassphrase.get())
-    }
-
-    @Test
-    void evaluate_setEnvNameGpgKeyIdToNull_usesConvention() {
-        Project project = setUp()
-        getPluginExtension(project).envNameGpgKeyId.set(null)
-
-        project.evaluate()
-        assertEquals("GPG_KEY_ID", getPluginExtension(project).envNameGpgKeyId.get())
-    }
-    @Test
-    void evaluate_setEnvNameGpgSecretKeyRingFileToNull_usesConvention() {
-        Project project = setUp()
-        getPluginExtension(project).envNameGpgKeyRing.set(null)
-
-        project.evaluate()
-        assertEquals("GPG_KEY_RING", getPluginExtension(project).envNameGpgKeyRing.get())
-    }
-    @Test
-    void evaluate_setEnvNameGpgSigningKeyToNull_usesConvention() {
-        Project project = setUp()
-        getPluginExtension(project).envNameGpgSigningKey.set(null)
-
-        project.evaluate()
-        assertEquals("GPG_SIGNING_KEY", getPluginExtension(project).envNameGpgSigningKey.get())
-    }
-
-    @Test
     void evaluate_signIfNotSnapshot() {
         Project project = setUp()
         project.version = "1.0.0"

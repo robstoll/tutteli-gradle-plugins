@@ -22,7 +22,6 @@ class PublishPlugin : Plugin<Project> {
         val LOGGER: Logger = Logging.getLogger(PublishPlugin::class.java)
         const val EXTENSION_NAME = "tutteliPublish"
         private const val PUBLICATION_NAME = "tutteli"
-        const val TASK_NAME_VALIDATE_PUBLISH = "validateBeforePublish"
         const val TASK_GENERATE_POM = "generatePomFileForTutteliPublication"
         const val TASK_GENERATE_GRADLE_METADATA = "generateMetadataFileForTutteliPublication"
     }
@@ -31,6 +30,8 @@ class PublishPlugin : Plugin<Project> {
 
         project.plugins.apply(MavenPublishPlugin::class.java)
         project.plugins.apply(SigningPlugin::class.java)
+        val signingExtension = project.the<SigningExtension>()
+        signingExtension.useGpgCmd()
 
         val extension = project.extensions.create<PublishPluginExtension>(EXTENSION_NAME, project)
         val manifestAugmenter = ManifestAugmenter(project, extension)
@@ -64,9 +65,6 @@ class PublishPlugin : Plugin<Project> {
             checkExtensionPropertyPresentAndNotBlank(extension.githubUser, "githubUser")
             checkExtensionPropertyPresentNotEmpty(extension.licenses, "licenses")
 
-            val validateBeforePublish = project.tasks.register<ValidateBeforePublishTask>(TASK_NAME_VALIDATE_PUBLISH)
-            val signingExtension = project.the<SigningExtension>()
-
             val publications = getMavenPublications(project)
 
             val needToCreateOwnPublication = publications.isEmpty()
@@ -83,10 +81,8 @@ class PublishPlugin : Plugin<Project> {
                 val publication = this
                 pomAugmenter.augment(publication)
 
-                // creates the sign task -- tasks if we would pass more than one publication
-                signingExtension.sign(publication).forEach { signTask ->
-                    signTask.dependsOn(validateBeforePublish)
-                }
+                // creates the sign task (the sign tasks if we would pass more than one publication)
+                signingExtension.sign(publication)
             }
         }
     }

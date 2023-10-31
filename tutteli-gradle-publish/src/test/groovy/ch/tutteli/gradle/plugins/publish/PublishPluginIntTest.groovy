@@ -64,17 +64,13 @@ class PublishPluginIntTest {
                 classpath files($settingsSetup.pluginClasspath)
             }
         }
-        buildscript {
-            ext {
-                // required since we don't set the System.env variables.
-                myGpgPassphrase = '$gpgPassphrase'
-                myGpgKeyRing = '$gpgKeyRing'
-                myGpgKeyId = '$gpgKeyId'
-            }
-        }
 
         apply plugin: 'java'
         apply plugin: 'ch.tutteli.gradle.plugins.publish'
+
+        project.ext.set('signing.password', '$gpgPassphrase')
+        project.ext.set('signing.keyId', '$gpgKeyId')
+        project.ext.set('signing.secretKeyRingFile', '$gpgKeyRing')
 
         project.with {
             group = '$groupId'
@@ -134,23 +130,16 @@ class PublishPluginIntTest {
             // will add Implementation-Vendor to all manifest files.
             manifestVendor = 'tutteli.ch'
 
-            // you can customise the property and env variable names if they differ from the convention
-            propNameGpgPassphrase = 'myGpgPassphrase'           // default is gpgPassphrase
-            propNameGpgKeyId      = 'myGpgKeyId'                // default is gpgKeyId
-            propNameGpgKeyRing     = 'myGpgKeyRing'             // default is gpgKeyRing
-            envNameGpgPassphrase  = 'MY_GPG_PASSPHRASE'         // default is GPG_PASSPHRASE
-            envNameGpgKeyId       = 'MY_GPG_KEY_ID'             // default is GPG_KEY_ID
-            envNameGpgKeyRing     = 'MY_GPG_KEY_RING'           // default is GPG_KEY_RING
-            envNameGpgSigningKey  = 'MY_GPG_SIGNING_KEY'        // default is GPG_SIGNING_KEY
-
             // you can also disable GPG signing (default is true)
             signWithGpg = false
             // yet, we will re-activate it for this test
             signWithGpg = true
+
+            // default uses GPG-command, we use the java-version here to have less issues in CI regarding ubuntu/windows
+            usePgpJava()
         }
 
         ${publishingRepo()}
-        ${taskPrintSigning()}
         """
         //act
         def builder = GradleRunner.create()
@@ -159,7 +148,7 @@ class PublishPluginIntTest {
         }
         def result = builder
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
+            .withArguments("publishAllPublicationsToMavenRepository",  "--stacktrace")
             .build()
 
         //assert
@@ -209,53 +198,6 @@ class PublishPluginIntTest {
         )
 
         assertModuleExists(releasePath, projectName, version)
-        assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
-    }
-
-    @Test
-    void smokeTest_GpgPassphraseMissing(SettingsExtensionObject settingsSetup) throws IOException {
-        //arrange
-        def projectName = 'smoke-gpg'
-        settingsSetup.settings << "rootProject.name='$projectName'"
-        def version = '1.0.0'
-        def githubUser = 'robstoll'
-
-        settingsSetup.buildGradle << """
-        buildscript {
-            dependencies {
-                classpath files($settingsSetup.pluginClasspath)
-            }
-        }
-
-        apply plugin: 'java'
-        apply plugin: 'ch.tutteli.gradle.plugins.publish'
-
-        project.with {
-            group = 'com.example'
-            version = '$version'
-            description = 'test project'
-        }
-
-        tutteliPublish {
-            // minimal setup required for publish, all other things are only needed if not the default is used
-            githubUser = '$githubUser'
-            // gpg passphrase not defined via property or something
-        }
-        """
-        // still able to generate a pom, the GPG-key is only used for publishing
-        GradleRunner.create()
-            .withProjectDir(settingsSetup.tmp)
-            .withArguments("tasks", "generatePom", "--stacktrace")
-            .build()
-        //assert
-        def exception = assertThrows(UnexpectedBuildFailure) {
-            GradleRunner.create()
-                .withProjectDir(settingsSetup.tmp)
-                .withArguments("validateBeforePublish", "--stacktrace")
-                .build()
-        }
-        assertTrue(exception.message.contains("You need to define property with name gpgPassphrase or System.env variable with name GPG_PASSPHRASE"),
-            "did not fail due to missing passphase\n$exception.message")
     }
 
     @Test
@@ -290,19 +232,11 @@ class PublishPluginIntTest {
         settingsSetup.gpgKeyRing << PublishPluginIntTest.class.getResourceAsStream('/test-tutteli-gradle-plugin.gpg')
 
         settingsSetup.buildGradle << """
-        buildscript {
-            repositories { maven { url "https://plugins.gradle.org/m2/" } }
-            dependencies {
-                classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION'
-                classpath 'ch.tutteli:tutteli-gradle-publish:4.11.0'
-            }
-            ext {
-                // required since we don't set the System.env variables.
-                gpgPassphrase = '$gpgPassphrase'
-                gpgKeyRing = "\$rootProject.projectDir/$gpgKeyRing"
-                gpgKeyId = '$gpgKeyId'
-            }
-        }
+        ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+
+        project.ext.set('signing.password', '$gpgPassphrase')
+        project.ext.set('signing.keyId', '$gpgKeyId')
+        project.ext.set('signing.secretKeyRingFile', "\$project.projectDir/$gpgKeyRing")
 
         project.with {
             group = '$groupId'
@@ -341,9 +275,11 @@ class PublishPluginIntTest {
                 //manifestVendor = $vendor // we don't have a manifestVendor, thus we reset it to null
 
                 artifactFilter = { jar -> jar.name != 'testSourcesJarFiltered' } as kotlin.jvm.functions.Function1
+
+                // default uses GPG-command, we use the java-version here to have less issues in CI regarding ubuntu/windows
+                usePgpJava()
             }
             ${publishingRepo()}
-            ${taskPrintSigning()}
         }
 
         configure(project(':$dependentName')) {
@@ -361,12 +297,10 @@ class PublishPluginIntTest {
         }
         def result = builder
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
+            .withArguments("publishAllPublicationsToMavenRepository", "--stacktrace")
             .build()
 
         //assert
-        assertSigning(result, gpgPassphrase, gpgKeyId, "${settingsSetup.tmpPath.toRealPath()}/$gpgKeyRing")
-
         def dependentReleasePath = getReleasePath(settingsSetup, dependentName, groupId, version, dependentName)
         def (dependentPom, dependentPomName) = getPomInclFileNameAndAssertBasicPomProperties(dependentReleasePath, dependentName, groupId, version, githubUser, rootProjectName)
         assertContainsRegex(dependentPom, "licenses", "<licenses>$NL_INDENT" +
@@ -467,15 +401,13 @@ class PublishPluginIntTest {
         settingsSetup.buildGradle << """
         ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
         buildscript {
-            ext {
-                // required since we don't set the System.env variables.
-                gpgPassphrase = '$gpgPassphrase'
-                gpgKeyRing = '$gpgKeyRing'
-                gpgKeyId = '$gpgKeyId'
-            }
             $dokkaDependency
-
         }
+
+        project.ext.set('signing.password', '$gpgPassphrase')
+        project.ext.set('signing.keyId', '$gpgKeyId')
+        project.ext.set('signing.secretKeyRingFile', '$gpgKeyRing')
+
         repositories {
             mavenCentral()
         }
@@ -492,13 +424,15 @@ class PublishPluginIntTest {
         tutteliPublish {
             // minimal setup required for local publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
+
+            // default uses GPG-command, we use the java-version here to have less issues in CI regarding ubuntu/windows
+            usePgpJava()
         }
         dependencies {
             implementation 'ch.tutteli.atrium:atrium-fluent:$ATRIUM_VERSION'
         }
 
         ${publishingRepo()}
-        ${taskPrintSigning()}
         """
         File license = new File(settingsSetup.tmp, 'LICENSE.txt')
         license << 'Copyright...'
@@ -513,7 +447,7 @@ class PublishPluginIntTest {
         //act
         def result = GradleRunner.create()
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
+            .withArguments("publishAllPublicationsToMavenRepository", "--stacktrace")
             .build()
 
         Asserts.assertTaskRunSuccessfully(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")
@@ -565,7 +499,6 @@ class PublishPluginIntTest {
         new ZipFile(releasePath.resolve("$projectName-${version}-sources.jar").toFile()).withCloseable { zipFile ->
             assertInZipFile(zipFile, 'main/ch/tutteli/atrium/a.kt')
         }
-        assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
     }
 
 
@@ -602,14 +535,11 @@ class PublishPluginIntTest {
         import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 
         ${settingsSetup.buildscriptWithKotlin(kotlinVersion)}
-        buildscript {
-            ext {
-                // required since we don't set the System.env variables.
-                gpgPassphrase = '$gpgPassphrase'
-                gpgKeyRing = '$gpgKeyRing'
-                gpgKeyId = '$gpgKeyId'
-            }
-        }
+
+        project.ext.set('signing.password', '$gpgPassphrase')
+        project.ext.set('signing.keyId', '$gpgKeyId')
+        project.ext.set('signing.secretKeyRingFile', '$gpgKeyRing')
+
         repositories {
             mavenCentral()
         }
@@ -625,6 +555,9 @@ class PublishPluginIntTest {
         tutteliPublish {
             //minimal setup required for local publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
+
+            // default uses GPG-command, we use the java-version here to have less issues in CI regarding ubuntu/windows
+            usePgpJava()
         }
 
         kotlin {
@@ -651,7 +584,6 @@ class PublishPluginIntTest {
            }
         }
         ${publishingRepo()}
-        ${taskPrintSigning()}
         """
         File license = new File(settingsSetup.tmp, 'LICENSE.txt')
         license << 'Copyright...'
@@ -677,12 +609,11 @@ class PublishPluginIntTest {
         }
         def result = builder
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishAllPublicationsToMavenRepository", "printSigning", "--stacktrace")
+            .withArguments("publishAllPublicationsToMavenRepository", "--stacktrace")
             .build()
 
         Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")
         Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_POM")
-        assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
 
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
@@ -750,16 +681,14 @@ class PublishPluginIntTest {
 
         ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
         buildscript {
-            ext {
-                // required since we don't set the System.env variables.
-                gpgPassphrase = '$gpgPassphrase'
-                gpgKeyRing = '$gpgKeyRing'
-                gpgKeyId = '$gpgKeyId'
-            }
             dependencies {
                 classpath 'org.jetbrains.dokka:org.jetbrains.dokka.gradle.plugin:1.9.0'
             }
         }
+        project.ext.set('signing.password', '$gpgPassphrase')
+        project.ext.set('signing.keyId', '$gpgKeyId')
+        project.ext.set('signing.secretKeyRingFile', '$gpgKeyRing')
+
         repositories {
             mavenCentral()
         }
@@ -776,6 +705,9 @@ class PublishPluginIntTest {
         tutteliPublish {
             //minimal setup required for local publish, all other things are only needed if not the default is used
             githubUser = '$githubUser'
+
+            // default uses GPG-command, we use the java-version here to have less issues in CI regarding ubuntu/windows
+            usePgpJava()
         }
 
         kotlin {
@@ -792,7 +724,6 @@ class PublishPluginIntTest {
            }
         }
         ${publishingRepo()}
-        ${taskPrintSigning()}
         """
         File license = new File(settingsSetup.tmp, 'LICENSE.txt')
         license << 'Copyright...'
@@ -815,14 +746,12 @@ class PublishPluginIntTest {
 
         //act
         def result = GradleRunner.create()
-//            .withGradleVersion("8.1.1")
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishAllPublicationsToMavenRepository", "printSigning")
+            .withArguments("publishAllPublicationsToMavenRepository")
             .build()
 
         Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_GRADLE_METADATA")
         Asserts.assertTaskNotInvolved(result, ":$PublishPlugin.TASK_GENERATE_POM")
-        assertSigning(result, gpgPassphrase, gpgKeyId, gpgKeyRing)
 
 
         def repoUrl = "https://github.com/$githubUser/$projectName"
@@ -870,16 +799,6 @@ class PublishPluginIntTest {
         return group.resolve(projectName).resolve(version)
     }
 
-    private static String taskPrintSigning() {
-        return """
-            task printSigning {
-                doLast {
-                    ${printSigning()}
-                }
-            }
-        """
-    }
-
     private static String publishingRepo() {
         return """
         // only here for testing purposes, not needed for the plugin
@@ -893,21 +812,6 @@ class PublishPluginIntTest {
         """
     }
 
-    private static String printSigning() {
-        return """
-            if (project.hasProperty('signing')) {
-                println("signing.password: \${project.ext."signing.password"}")
-                println("signing.keyId: \${project.ext."signing.keyId"}")
-                println("signing.secretKeyRingFile: \${project.ext."signing.secretKeyRingFile"}")
-            }
-        """
-    }
-
-    private static void assertSigning(BuildResult result, String gpgPassphrase, String gpgKeyId, String gpgKeyRing) {
-        assertTrue(result.output.contains("signing.password: $gpgPassphrase"), "project.ext.\"signing.password\" $gpgPassphrase\n$result.output")
-        assertTrue(result.output.contains("signing.keyId: $gpgKeyId"), "project.ext.\"signing.keyId\" $gpgKeyId\n$result.output")
-        assertTrue(result.output.contains("signing.secretKeyRingFile: $gpgKeyRing"), "project.ext.\"signing.secretKeyRingFile\" $gpgKeyRing\n$result.output")
-    }
 
     private static void assertJarsWithLicenseAndManifest(Path releasePath, String projectName, String version, String repoUrl, String vendor, String kotlinVersion, String pomName, String... jarNameEndings) {
         def prefix = pomName.substring(0, pomName.length() - 4)
