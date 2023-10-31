@@ -9,6 +9,9 @@ import org.gradle.api.provider.Property
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
+import org.gradle.kotlin.dsl.the
+import org.gradle.plugins.signing.SigningExtension
+import org.gradle.plugins.signing.signatory.pgp.PgpSignatoryProvider
 
 open class PublishPluginExtension(private val project: Project) {
     companion object {
@@ -20,39 +23,26 @@ open class PublishPluginExtension(private val project: Project) {
     val artifactFilter: Property<(Jar) -> Boolean> = project.objects.property()
     val licenses: ListProperty<License> = project.objects.listProperty()
     val developers: ListProperty<Developer> = project.objects.listProperty()
-    val propNameGpgKeyId: Property<String> = project.objects.property()
-    val propNameGpgKeyRing: Property<String> = project.objects.property()
-    val propNameGpgPassphrase: Property<String> = project.objects.property()
-    val envNameGpgPassphrase: Property<String> = project.objects.property()
-    val envNameGpgKeyId: Property<String> = project.objects.property()
-    val envNameGpgKeyRing: Property<String> = project.objects.property()
-    val envNameGpgSigningKey: Property<String> = project.objects.property()
+
     val signWithGpg: Property<Boolean> = project.objects.property()
     val manifestVendor: Property<String> = project.objects.property()
 
     init {
         resetLicenses(StandardLicenses.APACHE_2_0, "repo")
-        propNameGpgPassphrase.convention("gpgPassphrase")
-        propNameGpgKeyId.convention("gpgKeyId")
-        propNameGpgKeyRing.convention("gpgKeyRing")
-        envNameGpgPassphrase.convention("GPG_PASSPHRASE")
-        envNameGpgKeyId.convention("GPG_KEY_ID")
-        envNameGpgKeyRing.convention("GPG_KEY_RING")
-        envNameGpgSigningKey.convention("GPG_SIGNING_KEY")
 //        if (!signWithGpg.present) {
 //            signWithGpg.set(!project.version.endsWith('-SNAPSHOT'))
 //        }
-        signWithGpg.set(true)
+        signWithGpg.convention(true)
 
         if (isTutteliProject(project) || isTutteliProject(project.rootProject)) {
             githubUser.set("robstoll")
             manifestVendor.set("tutteli.ch")
-            val dev = Developer()
-            dev.id = "robstoll"
-            dev.name = "Robert Stoll"
-            dev.email = "rstoll@tutteli.ch"
-            dev.url = "https://tutteli.ch"
-            developers.add(dev)
+            addDeveloper {
+                id = "robstoll"
+                name = "Robert Stoll"
+                email = "rstoll@tutteli.ch"
+                url = "https://tutteli.ch"
+            }
         }
 
         // reset group of sub-projects
@@ -144,5 +134,10 @@ open class PublishPluginExtension(private val project: Project) {
 
     fun determineRepoDomainAndPath(): String =
         "github.com/${githubUser.get()}/${project.rootProject.name}"
+
+    fun usePgpJava() {
+        val signingExtension = project.the<SigningExtension>()
+        signingExtension.signatories = PgpSignatoryProvider()
+    }
 
 }

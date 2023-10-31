@@ -26,12 +26,6 @@ class SetUp {
         project.group = GROUP_ID
         project.description = DESCRIPTION
 
-        project.ext {
-            gpgPassphrase = 'test'
-            gpgKeyRing = 'test'
-            gpgKeyId = 'test'
-        }
-
         pluginApplier.execute(project)
         project.plugins.apply(PublishPlugin)
         PublishPluginExtension extension = getPluginExtension(project)
