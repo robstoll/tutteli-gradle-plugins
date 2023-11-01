@@ -1,5 +1,5 @@
 buildscript {
-    val version = "4.11.0-SNAPSHOT"
+    val version = "5.0.0"
     val previousVersion = "4.11.0"
 
     rootProject.version = version
@@ -43,8 +43,7 @@ configure(pluginProjects) {
 Release & deploy
 ----------------
 (assumes you have an alias named gr pointing to ./gradlew)
-1. gr removeRepo
-2. Update master:
+1. Update master:
     a) point to the tag
         1) update version of the badges in README (except for codecov)
         2) search for `tree/master` in README and replace it with `tree/vX.Y.Z`
@@ -53,9 +52,9 @@ Release & deploy
     c) commit & push (modified README.md and build.gradle.kts)
     d) git tag vX.Y.Z
     e) git push origin vX.Y.Z
-3. publish plugins
+2. publish plugins
    a) gr publishPlugins
-4. create release on github
+3. create release on github
 
 
 Prepare next dev cycle
