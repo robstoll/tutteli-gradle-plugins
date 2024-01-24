@@ -76,12 +76,12 @@ class ModuleInfoPlugin : Plugin<Project> {
                     }
                 compilerArgs = listOf("--patch-module", "$moduleName=$modulePath")
             }
-            if (JavaVersion.toVersion(sourceCompatibility) <= JavaVersion.VERSION_11) {
-                checkOnlyModuleInfoInSrc(javaFiles)
+            if (JavaVersion.toVersion(sourceCompatibility) < JavaVersion.VERSION_11) {
+                checkOnlyModuleInfoInSrc(javaFiles, sourceCompatibility, targetCompatibility)
                 sourceCompatibility = JavaVersion.VERSION_11.toString()
             }
-            if (JavaVersion.toVersion(targetCompatibility) <= JavaVersion.VERSION_11) {
-                checkOnlyModuleInfoInSrc(javaFiles)
+            if (JavaVersion.toVersion(targetCompatibility) < JavaVersion.VERSION_11) {
+                checkOnlyModuleInfoInSrc(javaFiles, sourceCompatibility, targetCompatibility)
                 targetCompatibility = JavaVersion.VERSION_11.toString()
             }
         }
@@ -90,9 +90,13 @@ class ModuleInfoPlugin : Plugin<Project> {
         }
     }
 
-    private fun checkOnlyModuleInfoInSrc(javaFiles: Set<File>) {
+    private fun checkOnlyModuleInfoInSrc(
+        javaFiles: Set<File>,
+        sourceCompatibility: String,
+        targetCompatibility: String
+    ) {
         if (javaFiles.size > 1) throw IllegalStateException(
-            "tutteli-gradle-kotlin-module-info assumes you either have set either java.toolchain.languageVersion or source/targetCompatibility >= 11 and in case not only have module-info.java to compile"
+            "tutteli-gradle-kotlin-module-info assumes you either have set java.toolchain.languageVersion or source/targetCompatibility >= 11 (was sourceCompatibility: $sourceCompatibility, targetCompatibility: $targetCompatibility) and in case not only have module-info.java to compile"
         )
     }
 }
