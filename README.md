@@ -1,4 +1,4 @@
-[![Gradle Plugin Portal](https://img.shields.io/badge/gradle%20plugin-v5.0.0-blue.svg)](https://plugins.gradle.org/u/robstoll)
+[![Gradle Plugin Portal](https://img.shields.io/badge/gradle%20plugin-v5.0.1-blue.svg)](https://plugins.gradle.org/u/robstoll)
 [![Apache license](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg)](http://opensource.org/licenses/Apache2.0)
 [![Build Status Ubuntu](https://github.com/robstoll/tutteli-gradle-plugins/workflows/Ubuntu/badge.svg?event=push)](https://github.com/robstoll/tutteli-gradle-plugins/actions?query=workflow%3AUbuntu+branch%3Amain)
 [![Build Status Windows](https://github.com/robstoll/tutteli-gradle-plugins/workflows/Windows/badge.svg?event=push)](https://github.com/robstoll/tutteli-gradle-plugins/actions?query=workflow%3AWindows+branch%3Amain)
@@ -32,7 +32,7 @@ as well as the [jacoco-plugin](https://docs.gradle.org/current/userguide/jacoco_
 and applies some default configuration.
 
 This plugin does not set up a junit engine and you need to define it yourself.
-Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/v5.0.0/build.gradle#L61)
+Have a look at [build.gradle](https://github.com/robstoll/tutteli-gradle-plugins/tree/v5.0.1/build.gradle#L61)
 for an example.
 
 # ch.tutteli.gradle.plugins.kotlin.module.info [🔗](https://plugins.gradle.org/plugin/ch.tutteli.gradle.plugins.kotlin.module.info/5.0.0)
@@ -48,7 +48,7 @@ You can speed up this process (in case you have many java files) by defining `mo
 Applies the `maven-publish` and `signing` plugin and 
 configures them based on given license(s), a github user and a few other information.
 It exposes the `tutteliPublish` extension which lets you specify those information and refine default conventions.
-Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/v5.0.0/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
+Have a look at the [example in the tests](https://github.com/robstoll/tutteli-gradle-plugins/tree/v5.0.1/tutteli-gradle-publish/src/test/groovy/ch/tutteli/gradle/publish/PublishPluginIntTest.groovy#L41)
 for more information.
 
 If not set, it automatically propagates `version` and `group` from `rootProject` to subprojects 

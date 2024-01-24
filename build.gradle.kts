@@ -1,6 +1,6 @@
 buildscript {
-    val version = "5.0.0"
-    val previousVersion = "4.11.0"
+    val version = "5.0.1"
+    val previousVersion = "5.0.0"
 
     rootProject.version = version
     rootProject.group = "ch.tutteli"
@@ -47,7 +47,7 @@ Release & deploy
     a) point to the tag
         1) update version of the badges in README (except for codecov)
         2) search for `tree/master` in README and replace it with `tree/vX.Y.Z`
-    b) change `version` in build.gradle to X.Y.Z (remove -SNAPSHOT)
+    b) change `version` in build.gradle.kts to X.Y.Z (remove -SNAPSHOT)
     c) search for old version and replace by new with the *exception* of previous_version in build.gradle.kts
     c) commit & push (modified README.md and build.gradle.kts)
     d) git tag vX.Y.Z
