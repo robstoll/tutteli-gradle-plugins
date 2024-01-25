@@ -5,7 +5,7 @@ jacocoTool = "0.8.11"
 jsonPathAssert = "2.9.0"
 junitJupiter = "5.10.1"
 junitPlatform = "1.9.1"
-mavenModel = "3.9.5"
+mavenModel = "3.9.6"
 mockito = "5.10.0"
 spek = "2.0.15"
 
