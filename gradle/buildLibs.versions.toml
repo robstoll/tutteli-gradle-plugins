@@ -1,6 +1,6 @@
 [versions]
 publish = "1.2.1"
-task-tree = "2.1.1"
+task-tree = "3.0.0"
 vlsi = "1.90"
 
 [libraries]
