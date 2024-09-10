@@ -7,6 +7,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
 import static org.junit.jupiter.api.Assertions.assertFalse
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 
 @ExtendWith(SettingsExtension)
 class JunitJacocoPluginIntTest {
-    private static final String KOTLIN_VERSION = '1.8.22'
+    private static final String KOTLIN_VERSION = '2.0.20'
     private static final String MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 
     @Test
@@ -28,11 +29,6 @@ class JunitJacocoPluginIntTest {
     }
 
     @Test
-    void withTests_OldJvmPlatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds(settingsSetup, "kotlin-platform-jvm")
-    }
-
-    @Test
     void withTests_MultiplatformPlugin(SettingsExtensionObject settingsSetup) {
         checkSucceeds(settingsSetup, MULTIPLATFORM_PLUGIN)
     }
@@ -41,12 +37,16 @@ class JunitJacocoPluginIntTest {
         //arrange
         setupProject(settingsSetup, kotlinPlugin)
         //act
-        def result = runGradleModuleBuild(settingsSetup, "build")
+        def result = runGradleModuleBuild(settingsSetup, "build", "--stacktrace")
         //assert
         Asserts.assertTaskRunSuccessfully(result, ":jacocoTestReport")
         assertFalse(result.output.contains("Execution optimizations have been disabled"), "Execution optimizations have been disabled! maybe due to jacocoTestReport?\n$result.output")
+        assertFalse(result.output.contains("'java' Gradle plugin is not compatible with 'org.jetbrains.kotlin.multiplatform' plugin."), "java plugin applied? still got w: 'java' Gradle plugin is not compatible with 'org.jetbrains.kotlin.multiplatform' plugin.\n$result.output")
+
         def reportXml = "build/reports/jacoco/report.xml"
         assertTrue(Files.exists(settingsSetup.tmpPath.resolve(reportXml)), "$reportXml did not exist")
+        def content = new String(Files.readAllBytes(settingsSetup.tmpPath.resolve(reportXml)), StandardCharsets.UTF_8)
+        assertTrue(content.contains("<method name=\"foo\""), "xml report did not contain method foo:\n$content")
     }
 
 

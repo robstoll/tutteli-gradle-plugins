@@ -1,28 +1,27 @@
 package ch.tutteli.gradle.plugins.junitjacoco
 
 import ch.tutteli.gradle.plugins.junitjacoco.generated.Dependencies
-import org.gradle.api.GradleException
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.*
+import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.testing.*
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.withType
+import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
-import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.withType
 import java.util.*
 
 class JunitJacocoPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         //TODO use apply from gradle-kotlinx with type parameter
-        project.pluginManager.apply(JavaPlugin::class.java)
+        project.pluginManager.apply(JavaBasePlugin::class.java)
         project.pluginManager.apply(JacocoPlugin::class.java)
 
         val extension = project.extensions.create<JunitJacocoPluginExtension>(EXTENSION_NAME, project)
@@ -37,13 +36,22 @@ class JunitJacocoPlugin : Plugin<Project> {
     }
 
     private fun defaultConfig(target: Project, extension: JunitJacocoPluginExtension) {
-        @Suppress("UNCHECKED_CAST")
-        val jacocoReportTask = target.tasks.named(JACOCO_TASK_NAME) as TaskProvider<JacocoReport>
+        val jacocoPluginExtension = target.extensions.getByType(JacocoPluginExtension::class.java)
+        jacocoPluginExtension.toolVersion = Dependencies.jacocoToolsVersion
+
+        val jacocoReports = target.tasks.withType<JacocoReport>()
+        val jacocoReportTask = jacocoReports.findByName(JACOCO_TASK_NAME)?.let {
+            jacocoReports.named(JACOCO_TASK_NAME)
+        } ?: run {
+            target.tasks.register<JacocoReport>(JACOCO_TASK_NAME) {
+                group = LifecycleBasePlugin.VERIFICATION_GROUP
+                description = "Generates code coverage for jvmTest task"
+            }
+        }
+
         target.tasks.named("check") {
             dependsOn(jacocoReportTask)
         }
-        val jacocoPluginExtension = target.extensions.getByType(JacocoPluginExtension::class.java)
-        jacocoPluginExtension.toolVersion = Dependencies.jacocoToolsVersion
 
         jacocoReportTask.configure {
 
