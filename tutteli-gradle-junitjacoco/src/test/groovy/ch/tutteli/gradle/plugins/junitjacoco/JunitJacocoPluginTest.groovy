@@ -1,6 +1,6 @@
 package ch.tutteli.gradle.plugins.junitjacoco
 
-import ch.tutteli.gradle.plugins.junitjacoco.JunitJacocoPlugin
+
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
