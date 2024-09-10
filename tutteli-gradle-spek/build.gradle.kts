@@ -59,7 +59,7 @@ afterEvaluate {
 sourceSets {
     main {
         groovy {
-            srcDirs("src/main/generated/")
+            srcDirs("src/main/generated/groovy")
         }
     }
 }

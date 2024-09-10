@@ -11,7 +11,7 @@ gradlePlugin {
 }
 
 val createClasspathManifest = tasks.register("createClasspathManifest") {
-    val outputDir = file("${buildDir}/${name}")
+    val outputDir = file(project.layout.buildDirectory.file(name))
 
     inputs.files(sourceSets.main.get().runtimeClasspath)
     outputs.dir(outputDir)

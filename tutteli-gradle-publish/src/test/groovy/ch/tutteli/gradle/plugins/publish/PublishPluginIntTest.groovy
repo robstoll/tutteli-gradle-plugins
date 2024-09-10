@@ -148,7 +148,7 @@ class PublishPluginIntTest {
         }
         def result = builder
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("publishAllPublicationsToMavenRepository",  "--stacktrace")
+            .withArguments("publishAllPublicationsToMavenRepository", "--stacktrace")
             .build()
 
         //assert
@@ -303,6 +303,7 @@ class PublishPluginIntTest {
         //assert
         def dependentReleasePath = getReleasePath(settingsSetup, dependentName, groupId, version, dependentName)
         def (dependentPom, dependentPomName) = getPomInclFileNameAndAssertBasicPomProperties(dependentReleasePath, dependentName, groupId, version, githubUser, rootProjectName)
+
         assertContainsRegex(dependentPom, "licenses", "<licenses>$NL_INDENT" +
             "<license>$NL_INDENT" +
             "<name>${StandardLicenses.EUPL_1_2.longName}</name>$NL_INDENT" +
@@ -319,6 +320,18 @@ class PublishPluginIntTest {
             "<url>https://tutteli.ch</url>$NL_INDENT" +
             "</developer>$NL_INDENT" +
             "</developers>")
+
+        String runtimeDependency = ""
+        if (gradleVersion != null && (gradleVersion.startsWith("6") || gradleVersion.startsWith("7"))) {
+            runtimeDependency = "<dependency>$NL_INDENT" +
+                "<groupId>$groupId</groupId>$NL_INDENT" +
+                "<artifactId>$subprojectName</artifactId>$NL_INDENT" +
+                "<version>$version</version>$NL_INDENT" +
+                "<scope>runtime</scope>$NL_INDENT" +
+                "</dependency>$NL_INDENT" +
+                "</dependencies>"
+        }
+
         assertContainsRegex(dependentPom, "dependencies", "<dependencies>$NL_INDENT" +
             "<dependency>$NL_INDENT" +
             "<groupId>$groupId</groupId>$NL_INDENT" +
@@ -331,14 +344,7 @@ class PublishPluginIntTest {
             "<artifactId>kotlin-stdlib-jdk8</artifactId>$NL_INDENT" +
             "<version>$KOTLIN_VERSION</version>$NL_INDENT" +
             "<scope>compile</scope>$NL_INDENT" +
-            "</dependency>$NL_INDENT" +
-            "<dependency>$NL_INDENT" +
-            "<groupId>$groupId</groupId>$NL_INDENT" +
-            "<artifactId>$subprojectName</artifactId>$NL_INDENT" +
-            "<version>$version</version>$NL_INDENT" +
-            "<scope>runtime</scope>$NL_INDENT" +
-            "</dependency>$NL_INDENT" +
-            "</dependencies>"
+            "</dependency>$NL_INDENT" + runtimeDependency
         )
 
         def repoUrl = "https://github.com/$githubUser/$rootProjectName"

@@ -42,8 +42,19 @@ class PublishPlugin : Plugin<Project> {
             // as well as https://github.com/gradle/gradle/issues/10900
             isPreserveFileTimestamps = false
             isReproducibleFileOrder = true
+
+            // TODO 6.0.0 switch to the following once we drop support for gradle 6, require 7.4 at least
+            @Suppress("DEPRECATION")
             dirMode = "775".toInt(8)
+            @Suppress("DEPRECATION")
             fileMode = "664".toInt(8)
+//            dirPermissions {
+//                unix("rwxrwxr-x")
+//            }
+//
+//            filePermissions {
+//                unix("rw-rw-r--")
+//            }
         }
 
         project.tasks.withType<Jar>()
