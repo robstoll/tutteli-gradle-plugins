@@ -56,7 +56,7 @@ class SpekPluginIntTest {
         }
         def result = builder
             .withProjectDir(settingsSetup.tmp)
-            .withArguments("clean", "build")
+            .withArguments("clean", "build", "--stacktrace")
             .build()
         assertTrue(result.output.contains("was here"), "println in output:\n" + result.output)
         def failed = result.taskPaths(TaskOutcome.FAILED)
@@ -64,8 +64,8 @@ class SpekPluginIntTest {
     }
 
     static List<Arguments> kotlinVersionAndGradle() {
-        return ['1.7.20', '1.8.10', '1.9.10'].collectMany { kotlinVersion ->
-            def gradleVersions = ['8.1.1', '8.3']
+        return ['1.8.10', '1.9.10', '2.0.20'].collectMany { kotlinVersion ->
+            def gradleVersions = ['8.3', '8.10']
             gradleVersions.collect { gradleVersion ->
                 Arguments.of(kotlinVersion, gradleVersion)
             }

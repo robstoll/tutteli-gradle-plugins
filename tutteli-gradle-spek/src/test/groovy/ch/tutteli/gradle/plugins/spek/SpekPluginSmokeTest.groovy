@@ -21,10 +21,6 @@ class SpekPluginSmokeTest {
     }
 
     @Test
-    void smokeTest_KotlinPlatformJvmPlugin() {
-        smokeTest(KotlinPlatformJvmPlugin)
-    }
-    @Test
     void smokeTest_KotlinMultiPlatformPlugin() {
         smokeTest(KotlinMultiplatformPluginWrapper)
     }
