@@ -65,18 +65,6 @@ class PublishPluginSmokeTest {
     }
 
     @Test
-    void kotlinOldPlatformJs_TasksAndExtensionPresent() {
-        //arrange & act
-        Project project = setUp { project ->
-            project.plugins.apply('kotlin-platform-js')
-        }
-        project.evaluate()
-        //assert
-        assertExtensionAndTaskDefinedAfterEvaluate(project)
-    }
-
-
-    @Test
     void kotlinMultiplatform_TasksAndExtensionPresent() {
         //arrange & act
         Project project = setUp { project ->
