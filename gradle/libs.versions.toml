@@ -6,7 +6,7 @@ jsonPathAssert = "2.9.0"
 junitJupiter = "5.11.1"
 junitPlatform = "1.9.1"
 mavenModel = "3.9.9"
-mockito = "5.13.0"
+mockito = "5.14.0"
 spek = "2.0.15"
 
 [libraries]
