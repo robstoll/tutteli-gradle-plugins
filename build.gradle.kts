@@ -1,5 +1,5 @@
 buildscript {
-    val version = "5.0.1"
+    val version = "5.0.2"
     val previousVersion = "5.0.0"
 
     rootProject.version = version
