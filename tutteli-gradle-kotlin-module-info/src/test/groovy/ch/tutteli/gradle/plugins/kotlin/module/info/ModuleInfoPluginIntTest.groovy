@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse
 
 @ExtendWith(SettingsExtension)
 class ModuleInfoPluginIntTest {
-    private static final String KOTLIN_VERSION = '1.8.22'
+    private static final String KOTLIN_VERSION = '2.0.21'
     private static final String ATRIUM_VERSION = '1.0.0'
     private static final String MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 
@@ -42,23 +42,22 @@ class ModuleInfoPluginIntTest {
     }
 
     private static void setupPluginAndCheckFails(String projectName, SettingsExtensionObject settingsSetup, String kotlinPlugin, String additions = "") {
-        //not for jdk8
-        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfo(projectName, settingsSetup, "requires kotlin.stdlib;", kotlinPlugin, additions)
+        setupModuleInfo(projectName, settingsSetup, "requires kotlin.stdlib;", kotlinPlugin, KOTLIN_VERSION, additions)
         //act
         checkFails(settingsSetup, kotlinPlugin, "")
     }
 
     private static void checkFails(SettingsExtensionObject settingsSetup, String kotlinPlugin, String project) {
+        def isMpp = kotlinPlugin == MULTIPLATFORM_PLUGIN
         def exception = assertThrows(UnexpectedBuildFailure) {
-            runGradleModuleBuild(settingsSetup, null, project + ":jar")
+            runGradleModuleBuild(settingsSetup, null, project + (isMpp ? ":jvmJar" : ":jar"))
         }
 
         checkDoesNotFailDueToUnnamedModuleBug(settingsSetup, exception)
 
         //assert
-        def taskName = kotlinPlugin == MULTIPLATFORM_PLUGIN ? "compileKotlinJvm" : "compileKotlin"
+        def taskName = isMpp ? "compileKotlinJvm" : "compileKotlin"
         assertTrue(exception.message.contains("TaskExecutionException: Execution failed for task '$project:$taskName'"), "$project:$taskName did not fail.\n$exception.message")
         assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.verbs'"), "not atrium was the problem.\n$exception.message")
         assertTrue(exception.message.contains("Symbol is declared in module 'ch.tutteli.atrium.api.fluent.en_GB'"), "not atrium-verbs was the problem.\n$exception.message")
@@ -129,15 +128,13 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoCannotApplyJavaMissingMultiplatformPlugin(SettingsExtensionObject settingsSetup) {
-        //not for jdk8
-        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
         //arrange
-        setupModuleInfo("mpp-missing-kotlin", settingsSetup, "requires kotlin.stdlib;", MULTIPLATFORM_PLUGIN, "")
+        setupModuleInfo("mpp-missing-kotlin", settingsSetup, "requires kotlin.stdlib;", MULTIPLATFORM_PLUGIN, KOTLIN_VERSION, "")
         //act
         def exception = assertThrows(UnexpectedBuildFailure) {
             runGradleModuleBuild(settingsSetup, null, "jar")
         }
-        assertTrue(exception.message.contains("Looks like the java plugin was not applied. Did you forget to apply the kotlin plugin?"), "did not fail due to missing `withJava")
+        assertTrue(exception.message.contains("There is no compileJava task. Did you forget to apply the kotlin plugin?"), "did not fail due to missing `withJava")
     }
 
     @Test
@@ -146,8 +143,26 @@ class ModuleInfoPluginIntTest {
     }
 
     @Test
+    void moduleInfoSucceeds_KotlinPlugin_1_8_21(SettingsExtensionObject settingsSetup) {
+        checkSucceeds("kotlin-jvm-success", settingsSetup, null, "org.jetbrains.kotlin.jvm", "1.8.21")
+    }
+
+    @Test
     void moduleInfoSucceeds_MultiplatformPlugin(SettingsExtensionObject settingsSetup) {
-        checkSucceeds("kotlin-mpp-success", settingsSetup, null, MULTIPLATFORM_PLUGIN,
+        checkSucceeds("kotlin-mpp-success", settingsSetup, null, MULTIPLATFORM_PLUGIN, KOTLIN_VERSION,
+            """
+            kotlin {
+                jvm {
+                    withJava()
+                }
+            }
+            """
+        )
+    }
+
+    @Test
+    void moduleInfoSucceeds_MultiplatformPlugin_kotlin_1_8_21(SettingsExtensionObject settingsSetup) {
+        checkSucceeds("kotlin-mpp-success", settingsSetup, null, MULTIPLATFORM_PLUGIN, "1.8.21",
             """
             kotlin {
                 jvm {
@@ -162,7 +177,7 @@ class ModuleInfoPluginIntTest {
     void moduleInfoSucceeds_MultiplatformPlugin_Gradle6_9_3(SettingsExtensionObject settingsSetup) {
         def javaVersion = JavaVersion.toVersion(System.getProperty("java.version"))
         assumeFalse(javaVersion >= JavaVersion.VERSION_15)
-        checkSucceeds("mpp-6.9.3-success", settingsSetup, "6.9.3", MULTIPLATFORM_PLUGIN,
+        checkSucceeds("mpp-6.9.3-success", settingsSetup, "6.9.3", MULTIPLATFORM_PLUGIN, KOTLIN_VERSION,
             """
             kotlin {
                 jvm {
@@ -173,11 +188,16 @@ class ModuleInfoPluginIntTest {
         )
     }
 
-    private static void checkSucceeds(String projectName, SettingsExtensionObject settingsSetup, String gradleVersion, String kotlinPlugin, String additions = "") {
-        //not for jdk8
-        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
+    private static void checkSucceeds(
+        String projectName,
+        SettingsExtensionObject settingsSetup,
+        String gradleVersion,
+        String kotlinPlugin,
+        String kotlinVersion = KOTLIN_VERSION,
+        String additions = ""
+    ) {
         //arrange
-        setupModuleInfo(projectName, settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;", kotlinPlugin, additions)
+        setupModuleInfo(projectName, settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;", kotlinPlugin, kotlinVersion, additions)
         //act
         try {
             def result = runGradleModuleBuild(settingsSetup, gradleVersion, "build")
@@ -192,8 +212,7 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoInSubprojectMppFails(SettingsExtensionObject settingsSetup) throws IOException {
-        //not for jdk8
-        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
+
         //arrange
         setupModuleInfoInSubproject("sub-jvm-fails", settingsSetup, "requires kotlin.stdlib;")
         //act
@@ -202,8 +221,7 @@ class ModuleInfoPluginIntTest {
 
     @Test
     void moduleInfoInSubprojectSucceeds(SettingsExtensionObject settingsSetup) {
-        //not for jdk8
-        assumeFalse(System.getProperty("java.version").startsWith("1.8"))
+
         //arrange
         setupModuleInfoInSubproject("sub-jvm-success", settingsSetup, "requires kotlin.stdlib; requires ch.tutteli.atrium.fluent.en_GB;")
         try {
@@ -255,6 +273,7 @@ class ModuleInfoPluginIntTest {
         SettingsExtensionObject settingsSetup,
         String moduleInfoContent,
         String kotlinPlugin,
+        String kotlinVersion,
         String additions
     ) throws IOException {
         settingsSetup.settings << "rootProject.name='$projectName'"
@@ -276,7 +295,7 @@ class ModuleInfoPluginIntTest {
             }
             """
         settingsSetup.buildGradle << """
-            ${settingsSetup.buildscriptWithKotlin(KOTLIN_VERSION)}
+            ${settingsSetup.buildscriptWithKotlin(kotlinVersion)}
 
             apply plugin: '$kotlinPlugin'
             apply plugin: 'ch.tutteli.gradle.plugins.kotlin.module.info'
