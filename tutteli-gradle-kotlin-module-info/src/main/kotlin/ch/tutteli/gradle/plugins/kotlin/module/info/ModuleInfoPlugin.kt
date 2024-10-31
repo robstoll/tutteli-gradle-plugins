@@ -5,7 +5,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.kotlin.dsl.*
+import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.getByName
+import org.gradle.kotlin.dsl.the
 import java.io.File
 
 class ModuleInfoPlugin : Plugin<Project> {
@@ -13,9 +15,9 @@ class ModuleInfoPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         if (JavaVersion.current() >= JavaVersion.VERSION_11) {
             project.afterEvaluate {
-                if (project.plugins.findPlugin("java") == null) throw IllegalStateException(
+                if (project.tasks.findByName("compileJava") == null) throw IllegalStateException(
                     """\
-                    Looks like the java plugin was not applied. Did you forget to apply the kotlin plugin?
+                    There is no compileJava task. Did you forget to apply the kotlin plugin?
                     In case you use the multiplatform plugin, then activate java in the jvm target as follows:
 
                     kotlin {
