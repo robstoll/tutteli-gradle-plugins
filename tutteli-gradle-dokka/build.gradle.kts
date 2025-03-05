@@ -19,5 +19,7 @@ dependencies {
     implementation(libs.dokka.plugin) {
         exclude("com.jetbrains.kotlin")
     }
+    //TODO 6.0.0 activate, see libs.version.toml for more info
+//    implementation(libs.kbox)
     testImplementation(libs.kotlin)
 }

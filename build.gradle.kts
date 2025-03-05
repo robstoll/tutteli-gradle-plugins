@@ -33,7 +33,7 @@ configure(pluginProjects) {
 
     tasks.withType<Test>().configureEach {
         reports {
-            html.outputLocation.set(file("${buildDir}/reports/junit"))
+            html.outputLocation.set(project.layout.buildDirectory.dir("reports/junit"))
         }
     }
 }
