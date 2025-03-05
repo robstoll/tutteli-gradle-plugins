@@ -14,7 +14,6 @@ atrium = { module = "ch.tutteli.atrium:atrium-api-fluent", version.ref = "atrium
 dokka-plugin = { module = "org.jetbrains.dokka:org.jetbrains.dokka.gradle.plugin", version.ref = "dokka" }
 json-path-assert = { module = "com.jayway.jsonpath:json-path-assert", version.ref = "jsonPathAssert" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiter" }
-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junitJupiter" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junitJupiter" }
 # on purpose without version, kotlin version is specified by the kotlin version used by gradle-version the user uses
 kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin" }
