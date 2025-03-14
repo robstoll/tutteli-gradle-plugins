@@ -3,7 +3,7 @@ atrium = "1.2.0"
 dokka = "1.9.20"
 jacocoTool = "0.8.11"
 jsonPathAssert = "2.9.0"
-junitJupiter = "5.12.0"
+junitJupiter = "5.12.1"
 junitPlatform = "1.9.1"
 # TODO 6.0.0 use kbox
 # kbox = "3.0.0"
