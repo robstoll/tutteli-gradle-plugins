@@ -7,7 +7,7 @@ junitJupiter = "5.13.0"
 junitPlatform = "1.9.1"
 # TODO 6.0.0 use kbox
 # kbox = "3.0.0"
-mavenModel = "3.9.9"
+mavenModel = "3.9.10"
 mockito = "5.18.0"
 spek = "2.0.15"
 
