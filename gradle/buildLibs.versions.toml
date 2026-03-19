@@ -1,5 +1,5 @@
 [versions]
-publish = "2.1.0"
+publish = "2.1.1"
 task-tree = "4.0.1"
 vlsi = "3.0.1"
 
