@@ -1,14 +1,14 @@
 {
     "extends": [
-        "config:base",
+        "config:recommended",
         "github>robstoll/renovate-presets-jvm"
     ],
     "packageRules": [
         {
             "enabled": false,
-            "matchPackagePatterns": [
-                "^ch.tutteli:tutteli-gradle",
-                "^ch.tutteli.gradle.plugins"
+            "matchPackageNames": [
+                "/^ch.tutteli:tutteli-gradle/",
+                "/^ch.tutteli.gradle.plugins/"
             ]
         }
     ]
